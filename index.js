@@ -78,7 +78,7 @@ storage.init(app.get('storage')).then(() => {
     }
     server.listen(app.get('port'), () => {
         console.log('Server started at port: ' + app.get('port'));
-        createZip();
+        // createZip(); // Not clear what this adds, since the files are not minified
     });
 }).catch(err => {
     console.error(err);
