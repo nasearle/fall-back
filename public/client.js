@@ -2,120 +2,114 @@
 
 (function () {
 
-    let socket, //Socket.IO client
-        buttons, //Button elements
-        message, //Message element
-        score, //Score element
-        points = { //Game points
-            draw: 0,
-            win: 0,
-            lose: 0
-        };
+    let socket;
 
-    /**
-     * Disable all button
-     */
-    function disableButtons() {
-        for (let i = 0; i < buttons.length; i++) {
-            buttons[i].setAttribute("disabled", "disabled");
-        }
-    }
+    kontra.init();
+    kontra.initKeys();
+    let players = {};
 
-    /**
-     * Enable all button
-     */
-    function enableButtons() {
-        for (let i = 0; i < buttons.length; i++) {
-            buttons[i].removeAttribute("disabled");
-        }
-    }
-
-    /**
-     * Set message text
-     * @param {string} text
-     */
-    function setMessage(text) {
-        message.innerHTML = text;
-    }
-
-    /**
-     * Set score text
-     * @param {string} text
-     */
-    function displayScore(text) {
-        score.innerHTML = [
-            "<h2>" + text + "</h2>",
-            "Won: " + points.win,
-            "Lost: " + points.lose,
-            "Draw: " + points.draw
-        ].join("<br>");
-    }
-
-    /**
-     * Binde Socket.IO and button events
-     */
-    function bind() {
-
-        socket.on("start", () => {
-            enableButtons();
-            setMessage("Round " + (points.win + points.lose + points.draw + 1));
-        });
-
-        socket.on("win", () => {
-            points.win++;
-            displayScore("You win!");
-        });
-
-        socket.on("lose", () => {
-            points.lose++;
-            displayScore("You lose!");
-        });
-
-        socket.on("draw", () => {
-            points.draw++;
-            displayScore("Draw!");
-        });
-
-        socket.on("end", () => {
-            disableButtons();
-            setMessage("Waiting for opponent...");
-        });
-
-        socket.on("connect", () => {
-            disableButtons();
-            setMessage("Waiting for opponent...");
-        });
-
-        socket.on("disconnect", () => {
-            disableButtons();
-            setMessage("Connection lost!");
-        });
-
-        socket.on("error", () => {
-            disableButtons();
-            setMessage("Connection error!");
-        });
-
-        for (let i = 0; i < buttons.length; i++) {
-            ((button, guess) => {
-                button.addEventListener("click", function (e) {
-                    disableButtons();
-                    socket.emit("guess", guess);
-                }, false);
-            })(buttons[i], i + 1);
-        }
-    }
+    const addPlayer = playerInfo => {
+      const player = kontra.Sprite({
+        type: 'player',
+        id: playerInfo.id,
+        x: playerInfo.x,
+        y: playerInfo.y,
+        radius: 30,
+        render() {
+          this.context.strokeStyle = 'black';
+          this.context.beginPath(); // start drawing a shape
+          this.context.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          this.context.stroke(); // outline the circle
+        },
+      });
+      players[player.id] = player;
+    };
 
     /**
      * Client module init
      */
     function init() {
-        socket = io({ upgrade: false, transports: ["websocket"] });
-        buttons = document.getElementsByTagName("button");
-        message = document.getElementById("message");
-        score = document.getElementById("score");
-        disableButtons();
-        bind();
+      socket = io({ upgrade: false, transports: ["websocket"] });
+
+      const ctx = document
+        .querySelector('canvas#ctx')
+        .getContext('2d');
+      ctx.font = '30px Roboto';
+
+      socket.on('currentPlayers', currentPlayers => {
+        Object.keys(currentPlayers).forEach(id => {
+          // console.log(currentPlayers[id]);
+
+          addPlayer(currentPlayers[id]);
+        });
+        // console.log(currentPlayers);
+
+        // console.log(players);
+
+      });
+
+      // socket.on('newPlayer', playerInfo => {
+      //   addPlayer(playerInfo);
+      // });
+
+      // socket.on('disconnect', playerId => {
+      //   otherPlayers.forEach(otherPlayer => {
+      //     if (playerId === otherPlayer.playerId) {
+      //       console.log('player disconnected');
+      //       otherPlayer.ttl = 0;
+      //       // otherPlayer.destroy();
+      //     }
+      //   });
+      // });
+
+      // socket.on('playerMoved', playerInfo => {
+      //   otherPlayers.forEach(otherPlayer => {
+      //     if (playerInfo.playerId === otherPlayer.playerId) {
+      //       otherPlayer.x = playerInfo.x
+      //       otherPlayer.y = playerInfo.y;
+      //     }
+      //   });
+      // });
+
+      socket.on('newPosition', data => {
+        ctx.clearRect(0, 0, 500, 500);
+        for (let i = 0; i < data.length; i++) {
+          let player = data[i];
+          console.log(player);
+
+          // addPlayer(player.x, player.y, 30);
+          // players[player.id].render();
+          // console.log(players);
+
+          ctx.strokeStyle = 'black';
+          ctx.beginPath(); // start drawing a shape
+          ctx.arc(player.x, player.y, 30, 0, Math.PI * 2);
+          ctx.stroke(); // outline the circle
+
+          // ctx.fillText(player.number, player.x, player.y);
+        }
+        // sprites.map(sprite => sprite.render());
+      });
+
+      const keyMap = {
+        68: 'right', // d
+        65: 'left', // a
+        87: 'up', // w
+        83: 'down', // s
+      };
+
+      document.onkeydown = event => {
+        socket.emit('keyPress', {
+          inputId: keyMap[event.keyCode],
+          state: true,
+        });
+      };
+      document.onkeyup = event => {
+        socket.emit('keyPress', {
+          inputId: keyMap[event.keyCode],
+          state: false,
+        });
+      };
     }
 
     window.addEventListener("load", init, false);
