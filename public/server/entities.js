@@ -70,7 +70,6 @@ class Player extends Entity {
     delete Player.players[socket.id];
   }
   static updatePlayers() {
-    // TODO: clean up
     const pack = [];
     for (let id in Player.players) {
       let player = Player.players[id];
@@ -87,13 +86,6 @@ class Player extends Entity {
 // Static properties (not available in JavaScript I believe)
 Player.players = {};
 
-// class Bullet extends Entity {
-//     constructor(id) {
-//         super(id);
-//     }
-// }
-
 module.exports = {
   Player: Player,
-  // Bullet: Bullet
 };

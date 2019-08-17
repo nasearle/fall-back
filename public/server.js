@@ -1,163 +1,5 @@
 "use strict";
 
-// /**
-//  * User sessions
-//  * @param {Array} users
-//  */
-// const users = [];
-
-// /**
-//  * Find opponent for a user
-//  * @param {User} user
-//  */
-// function findOpponent(user) {
-// 	for (let i = 0; i < users.length; i++) {
-// 		if (user !== users[i] && users[i].opponent === null) {
-// 			new Game(user, users[i]).start();
-// 		}
-// 	}
-// }
-
-// /**
-//  * Remove user session
-//  * @param {User} user
-//  */
-// function removeUser(user) {
-// 	users.splice(users.indexOf(user), 1);
-// }
-
-// /**
-//  * Game class
-//  */
-// class Game {
-
-// 	/**
-// 	 * @param {User} user1
-// 	 * @param {User} user2
-// 	 */
-// 	constructor(user1, user2) {
-// 		this.user1 = user1;
-// 		this.user2 = user2;
-// 	}
-
-// 	/**
-// 	 * Start new game
-// 	 */
-// 	start() {
-// 		this.user1.start(this, this.user2);
-// 		this.user2.start(this, this.user1);
-// 	}
-
-// 	/**
-// 	 * Is game ended
-// 	 * @return {boolean}
-// 	 */
-// 	ended() {
-// 		return this.user1.guess !== GUESS_NO && this.user2.guess !== GUESS_NO;
-// 	}
-
-// 	/**
-// 	 * Final score
-// 	 */
-// 	score() {
-// 		if (
-// 			this.user1.guess === GUESS_ROCK && this.user2.guess === GUESS_SCISSORS ||
-// 			this.user1.guess === GUESS_PAPER && this.user2.guess === GUESS_ROCK ||
-// 			this.user1.guess === GUESS_SCISSORS && this.user2.guess === GUESS_PAPER
-// 		) {
-// 			this.user1.win();
-// 			this.user2.lose();
-// 		} else if (
-// 			this.user2.guess === GUESS_ROCK && this.user1.guess === GUESS_SCISSORS ||
-// 			this.user2.guess === GUESS_PAPER && this.user1.guess === GUESS_ROCK ||
-// 			this.user2.guess === GUESS_SCISSORS && this.user1.guess === GUESS_PAPER
-// 		) {
-// 			this.user2.win();
-// 			this.user1.lose();
-// 		} else {
-// 			this.user1.draw();
-// 			this.user2.draw();
-// 		}
-// 	}
-
-// }
-
-// /**
-//  * User session class
-//  */
-// class User {
-
-// 	/**
-// 	 * @param {Socket} socket
-// 	 */
-// 	constructor(socket) {
-// 		this.socket = socket;
-// 		this.game = null;
-// 		this.opponent = null;
-// 		this.guess = GUESS_NO;
-// 	}
-
-// 	/**
-// 	 * Set guess value
-// 	 * @param {number} guess
-// 	 */
-// 	setGuess(guess) {
-// 		if (
-// 			!this.opponent ||
-// 			guess <= GUESS_NO ||
-// 			guess > GUESS_SCISSORS
-// 		) {
-// 			return false;
-// 		}
-// 		this.guess = guess;
-// 		return true;
-// 	}
-
-// 	/**
-// 	 * Start new game
-// 	 * @param {Game} game
-// 	 * @param {User} opponent
-// 	 */
-// 	start(game, opponent) {
-// 		this.game = game;
-// 		this.opponent = opponent;
-// 		this.guess = GUESS_NO;
-// 		this.socket.emit("start");
-// 	}
-
-// 	/**
-// 	 * Terminate game
-// 	 */
-// 	end() {
-// 		this.game = null;
-// 		this.opponent = null;
-// 		this.guess = GUESS_NO;
-// 		this.socket.emit("end");
-// 	}
-
-// 	/**
-// 	 * Trigger win event
-// 	 */
-// 	win() {
-// 		this.socket.emit("win", this.opponent.guess);
-// 	}
-
-// 	/**
-// 	 * Trigger lose event
-// 	 */
-// 	lose() {
-// 		this.socket.emit("lose", this.opponent.guess);
-// 	}
-
-// 	/**
-// 	 * Trigger draw event
-// 	 */
-// 	draw() {
-// 		this.socket.emit("draw", this.opponent.guess);
-// 	}
-
-// }
-
 const SOCKETS = {};
 
 class Entity {
@@ -231,7 +73,6 @@ class Player extends Entity {
     delete Player.players[socket.id];
   }
   static updatePlayers() {
-    // TODO: clean up
     const pack = [];
     for (let id in Player.players) {
       let player = Player.players[id];
@@ -248,31 +89,45 @@ class Player extends Entity {
 // Static properties (not available in JavaScript I believe)
 Player.players = {};
 
-// class Bullet extends Entity {
-//     constructor(id) {
-//         super(id);
-//     }
-// }
 
+// Game loop
 setInterval(() => {
-  // TODO: rename
   const pack = Player.updatePlayers();
   io.emit('newPosition', pack);
 }, 1000 / 25);
 
-/**
- * Socket.IO on connect event
- * @param {Socket} socket
- */
+
+/* Exported objects here are configured as Express routes by index.js, which
+runs the game server in a sandboxed environment (supplied by the competition) */
 module.exports = {
 
+  /* Example:
+
+  statistics: (req, res) => {
+    // define regular express route here for /statistics
+    storage.get('games', 0).then(games => {
+    	res.send(`<h1>Games played: ${games}</h1>`);
+    });
+  }
+
+  */
+
+  /* The "io" object is special - it's not configured as an Express route, but
+  rather set as the handler for the web socket 'connect' event. This represents
+  the first time a client connects via socket. We will define all other socket
+  event listeners here (since it's the first time we will have access to the
+  user's socket) */
 	io: (socket) => {
+
+    // Add client/player to a global "list" of sockets
     SOCKETS[socket.id] = socket;
     console.log(`A user connected (${socket.id})`);
 
+    // Call the player's onConnect method to init a new player
     Player.onConnect(socket);
 
-    socket.emit('currentPlayers', Player.players)
+    // Update all clients with current players data
+    socket.emit('currentPlayers', Player.players);
 
     socket.on('disconnect', () => {
       // Note: disconnect event doesn't accept "socket" argument
@@ -280,38 +135,5 @@ module.exports = {
       delete SOCKETS[socket.id];
       Player.onDisconnect(socket);
     });
-
-		// const user = new User(socket);
-		// users.push(user);
-		// findOpponent(user);
-
-		// socket.on("disconnect", () => {
-		// 	console.log("Disconnected: " + socket.id);
-		// 	removeUser(user);
-		// 	if (user.opponent) {
-		// 		user.opponent.end();
-		// 		findOpponent(user.opponent);
-		// 	}
-		// });
-
-		// socket.on("guess", (guess) => {
-		// 	console.log("Guess: " + socket.id);
-		// 	if (user.setGuess(guess) && user.game.ended()) {
-		// 		user.game.score();
-		// 		user.game.start();
-		// 		storage.get('games', 0).then(games => {
-		// 			storage.set('games', games + 1);
-		// 		});
-		// 	}
-		// });
-
-		// console.log("Connected: " + socket.id);
-	},
-
-	// stat: (req, res) => {
-	// 	storage.get('games', 0).then(games => {
-	// 		res.send(`<h1>Games played: ${games}</h1>`);
-	// 	});
-	// }
-
+	}
 };
