@@ -4,25 +4,32 @@ const uglify = require('gulp-uglify-es').default;
 const htmlmin = require('gulp-htmlmin');
 const cssmin = require('gulp-clean-css');
 const zip = require('gulp-zip');
-const checkFileSize = require('gulp-check-filesize');
+const include = require('gulp-include');
 
 const paths = {
     root: '.',
     src: {
-        html: 'public/**/*.html',
-        css: 'public/**/*.css',
-        js: 'public/**/*.js',
-        images: 'public/images/**'
+        base: 'dev',
+        html: `dev/**/*.html`,
+        css: `dev/**/*.css`,
+        js: `dev/**/*.js`,
+        images: `dev/images/**`,
+        lib: `dev/lib/*`
     },
     dist: {
-        dir: 'build',
-        images: 'build/images',
-        all: 'build/**/*'
+        base: 'public',
+        dir: `public`,
+        images: `public/images`,
+        all: `public/**/*`
     },
-    zip: 'build.zip'
+    zip: `public.zip`
 };
 const jsOptions = {
-    mangle: { toplevel: true, }
+    mangle: {
+        toplevel: true, // mangles top level names
+        reserved: ['kontra'] // don't mangle var=kontra, expected in client.js
+    },
+    nameCache: {}, // prevents mangled-name conflicts across files
 };
 const htmlOptions = { collapseWhitespace: true }
 
@@ -31,7 +38,8 @@ function cleanTask() {
 }
 
 function buildJsTask() {
-    return src(paths.src.js)
+    return src(paths.src.js, { ignore: paths.src.lib })
+        .pipe(include()) // inserts lib files into server.js
         .pipe(uglify(jsOptions))
         .pipe(dest(paths.dist.dir));
 }
@@ -51,11 +59,9 @@ function buildCssTask() {
 // TODO: optimize images if applicable
 
 function zipTask() {
-    const thirteenKb = 13 * 1024;
     return src(paths.dist.all)
         .pipe(zip(paths.zip))
         .pipe(dest(paths.root))
-        .pipe(checkFileSize({ fileSizeLimit: thirteenKb }));
 }
 
 exports.build = series(

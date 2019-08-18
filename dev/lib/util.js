@@ -8,6 +8,7 @@ const generateId = () => {
   return getRandomInt(100000, 999999);
 };
 
-module.exports = {
-  generateId: generateId,
-};
+/* Not using module.exports because require() is unavailable in the sandbox environment */
+// module.exports = {
+//   generateId: generateId,
+// };

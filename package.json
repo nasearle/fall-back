@@ -3,12 +3,17 @@
   "version": "1.0.2",
   "description": "js13kgames game jam server",
   "license": "MIT",
-  "main": "index.js",
+  "private": true,
   "scripts": {
     "start": "node index.js",
     "test": "mocha test",
-    "build": "node_modules/gulp/bin/gulp.js build",
-    "dev": "nodemon index.js"
+    "size": "echo $((13312 - $(wc -c < public.zip))) of 13312 bytes remaining",
+    "build": "node_modules/gulp/bin/gulp.js build && npm run size",
+    "dev": "npm-watch",
+    "serve": "npm run build && npm start"
+  },
+  "watch": {
+    "serve": "dev/*"
   },
   "keywords": [
     "js13kgames",
@@ -32,12 +37,12 @@
   "devDependencies": {
     "del": "^5.0.0",
     "gulp": "^4.0.2",
-    "gulp-check-filesize": "^2.0.1",
     "gulp-clean-css": "^4.2.0",
     "gulp-htmlmin": "^5.0.1",
+    "gulp-include": "^2.4.1",
     "gulp-uglify-es": "^1.0.4",
     "gulp-zip": "^5.0.0",
     "mocha": "^6.1.4",
-    "nodemon": "^1.19.1"
+    "npm-watch": "^0.6.0"
   }
 }
