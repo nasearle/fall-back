@@ -45,12 +45,15 @@ module.exports = {
 
     // Update all clients with current players data
     socket.emit('currentPlayers', Player.players);
+    // update all other players with the new player
+    socket.broadcast.emit('newPlayer', Player.players[socket.id]);
 
     socket.on('disconnect', () => {
       // Note: disconnect event doesn't accept "socket" argument
       console.log(`User disconnected (${socket.id})`);
       delete SOCKETS[socket.id];
       Player.onDisconnect(socket);
+      io.emit('disconnect', socket.id);
     });
 	}
 };
