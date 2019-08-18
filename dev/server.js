@@ -43,7 +43,7 @@ module.exports = {
     // Call the player's onConnect method to init a new player
     Player.onConnect(socket);
 
-    // Update all clients with current players data
+    // Update new client with existing players data
     socket.emit('currentPlayers', Player.players);
     // update all other players with the new player
     socket.broadcast.emit('newPlayer', Player.players[socket.id]);
