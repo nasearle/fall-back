@@ -5,7 +5,6 @@
     let socket;
 
     kontra.init();
-    kontra.initKeys();
     let players = {};
 
     const addPlayer = playerInfo => {
@@ -38,57 +37,26 @@
 
       socket.on('currentPlayers', currentPlayers => {
         Object.keys(currentPlayers).forEach(id => {
-          // console.log(currentPlayers[id]);
-
           addPlayer(currentPlayers[id]);
         });
-        // console.log(currentPlayers);
-
-        // console.log(players);
-
       });
 
-      // socket.on('newPlayer', playerInfo => {
-      //   addPlayer(playerInfo);
-      // });
+      socket.on('newPlayer', playerInfo => {
+        addPlayer(playerInfo);
+      });
 
-      // socket.on('disconnect', playerId => {
-      //   otherPlayers.forEach(otherPlayer => {
-      //     if (playerId === otherPlayer.playerId) {
-      //       console.log('player disconnected');
-      //       otherPlayer.ttl = 0;
-      //       // otherPlayer.destroy();
-      //     }
-      //   });
-      // });
-
-      // socket.on('playerMoved', playerInfo => {
-      //   otherPlayers.forEach(otherPlayer => {
-      //     if (playerInfo.playerId === otherPlayer.playerId) {
-      //       otherPlayer.x = playerInfo.x
-      //       otherPlayer.y = playerInfo.y;
-      //     }
-      //   });
-      // });
+      socket.on('disconnect', playerId => {
+        delete players[playerId];
+      });
 
       socket.on('newPosition', data => {
         ctx.clearRect(0, 0, 500, 500);
         for (let i = 0; i < data.length; i++) {
           let player = data[i];
-          console.log(player);
-
-          // addPlayer(player.x, player.y, 30);
-          // players[player.id].render();
-          // console.log(players);
-
-          ctx.strokeStyle = 'black';
-          ctx.beginPath(); // start drawing a shape
-          ctx.arc(player.x, player.y, 30, 0, Math.PI * 2);
-          ctx.stroke(); // outline the circle
-
-          // ctx.fillText(player.number, player.x, player.y);
+          players[player.id].x = player.x;
+          players[player.id].y = player.y;
+          players[player.id].render();
         }
-        // sprites.map(sprite => sprite.render());
       });
 
       const keyMap = {
