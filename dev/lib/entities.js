@@ -19,7 +19,6 @@ class Player extends Entity {
   constructor(id) {
     super();
     this.id = id;
-    this.number = '' + Math.floor(10 * Math.random());
     this.pressingRight = false;
     this.pressingLeft = false;
     this.pressingUp = false;
@@ -75,7 +74,7 @@ class Player extends Entity {
       let player = Player.players[id];
       player.update();
       pack.push({
-        number: player.number,
+        id: player.id,
         x: player.x,
         y: player.y,
       });
