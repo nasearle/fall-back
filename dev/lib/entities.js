@@ -86,6 +86,7 @@ class Player extends Entity {
 // Static properties (not available in JavaScript I believe)
 Player.players = {};
 
-module.exports = {
-  Player: Player,
-};
+/* Not using module.exports because require() is unavailable in the sandbox environment */
+// module.exports = {
+//   Player: Player,
+// };

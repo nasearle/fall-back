@@ -10,17 +10,19 @@ From the root directory, install all dependencies:
 
     npm install
 
-Start a local server at [http://localhost:3000](http://localhost:3000) with
+Build the app and start a local server at [http://localhost:3000](http://localhost:3000) with:
 
-    npm start
+    npm serve
 
-Or with
+You can also use:
 
     npm run dev
 
-to enable hot reloading. You can minify and zip the game resources (`public`) into `build.zip` and log the current size in kB with:
+which will watch all the files in `dev/` and automatically rebuild and restart the server. You can rebuild manually with:
 
     npm run build
+
+Building minifies and zips all game assets and logs the remaining bytes available in the 13Kb limit.
 
 ## Authors
 

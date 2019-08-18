@@ -3,6 +3,5 @@ node_modules
 .vscode
 dist.zip
 *.sqlite
-/build
-build.zip
+public.zip
 .DS_Store
