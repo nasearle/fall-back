@@ -5,3 +5,4 @@ dist.zip
 *.sqlite
 public.zip
 .DS_Store
+public/
