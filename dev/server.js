@@ -1,6 +1,7 @@
 "use strict";
 
 const SOCKETS = {};
+const FPS = 25
 
 /* Using a slightly hacky work around for including dependencies because we
    can't use require() inside the sandbox environment. The comment below will
@@ -9,9 +10,12 @@ const SOCKETS = {};
 
 // Game loop
 setInterval(() => {
-  const pack = Player.updatePlayers();
+  const pack = {
+    players: Player.updatePlayers(),
+    enemies: Enemy.updateEnemies()
+  };
   io.emit('newPosition', pack);
-}, 1000 / 25);
+}, 1000 / FPS);
 
 
 /* Exported objects here are configured as Express routes by index.js, which

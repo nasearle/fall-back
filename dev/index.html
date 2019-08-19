@@ -1,26 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>Fall Back!</title>
-<meta charset="UTF-8">
+    <title>Fall Back!</title>
+    <meta charset="UTF-8">
 </head>
 <body>
 
-<!-- <div style="text-align:center">
-    <h1 id="message"></h1>
-    <div>
-        <button>Rock</button>
-        <button>Paper</button>
-        <button>Scissors</button>
-    </div>
-    <div id="score"></div>
-    <p>
-        <a href="/stat">Statistics</a>
-    </p>
-</div> -->
-
 <main>
   <canvas id="ctx" width="500" height="500" style="border: 1px solid black "></canvas>
+
+  <div id="stats">
+    <!-- Maybe keep, but useful for debugging now -->
+    <p>Number of enemies:
+        <strong>
+            <span id="num-enemies"><!-- dynamic --></span>
+        </strong>
+    </p>
+  </div>
 </main>
 
 <script src="/socket.io/socket.io.js"></script>

@@ -5,7 +5,8 @@
     let socket;
 
     kontra.init();
-    let players = {};
+    const players = {};
+    const enemies = {}
 
     const addPlayer = playerInfo => {
       const player = kontra.Sprite({
@@ -22,6 +23,23 @@
         },
       });
       players[player.id] = player;
+    };
+
+    const addEnemy = enemyInfo => {
+      const enemy = kontra.Sprite({
+        type: 'enemy',
+        id: enemyInfo.id,
+        x: enemyInfo.x,
+        y: enemyInfo.y,
+        radius: 30,
+        render() {
+          this.context.strokeStyle = 'red';
+          this.context.beginPath(); // start drawing a shape
+          this.context.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          this.context.stroke(); // outline the circle
+        },
+      });
+      enemies[enemy.id] = enemy;
     };
 
     /**
@@ -51,19 +69,38 @@
 
       // Update local positions only, drawing should be in renderLoop
       socket.on('newPosition', data => {
-        for (let i = 0; i < data.length; i++) {
-          let player = data[i];
+        const playersData = data.players;
+        for (let i = 0; i < playersData.length; i++) {
+          let player = playersData[i];
           players[player.id].x = player.x;
           players[player.id].y = player.y;
+        }
+        const enemiesData = data.enemies;
+        for (let i = 0; i < enemiesData.length; i++) {
+          let enemy = enemiesData[i];
+          // This will get refactored, but for now, add new enemies to local group
+          if (!enemies[enemy.id]) {
+            addEnemy(enemy);
+          }
+          enemies[enemy.id].x = enemy.x;
+          enemies[enemy.id].y = enemy.y;
         }
       });
 
       // Use requestAnimationFrame to ensure paints happen perfomantly
       const renderLoop = () => {
+        // For debug
+        const numEnemies = Object.keys(enemies).length;
+        document.querySelector('span#num-enemies').textContent = numEnemies;
+
         ctx.clearRect(0, 0, 500, 500);
         for (let i in players) {
-          let player = players[i];
+          const player = players[i];
           player.render();
+        }
+        for (let i in enemies) {
+          const enemy = enemies[i];
+          enemy.render();
         }
         window.requestAnimationFrame(renderLoop);
       };
