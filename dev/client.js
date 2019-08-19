@@ -49,15 +49,25 @@
         delete players[playerId];
       });
 
+      // Update local positions only, drawing should be in renderLoop
       socket.on('newPosition', data => {
-        ctx.clearRect(0, 0, 500, 500);
         for (let i = 0; i < data.length; i++) {
           let player = data[i];
           players[player.id].x = player.x;
           players[player.id].y = player.y;
-          players[player.id].render();
         }
       });
+
+      // Use requestAnimationFrame to ensure paints happen perfomantly
+      const renderLoop = () => {
+        ctx.clearRect(0, 0, 500, 500);
+        for (let i in players) {
+          let player = players[i];
+          player.render();
+        }
+        window.requestAnimationFrame(renderLoop);
+      };
+      window.requestAnimationFrame(renderLoop);
 
       const keyMap = {
         68: 'right', // d
