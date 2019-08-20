@@ -10,11 +10,9 @@ const FPS = 25
 
 // Game loop
 setInterval(() => {
-  const pack = {
-    players: Player.updatePlayers(),
-    enemies: Enemy.updateEnemies()
-  };
-  io.emit('newPosition', pack);
+  const packs = Entity.getFrameUpdateData();
+  io.emit('update', packs.updatePack);
+  io.emit('remove', packs.removePack);
 }, 1000 / FPS);
 
 
