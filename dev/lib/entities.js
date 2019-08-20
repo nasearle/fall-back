@@ -96,6 +96,7 @@ class Bullet extends Entity {
       if (this.getDistance(player) < 32 && !playerIds.includes(this.parent)) {
         // TODO: update hard-coded distance
         player.hp -= this.damage;
+        // TODO: move to Player class
         if (player.hp <= 0) {
           player.hp = player.hpMax;
           player.x = Math.random() * 500;
@@ -156,8 +157,6 @@ class Enemy extends Entity {
     super.update();
     // For now, enemies simply shoot at a player randomly
     if (Math.random() <= Enemy.chanceToShoot) {
-      console.log(Object.keys(Player.players));
-      console.log(Object.keys(Player.players).length);
       const numPlayers = Object.keys(Player.players).length;
       // get a random player
       const player =
@@ -172,6 +171,7 @@ class Enemy extends Entity {
         x = -this.x + player.x - 8; // TODO: replace hard-coded canvas margin
         y = -this.y + player.y - 8; // TODO: replace hard-coded canvas margin
       } else {
+        // TODO: make this more better
         x = -8; // TODO: replace hard-coded canvas margin
         y = -8 + 1; // TODO: replace hard-coded canvas margin
       }
@@ -209,6 +209,7 @@ class Enemy extends Entity {
     if (Math.random() <= Enemy.chanceToGenerate && numEnemies < Enemy.numCap) {
       const id = generateId();
       // TODO: enemy x depends on viewport width which will vary between clients...
+      // probably just want a "map" width
       const x = getRandomInt(0, 500);
       new Enemy(id, x);
     }
@@ -217,7 +218,8 @@ class Enemy extends Entity {
     Enemy.chanceToGenerate += Enemy.generationGradient;
 
     /* TODO: remove enemies so they dont accumulate?
-    will they *always* be defeated by player? */
+    will they *always* be defeated by player? 
+    What if they walk past the players on the sides?*/
 
     const pack = [];
     for (let id in Enemy.enemies) {
