@@ -6,7 +6,8 @@
 
     kontra.init();
     const players = {};
-    const enemies = {}
+    const enemies = {};
+    const bullets = {};
 
     const addPlayer = playerInfo => {
       const player = kontra.Sprite({
@@ -42,6 +43,20 @@
       enemies[enemy.id] = enemy;
     };
 
+    const addBullet = bulletInfo => {
+      const bullet = kontra.Sprite({
+        type: 'bullet',
+        id: bulletInfo.id,
+        x: bulletInfo.x,
+        y: bulletInfo.y,
+        render() {
+          this.context.strokeStyle = 'black';
+          this.context.fillRect(this.x, this.y, 10, 10);
+        },
+      });
+      bullets[bullet.id] = bullet;
+    };
+
     /**
      * Client module init
      */
@@ -68,7 +83,7 @@
       });
 
       // Update local positions only, drawing should be in renderLoop
-      socket.on('newPosition', data => {
+      socket.on('update', data => {
         const playersData = data.players;
         for (let i = 0; i < playersData.length; i++) {
           let player = playersData[i];
@@ -85,9 +100,32 @@
           enemies[enemy.id].x = enemy.x;
           enemies[enemy.id].y = enemy.y;
         }
+        const bulletsData = data.bullets;
+        for (let i = 0; i < bulletsData.length; i++) {
+          let bullet = bulletsData[i];
+          // This will get refactored, but for now, add new enemies to local group
+          if (!bullets[bullet.id]) {
+            addBullet(bullet);
+          }
+          bullets[bullet.id].x = bullet.x;
+          bullets[bullet.id].y = bullet.y;
+        }
       });
 
-      // Use requestAnimationFrame to ensure paints happen perfomantly
+      // remove
+      socket.on('remove', data => {
+        for (let i = 0; i < data.players.length; i++) {
+          delete players[data.players[i]];
+        }
+        for (let i = 0; i < data.enemies.length; i++) {
+          delete enemies[data.enemies[i]];
+        }
+        for (let i = 0; i < data.bullets.length; i++) {
+          delete bullets[data.bullets[i]];
+        }
+      });
+
+      // Use requestAnimationFrame to ensure paints happen performantly
       const renderLoop = () => {
         // For debug
         const numEnemies = Object.keys(enemies).length;
@@ -101,6 +139,10 @@
         for (let i in enemies) {
           const enemy = enemies[i];
           enemy.render();
+        }
+        for (let i in bullets) {
+          const bullet = bullets[i];
+          bullet.render();
         }
         window.requestAnimationFrame(renderLoop);
       };
@@ -125,6 +167,26 @@
           state: false,
         });
       };
+      document.onmousedown = event => {
+        socket.emit('keyPress', { inputId: 'shoot', state: true });
+      };
+      document.onmouseup = event => {
+        socket.emit('keyPress', { inputId: 'shoot', state: false });
+      };
+      document.onmousemove = event => {
+        const mousePosition = {
+          x: event.clientX,
+          y: event.clientY
+        };
+        // const x = -250 + event.clientX - 8;
+        // const y = -250 + event.clientY - 8;
+        // const angle = (Math.atan2(y, x) / Math.PI) * 180;
+        socket.emit('keyPress', {
+          inputId: 'mouseAngle',
+          state: mousePosition,
+        });
+      };
+
     }
 
     window.addEventListener("load", init, false);

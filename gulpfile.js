@@ -40,7 +40,7 @@ function cleanTask() {
 function buildJsTask() {
     return src(paths.src.js, { ignore: paths.src.lib })
         .pipe(include()) // inserts lib files into server.js
-        .pipe(uglify(jsOptions))
+        // .pipe(uglify(jsOptions))
         .pipe(dest(paths.dist.dir));
 }
 

@@ -1,3 +1,6 @@
+const initPack = { players: [], enemies: [], bullets: [] };
+const removePack = { players: [], enemies: [], bullets: []};
+
 class Entity {
   constructor() {
     this.id = '';
@@ -13,7 +16,77 @@ class Entity {
     this.x += this.speedX;
     this.y += this.speedY;
   }
+  static getFrameUpdateData() {
+    const packs = {
+      initPack: {
+        players: initPack.players,
+        enemies: initPack.enemies,
+        bullets: initPack.bullets,
+      },
+      removePack: {
+        players: removePack.players,
+        enemies: removePack.enemies,
+        bullets: removePack.bullets,
+      },
+      updatePack: {
+        players: Player.updatePlayers(),
+        enemies: Enemy.updateEnemies(),
+        bullets: Bullet.updateBullets(),
+      },
+    };
+    initPack.players = [];
+    initPack.enemies = [];
+    initPack.bullets = [];
+    removePack.players = [];
+    removePack.enemies = [];
+    removePack.bullets = [];
+    return packs;
+  }
 }
+
+class Bullet extends Entity {
+  constructor(config) {
+    super();
+    this.id = generateId(); // TODO: will need to do something more unique
+    this.parent = config.parent;
+    this.angle = config.angle;
+    this.x = config.x;
+    this.y = config.y;
+    this.speedX = Math.cos((config.angle / 180) * Math.PI) * 10;
+    this.speedY = Math.sin((config.angle / 180) * Math.PI) * 10;
+    this.timer = 0;
+    this.toRemove = false;
+    Bullet.bullets[this.id] = this;
+  }
+  update() {
+    if (this.timer++ > 100) {
+      this.toRemove = true;
+    }
+    super.update();
+  }
+  getUpdatePack() {
+    return {
+      id: this.id,
+      x: this.x,
+      y: this.y,
+    };
+  };
+  static updateBullets() {
+    const pack = [];
+    for (let id in Bullet.bullets) {
+      let bullet = Bullet.bullets[id];
+      bullet.update();
+      if (bullet.toRemove) {
+        delete Bullet.bullets[id];
+        removePack.bullets.push(bullet.id);
+      } else {
+        pack.push(bullet.getUpdatePack());
+      }
+    }
+    return pack;
+  }
+}
+Bullet.bullets = {};
 
 class Enemy extends Entity {
   constructor(id, x) {
@@ -87,13 +160,22 @@ class Player extends Entity {
     this.pressingLeft = false;
     this.pressingUp = false;
     this.pressingDown = false;
+    this.pressingShoot = false;
+    this.mouseAngle = 0;
     this.maxSpeed = 10;
+    this.hp = 10;
+    this.hpMax = 10;
+    this.score = 0;
     // Add player to "global" players object
     Player.players[id] = this;
   }
   update() {
     this.updateSpeed();
     super.update();
+
+    if (this.pressingShoot) { // only happens if the click is down during an update loop
+      this.shootBullet(this.mouseAngle);
+    }
   }
   updateSpeed() {
     if (this.pressingRight) {
@@ -112,6 +194,14 @@ class Player extends Entity {
       this.speedY = 0;
     }
   }
+  shootBullet(angle) {
+    new Bullet({
+      parent: this.id,
+      angle: angle,
+      x: this.x,
+      y: this.y,
+    });
+  };
   setPressingKey(inputId, state) {
     if (inputId == 'right') {
       this.pressingRight = state;
@@ -121,6 +211,15 @@ class Player extends Entity {
       this.pressingUp = state;
     } else if (inputId == 'down') {
       this.pressingDown = state;
+    } else if (inputId === 'shoot') {
+      this.pressingShoot = state;
+    } else if (inputId === 'mouseAngle') {
+      const mouseX = state.x;
+      const mouseY = state.y;
+      const x = -this.x + mouseX - 8; // TODO: replace hard-coded canvas margin
+      const y = -this.y + mouseY - 8; // TODO: replace hard-coded canvas margin
+      const angle = (Math.atan2(y, x) / Math.PI) * 180;
+      this.mouseAngle = angle;
     }
   }
   static onConnect(socket) {
