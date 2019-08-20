@@ -40,6 +40,7 @@ function cleanTask() {
 function buildJsTask() {
     return src(paths.src.js, { ignore: paths.src.lib })
         .pipe(include()) // inserts lib files into server.js
+        /* Uglification makes debugging hard during dev. TODO: restore closer to production */
         // .pipe(uglify(jsOptions))
         .pipe(dest(paths.dist.dir));
 }
