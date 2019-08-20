@@ -174,13 +174,12 @@
         socket.emit('keyPress', { inputId: 'shoot', state: false });
       };
       document.onmousemove = event => {
+        // Calculate angle on server using player position
+        /* Note that the camera can't be centered on player locally because camera will be shifting downwards */
         const mousePosition = {
           x: event.clientX,
           y: event.clientY
         };
-        // const x = -250 + event.clientX - 8;
-        // const y = -250 + event.clientY - 8;
-        // const angle = (Math.atan2(y, x) / Math.PI) * 180;
         socket.emit('keyPress', {
           inputId: 'mouseAngle',
           state: mousePosition,
