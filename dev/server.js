@@ -51,7 +51,6 @@ module.exports = {
       console.log(`User disconnected (${socket.id})`);
       delete SOCKETS[socket.id];
       Player.onDisconnect(socket);
-      io.emit('disconnect', socket.id);
     });
 	}
 };
