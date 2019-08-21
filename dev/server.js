@@ -11,6 +11,7 @@ const FPS = 25
 // Game loop
 setInterval(() => {
   const packs = Entity.getFrameUpdateData();
+  io.emit('init', packs.initPack);
   io.emit('update', packs.updatePack);
   io.emit('remove', packs.removePack);
 }, 1000 / FPS);
@@ -44,11 +45,6 @@ module.exports = {
 
     // Call the player's onConnect method to init a new player
     Player.onConnect(socket);
-
-    // Update new client with existing players data
-    socket.emit('currentPlayers', Player.players);
-    // update all other players with the new player
-    socket.broadcast.emit('newPlayer', Player.players[socket.id]);
 
     socket.on('disconnect', () => {
       // Note: disconnect event doesn't accept "socket" argument
