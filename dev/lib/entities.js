@@ -404,7 +404,7 @@ class Player extends Entity {
     return existingPlayers;
   }
   static onDisconnect(socket) {
-    delete Player.players[socket.id];
+    Player.players[socket.id].toRemove = true;
   }
   static updatePlayers() {
     const pack = [];

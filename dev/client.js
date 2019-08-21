@@ -129,10 +129,6 @@
         }
       });
 
-      socket.on('disconnect', playerId => {
-        delete players[playerId];
-      });
-
       // Use requestAnimationFrame to ensure paints happen performantly
       const renderLoop = () => {
         // For debug
