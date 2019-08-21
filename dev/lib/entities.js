@@ -69,6 +69,7 @@ class Bullet extends Entity {
     this.timer = 0;
     this.damage = config.damage; // comes from the Player, based on weapon
     this.toRemove = false;
+    initPack.bullets.push(this.getInitPack());
     Bullet.bullets[this.id] = this;
   }
   update() {
@@ -80,7 +81,8 @@ class Bullet extends Entity {
       let enemy = Enemy.enemies[id];
       if (this.getDistance(enemy) < 32 && this.parent !== enemy.id) {
         enemy.hp -= this.damage;
-        if (enemy.hp <= 0) { // enemy removal handled in Enemy class
+        if (enemy.hp <= 0) {
+          // enemy removal handled in Enemy class
           const shooter = Player.players[this.parent];
           if (shooter) {
             shooter.score += 100;
@@ -96,12 +98,6 @@ class Bullet extends Entity {
       if (this.getDistance(player) < 32 && !playerIds.includes(this.parent)) {
         // TODO: update hard-coded distance
         player.hp -= this.damage;
-        // TODO: move to Player class
-        if (player.hp <= 0) {
-          player.hp = player.hpMax;
-          player.x = Math.random() * 500;
-          player.y = Math.random() * 500;
-        }
         this.toRemove = true;
       }
     }
@@ -109,13 +105,27 @@ class Bullet extends Entity {
   setDamage(damage) {
     this.damage = damage;
   }
+  getInitPack() {
+    return {
+      id: this.id,
+      x: this.x,
+      y: this.y,
+    };
+  }
   getUpdatePack() {
     return {
       id: this.id,
       x: this.x,
       y: this.y,
     };
-  };
+  }
+  static getAllInitPack() {
+    const existingBullets = [];
+    for (let id in Bullet.bullets) {
+      existingBullets.push(Bullet.bullets[id].getInitPack());
+    }
+    return existingBullets;
+  }
   static updateBullets() {
     const pack = [];
     for (let id in Bullet.bullets) {
@@ -145,6 +155,7 @@ class Enemy extends Entity {
     this.hpMax = 30;
     this.damage = 10;
     this.toRemove = false;
+    initPack.enemies.push(this.getInitPack());
     // Add player to "global" enemies object
     Enemy.enemies[id] = this;
     console.log('New enemy:', this);
@@ -161,22 +172,14 @@ class Enemy extends Entity {
       // get a random player
       const player =
         Player.players[
-          Object.keys(Player.players)[
-            Math.floor(Math.random() * numPlayers)
-          ]
+          Object.keys(Player.players)[Math.floor(Math.random() * numPlayers)]
         ];
-      let x;
-      let y;
       if (player) {
-        x = -this.x + player.x - 8; // TODO: replace hard-coded canvas margin
-        y = -this.y + player.y - 8; // TODO: replace hard-coded canvas margin
-      } else {
-        // TODO: make this more better
-        x = -8; // TODO: replace hard-coded canvas margin
-        y = -8 + 1; // TODO: replace hard-coded canvas margin
+        const x = -this.x + player.x - 8; // TODO: replace hard-coded canvas margin
+        const y = -this.y + player.y - 8; // TODO: replace hard-coded canvas margin
+        const angle = (Math.atan2(y, x) / Math.PI) * 180;
+        this.shootBullet(angle);
       }
-      const angle = (Math.atan2(y, x) / Math.PI) * 180;
-      this.shootBullet(angle);
     }
   }
   updateSpeed() {
@@ -193,15 +196,31 @@ class Enemy extends Entity {
       angle: angle,
       x: this.x,
       y: this.y,
-      damage: this.damage
+      damage: this.damage,
     });
-  };
+  }
+  getInitPack() {
+    return {
+      id: this.id,
+      x: this.x,
+      y: this.y,
+      hp: this.hp
+    };
+  }
   getUpdatePack() {
     return {
       id: this.id,
       x: this.x,
       y: this.y,
+      hp: this.hp
     };
+  }
+  static getAllInitPack() {
+    const existingEnemies = [];
+    for (let id in Enemy.enemies) {
+      existingEnemies.push(Enemy.enemies[id].getInitPack());
+    }
+    return existingEnemies;
   }
   static updateEnemies() {
     // Periodically generate new enemies
@@ -218,8 +237,10 @@ class Enemy extends Entity {
     Enemy.chanceToGenerate += Enemy.generationGradient;
 
     /* TODO: remove enemies so they dont accumulate?
-    will they *always* be defeated by player? 
+    will they *always* be defeated by player?
     What if they walk past the players on the sides?*/
+    /* Potential solution: make enemies move towards player. can have them not
+    come any closer than a certain radius or something */
 
     const pack = [];
     for (let id in Enemy.enemies) {
@@ -260,14 +281,26 @@ class Player extends Entity {
     this.maxSpeed = 10;
     this.hp = 100;
     this.hpMax = 100;
-    this.damage = 10;  // can base this on the current weapon / power up
-    this.coolDown = 400;  // can base this on the current weapon / power up
+    this.lives = 3;
+    this.damage = 10; // can base this on the current weapon / power up
+    this.coolDown = 400; // can base this on the current weapon / power up
     this.timeLastShot = 0;
     this.score = 0;
+    this.toRemove = false;
     // Add player to "global" players object
     Player.players[id] = this;
   }
   update() {
+    if (this.hp <= 0) {
+      this.lives--;
+      if (this.lives < 0) {
+        this.toRemove = true;
+      } else {
+        this.hp = this.hpMax;
+        this.x = Math.random() * 500;
+        this.y = Math.random() * 150 + 350; // spawn in bottom part of map
+      }
+    }
     this.updateSpeed();
     super.update();
 
@@ -302,9 +335,9 @@ class Player extends Entity {
       angle: angle,
       x: this.x,
       y: this.y,
-      damage: this.damage
+      damage: this.damage,
     });
-  };
+  }
   setPressingKey(inputId, state) {
     if (inputId == 'right') {
       this.pressingRight = state;
@@ -325,11 +358,50 @@ class Player extends Entity {
       this.mouseAngle = angle;
     }
   }
+  getInitPack() {
+    return {
+      id: this.id,
+      x: this.x,
+      y: this.y,
+      hp: this.hp,
+      hpMax: this.hpMax,
+      score: this.score
+    };
+  };
+  getUpdatePack() {
+    return {
+      id: this.id,
+      x: this.x,
+      y: this.y,
+      hp: this.hp,
+      score: this.score,
+    };
+  }
   static onConnect(socket) {
     const player = new Player(socket.id);
     socket.on('keyPress', data => {
       player.setPressingKey(data.inputId, data.state); // e.g. 'right', true
     });
+    // Update new client with existing players, enemies, and bullets data
+    socket.emit('init', {
+      selfId: socket.id,
+      players: Player.getAllInitPack(),
+      enemies: Enemy.getAllInitPack(),
+      bullets: Bullet.getAllInitPack(),
+    });
+    /** broadcast the new player to all other players once on creation instead
+     * of adding the new player to the initPack in the constructor, to avoid
+     * sending the new player its own info twice (once in the above 'init'
+     * socket and once when the initPack containing the new player is sent to
+     * the new player in the next loop) */
+    socket.broadcast.emit('newPlayer', player.getInitPack());
+  }
+  static getAllInitPack() {
+    const existingPlayers = [];
+    for (let id in Player.players) {
+      existingPlayers.push(Player.players[id].getInitPack());
+    }
+    return existingPlayers;
   }
   static onDisconnect(socket) {
     delete Player.players[socket.id];
@@ -339,11 +411,12 @@ class Player extends Entity {
     for (let id in Player.players) {
       let player = Player.players[id];
       player.update();
-      pack.push({
-        id: player.id,
-        x: player.x,
-        y: player.y,
-      });
+      if (player.toRemove) {
+        delete Player.players[id];
+        removePack.players.push(player.id);
+      } else {
+        pack.push(player.getUpdatePack());
+      }
     }
     return pack;
   }

@@ -15,6 +15,9 @@
         id: playerInfo.id,
         x: playerInfo.x,
         y: playerInfo.y,
+        hp: playerInfo.hp,
+        hpMax: playerInfo.hpMax,
+        score: playerInfo.score,
         radius: 30,
         render() {
           this.context.strokeStyle = 'black';
@@ -32,6 +35,7 @@
         id: enemyInfo.id,
         x: enemyInfo.x,
         y: enemyInfo.y,
+        hp: enemyInfo.hp,
         radius: 30,
         render() {
           this.context.strokeStyle = 'red';
@@ -68,51 +72,51 @@
         .getContext('2d');
       ctx.font = '30px Roboto';
 
-      socket.on('currentPlayers', currentPlayers => {
-        Object.keys(currentPlayers).forEach(id => {
-          addPlayer(currentPlayers[id]);
-        });
-      });
-
       socket.on('newPlayer', playerInfo => {
         addPlayer(playerInfo);
       });
 
-      socket.on('disconnect', playerId => {
-        delete players[playerId];
+      // will use selfId to access props of this player in the future
+      let selfId = null;
+      socket.on('init', data => {
+        if (data.selfId) {
+          selfId = data.selfId;
+        }
+        for (let i = 0; i < data.players.length; i++) {
+          addPlayer(data.players[i]);
+        }
+        for (let i = 0; i < data.enemies.length; i++) {
+          addEnemy(data.enemies[i]);
+        }
+        for (let i = 0; i < data.bullets.length; i++) {
+          addBullet(data.bullets[i]);
+        }
       });
 
-      // Update local positions only, drawing should be in renderLoop
       socket.on('update', data => {
         const playersData = data.players;
         for (let i = 0; i < playersData.length; i++) {
           let player = playersData[i];
           players[player.id].x = player.x;
           players[player.id].y = player.y;
+          players[player.id].hp = player.hp;
+          players[player.id].score = player.score;
         }
         const enemiesData = data.enemies;
         for (let i = 0; i < enemiesData.length; i++) {
           let enemy = enemiesData[i];
-          // This will get refactored, but for now, add new enemies to local group
-          if (!enemies[enemy.id]) {
-            addEnemy(enemy);
-          }
           enemies[enemy.id].x = enemy.x;
           enemies[enemy.id].y = enemy.y;
+          enemies[enemy.id].hp = enemy.hp;
         }
         const bulletsData = data.bullets;
         for (let i = 0; i < bulletsData.length; i++) {
           let bullet = bulletsData[i];
-          // This will get refactored, but for now, add new enemies to local group
-          if (!bullets[bullet.id]) {
-            addBullet(bullet);
-          }
           bullets[bullet.id].x = bullet.x;
           bullets[bullet.id].y = bullet.y;
         }
       });
 
-      // remove
       socket.on('remove', data => {
         for (let i = 0; i < data.players.length; i++) {
           delete players[data.players[i]];
@@ -123,6 +127,10 @@
         for (let i = 0; i < data.bullets.length; i++) {
           delete bullets[data.bullets[i]];
         }
+      });
+
+      socket.on('disconnect', playerId => {
+        delete players[playerId];
       });
 
       // Use requestAnimationFrame to ensure paints happen performantly
