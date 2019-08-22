@@ -23,6 +23,11 @@ class Entity {
     this.y += this.speedY;
     // this.lastUpdateTime = currentTime;
   }
+  getAngle(point) {
+    const x = -this.x + point.x - 8; // TODO: replace hard-coded canvas margin
+    const y = -this.y + point.y - 8; // TODO: replace hard-coded canvas margin
+    return (Math.atan2(y, x) / Math.PI) * 180;
+  }
   getDistance(point) {
     return Math.sqrt(
       Math.pow(this.x - point.x, 2) + Math.pow(this.y - point.y, 2)
@@ -168,25 +173,24 @@ class Enemy extends Entity {
     super.update();
     // For now, enemies simply shoot at a player randomly
     if (Math.random() <= Enemy.chanceToShoot) {
-      const numPlayers = Object.keys(Player.players).length;
-      // get a random player
-      const player =
-        Player.players[
-          Object.keys(Player.players)[Math.floor(Math.random() * numPlayers)]
-        ];
+      const player = Player.getRandomPlayer();
       if (player) {
-        const x = -this.x + player.x - 8; // TODO: replace hard-coded canvas margin
-        const y = -this.y + player.y - 8; // TODO: replace hard-coded canvas margin
-        const angle = (Math.atan2(y, x) / Math.PI) * 180;
+        const angle = this.getAngle(player);
         this.shootBullet(angle);
       }
     }
   }
   updateSpeed() {
-    // For now, enemies simply march down randomly
+    // For now, enemies simply march toward a player randomly
     if (Math.random() <= Enemy.chanceToMarch) {
-      this.speedY = this.maxSpeed;
+      const player = Player.getRandomPlayer();
+      if (player) {
+        const angle = this.getAngle(player);
+        this.speedX = Math.cos((angle / 180) * Math.PI) * this.maxSpeed;
+        this.speedY = Math.sin((angle / 180) * Math.PI) * this.maxSpeed;
+      }
     } else {
+      this.speedX = 0;
       this.speedY = 0;
     }
   }
@@ -350,12 +354,7 @@ class Player extends Entity {
     } else if (inputId === 'shoot') {
       this.pressingShoot = state;
     } else if (inputId === 'mouseAngle') {
-      const mouseX = state.x;
-      const mouseY = state.y;
-      const x = -this.x + mouseX - 8; // TODO: replace hard-coded canvas margin
-      const y = -this.y + mouseY - 8; // TODO: replace hard-coded canvas margin
-      const angle = (Math.atan2(y, x) / Math.PI) * 180;
-      this.mouseAngle = angle;
+      this.mouseAngle = this.getAngle(state);
     }
   }
   getInitPack() {
@@ -376,6 +375,15 @@ class Player extends Entity {
       hp: this.hp,
       score: this.score,
     };
+  }
+  static countPlayers() {
+    return Object.keys(Player.players).length;
+  }
+  static getRandomPlayer() {
+    const countPlayers = Player.countPlayers();
+    return Player.players[
+      Object.keys(Player.players)[Math.floor(Math.random() * countPlayers)]
+    ];
   }
   static onConnect(socket) {
     const player = new Player(socket.id);
@@ -404,7 +412,11 @@ class Player extends Entity {
     return existingPlayers;
   }
   static onDisconnect(socket) {
-    Player.players[socket.id].toRemove = true;
+    // 'if' to avoid the server crashing if the player died (already removed)
+    const playerToRemove = Player.players[socket.id];
+    if (playerToRemove) {
+      playerToRemove.toRemove = true;
+    }
   }
   static updatePlayers() {
     const pack = [];
