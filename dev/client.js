@@ -129,6 +129,19 @@
         }
       });
 
+      let tileEngine;
+      socket.on('mapData', data => {
+        console.log(data);
+
+        let img = new Image();
+        img.src = 'assets/wall64.png';
+        data.tilesets[0].image = img;
+        img.onload = function() {
+          console.log('image loaded');
+          tileEngine = kontra.TileEngine(data);
+        }
+      });
+
       // Use requestAnimationFrame to ensure paints happen performantly
       const renderLoop = () => {
         // For debug
@@ -136,6 +149,10 @@
         document.querySelector('span#num-enemies').textContent = numEnemies;
 
         ctx.clearRect(0, 0, 500, 500);
+        if (tileEngine) {
+          tileEngine.render();
+        }
+
         for (let i in players) {
           const player = players[i];
           player.render();

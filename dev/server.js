@@ -46,6 +46,8 @@ module.exports = {
     // Call the player's onConnect method to init a new player
     Player.onConnect(socket);
 
+    socket.emit('mapData', tileEngine);
+
     socket.on('disconnect', () => {
       // Note: disconnect event doesn't accept "socket" argument
       console.log(`User disconnected (${socket.id})`);
