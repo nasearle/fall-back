@@ -69,6 +69,8 @@ class Bullet extends Entity {
     this.angle = config.angle;
     this.x = config.x;
     this.y = config.y;
+    this.width = 10;
+    this.height = 10;
     this.speedX = Math.cos((config.angle / 180) * Math.PI) * 10;
     this.speedY = Math.sin((config.angle / 180) * Math.PI) * 10;
     this.timer = 0;
@@ -82,9 +84,16 @@ class Bullet extends Entity {
       this.toRemove = true;
     }
     super.update();
+    // TODO: quadtree
     for (let id in Enemy.enemies) {
       let enemy = Enemy.enemies[id];
-      if (this.getDistance(enemy) < 32 && this.parent !== enemy.id) {
+      if (
+        this.parent !== enemy.id &&
+        this.x < enemy.x + enemy.width &&
+        this.x + this.width > enemy.x &&
+        this.y < enemy.y + enemy.height &&
+        this.y + this.height > enemy.y
+      ) {
         enemy.hp -= this.damage;
         if (enemy.hp <= 0) {
           // enemy removal handled in Enemy class
@@ -96,12 +105,18 @@ class Bullet extends Entity {
         this.toRemove = true;
       }
     }
+    // TODO: quadtree
     for (let id in Player.players) {
       let player = Player.players[id];
       const playerIds = Object.keys(Player.players);
       // no friendly fire ;)
-      if (this.getDistance(player) < 32 && !playerIds.includes(this.parent)) {
-        // TODO: update hard-coded distance
+      if (
+        !playerIds.includes(this.parent) &&
+        this.x < player.x + player.width &&
+        this.x + this.width > player.x &&
+        this.y < player.y + player.height &&
+        this.y + this.height > player.y
+      ) {
         player.hp -= this.damage;
         this.toRemove = true;
       }
@@ -154,6 +169,8 @@ class Enemy extends Entity {
     this.id = id;
     this.x = x;
     this.y = -5; // Just beyond top of screen, TODO: should be related to sprite height
+    this.width = 32;
+    this.height = 32;
     // Keep speed low and march chance high for smoother movement?
     this.maxSpeed = 5;
     this.hp = 30;
@@ -208,6 +225,8 @@ class Enemy extends Entity {
       id: this.id,
       x: this.x,
       y: this.y,
+      width: this.width,
+      height: this.height,
       hp: this.hp
     };
   }
@@ -276,6 +295,8 @@ class Player extends Entity {
   constructor(id) {
     super();
     this.id = id;
+    this.width = 32;
+    this.height = 32;
     this.pressingRight = false;
     this.pressingLeft = false;
     this.pressingUp = false;
@@ -362,6 +383,8 @@ class Player extends Entity {
       id: this.id,
       x: this.x,
       y: this.y,
+      width: this.width,
+      height: this.height,
       hp: this.hp,
       hpMax: this.hpMax,
       score: this.score
