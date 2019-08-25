@@ -15,34 +15,34 @@
         id: playerInfo.id,
         x: playerInfo.x,
         y: playerInfo.y,
+        width: playerInfo.width,
+        height: playerInfo.height,
         hp: playerInfo.hp,
         hpMax: playerInfo.hpMax,
         score: playerInfo.score,
-        radius: 30,
         render() {
-          this.context.strokeStyle = 'black';
-          this.context.beginPath(); // start drawing a shape
-          this.context.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-          this.context.stroke(); // outline the circle
+          this.context.strokeStyle = 'green';
+          this.context.strokeRect(this.x, this.y, this.width, this.height);
+          // just to see where x & y are in the rect (top left)
+          this.context.fillStyle = 'black';
+          this.context.fillRect(this.x, this.y, 5, 5);
         },
       });
       players[player.id] = player;
     };
 
+    let image = new Image();
+    image.src = 'assets/alien-32.png';
     const addEnemy = enemyInfo => {
       const enemy = kontra.Sprite({
         type: 'enemy',
         id: enemyInfo.id,
         x: enemyInfo.x,
         y: enemyInfo.y,
+        width: enemyInfo.width,
+        height: enemyInfo.height,
         hp: enemyInfo.hp,
-        radius: 30,
-        render() {
-          this.context.strokeStyle = 'red';
-          this.context.beginPath(); // start drawing a shape
-          this.context.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-          this.context.stroke(); // outline the circle
-        },
+        image: image
       });
       enemies[enemy.id] = enemy;
     };
