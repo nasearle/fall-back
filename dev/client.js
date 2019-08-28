@@ -76,6 +76,18 @@
         addPlayer(playerInfo);
       });
 
+      let tileEngine;
+      socket.on('mapData', data => {
+        console.log(data);
+        let img = new Image();
+        img.src = 'assets/wall64.png';
+        data.tilesets[0].image = img;
+        img.onload = function() {
+          console.log('image loaded');
+          tileEngine = kontra.TileEngine(data);
+        };
+      });
+
       // will use selfId to access props of this player in the future
       let selfId = null;
       socket.on('init', data => {
@@ -117,6 +129,10 @@
         }
       });
 
+      socket.on('map', data => {
+        tileEngine.sy += data;
+      })
+
       socket.on('remove', data => {
         for (let i = 0; i < data.players.length; i++) {
           delete players[data.players[i]];
@@ -126,19 +142,6 @@
         }
         for (let i = 0; i < data.bullets.length; i++) {
           delete bullets[data.bullets[i]];
-        }
-      });
-
-      let tileEngine;
-      socket.on('mapData', data => {
-        console.log(data);
-
-        let img = new Image();
-        img.src = 'assets/wall64.png';
-        data.tilesets[0].image = img;
-        img.onload = function() {
-          console.log('image loaded');
-          tileEngine = kontra.TileEngine(data);
         }
       });
 

@@ -14,6 +14,7 @@ setInterval(() => {
   io.emit('init', packs.initPack);
   io.emit('update', packs.updatePack);
   io.emit('remove', packs.removePack);
+  io.emit('map', 1);
 }, 1000 / FPS);
 
 

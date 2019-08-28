@@ -409,6 +409,11 @@ class Player extends Entity {
     ];
   }
   static onConnect(socket) {
+    let map;
+    if (!Map.maps) {
+      map = new Map(world1);
+      camera = new Camera(map);
+    }
     const player = new Player(socket.id);
     socket.on('keyPress', data => {
       player.setPressingKey(data.inputId, data.state); // e.g. 'right', true
