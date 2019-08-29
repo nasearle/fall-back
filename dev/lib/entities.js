@@ -156,8 +156,8 @@ class Bullet extends Entity {
     this.y = config.y;
     this.width = 10;
     this.height = 10;
-    this.speedX = Math.cos((config.angle / 180) * Math.PI) * 10;
-    this.speedY = Math.sin((config.angle / 180) * Math.PI) * 10;
+    this.speedX = Math.cos((config.angle / 180) * Math.PI) * config.speedX;
+    this.speedY = Math.sin((config.angle / 180) * Math.PI) * config.speedY;
     this.timer = 0;
     this.damage = config.damage; // comes from the Player, based on weapon
     this.toRemove = false;
@@ -290,6 +290,8 @@ class Enemy extends Entity {
       angle: angle,
       x: this.x,
       y: this.y,
+      speedX: 10, // move enemy bullet speed to config?
+      speedY: 10, // move enemy bullet speed to config?
       damage: this.damage,
     });
   }
@@ -433,6 +435,8 @@ class Player extends Entity {
       angle: angle,
       x: this.x,
       y: this.y,
+      speedX: 30, // move player bullet speed to config?
+      speedY: 30, // move player bullet speed to config?
       damage: this.damage,
     });
   }
