@@ -8,6 +8,7 @@
     const players = {};
     const enemies = {};
     const bullets = {};
+    const obstacles = {};
 
     const addPlayer = playerInfo => {
       const player = kontra.Sprite({
@@ -54,11 +55,26 @@
         x: bulletInfo.x,
         y: bulletInfo.y,
         render() {
-          this.context.strokeStyle = 'black';
           this.context.fillRect(this.x, this.y, 10, 10);
         },
       });
       bullets[bullet.id] = bullet;
+    };
+
+    const addObstacle = obstacleInfo => {
+      const obstacle = kontra.Sprite({
+        type: 'obstacle',
+        id: obstacleInfo.id,
+        x: obstacleInfo.x,
+        y: obstacleInfo.y,
+        width: obstacleInfo.width,
+        height: obstacleInfo.height,
+        render() {
+          this.context.fillStyle = 'grey';
+          this.context.fillRect(this.x, this.y, this.width, this.height);
+        },
+      });
+      obstacles[obstacle.id] = obstacle;
     };
 
     /**
@@ -91,6 +107,9 @@
         for (let i = 0; i < data.bullets.length; i++) {
           addBullet(data.bullets[i]);
         }
+        for (let i = 0; i < data.obstacles.length; i++) {
+          addObstacle(data.obstacles[i]);
+        }
       });
 
       socket.on('update', data => {
@@ -115,6 +134,12 @@
           bullets[bullet.id].x = bullet.x;
           bullets[bullet.id].y = bullet.y;
         }
+        const obstaclesData = data.obstacles;
+        for (let i = 0; i < obstaclesData.length; i++) {
+          let obstacle = obstaclesData[i];
+          obstacles[obstacle.id].x = obstacle.x;
+          obstacles[obstacle.id].y = obstacle.y;
+        }
       });
 
       socket.on('remove', data => {
@@ -126,6 +151,9 @@
         }
         for (let i = 0; i < data.bullets.length; i++) {
           delete bullets[data.bullets[i]];
+        }
+        for (let i = 0; i < data.obstacles.length; i++) {
+          delete obstacles[data.obstacles[i]];
         }
       });
 
@@ -147,6 +175,10 @@
         for (let i in bullets) {
           const bullet = bullets[i];
           bullet.render();
+        }
+        for (let i in obstacles) {
+          const obstacle = obstacles[i];
+          obstacle.render();
         }
         window.requestAnimationFrame(renderLoop);
       };
