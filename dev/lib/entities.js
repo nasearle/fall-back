@@ -23,16 +23,17 @@ class Entity {
     this.y += this.speedY;
     // this.lastUpdateTime = currentTime;
   }
+  // TODO: make static
   getAngle(point) {
     const x = -this.x + point.x - 8; // TODO: replace hard-coded canvas margin
     const y = -this.y + point.y - 8; // TODO: replace hard-coded canvas margin
     return (Math.atan2(y, x) / Math.PI) * 180;
   }
-  overlaps(target) {
-    return this.x < target.x + target.width &&
-           this.x + this.width > target.x &&
-           this.y < target.y + target.height &&
-           this.y + this.height > target.y
+  static overlaps(self, target) {
+    return self.x < target.x + target.width &&
+           self.x + self.width > target.x &&
+           self.y < target.y + target.height &&
+           self.y + self.height > target.y
   }
   static getFrameUpdateData() {
     const packs = {
@@ -172,7 +173,7 @@ class Bullet extends Entity {
     // TODO: quadtree
     for (let id in Enemy.enemies) {
       let enemy = Enemy.enemies[id];
-      if (this.parent !== enemy.id && this.overlaps(enemy)) {
+      if (this.parent !== enemy.id && Entity.overlaps(this, enemy)) {
         enemy.hp -= this.damage;
         if (enemy.hp <= 0) {
           // enemy removal handled in Enemy class
@@ -185,11 +186,18 @@ class Bullet extends Entity {
       }
     }
     // TODO: quadtree
+    for (let id in Obstacle.obstacles) {
+      let obstacle = Obstacle.obstacles[id];
+      if (Entity.overlaps(this, obstacle)) {
+        this.toRemove = true;
+      }
+    }
+    // TODO: quadtree
     for (let id in Player.players) {
       let player = Player.players[id];
       const playerIds = Object.keys(Player.players);
       // no friendly fire ;)
-      if (!playerIds.includes(this.parent) && this.overlaps(player)) {
+      if (!playerIds.includes(this.parent) && Entity.overlaps(this, player)) {
         player.hp -= this.damage;
         this.toRemove = true;
       }
