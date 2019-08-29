@@ -1,5 +1,5 @@
-const initPack = { players: [], enemies: [], bullets: [] };
-const removePack = { players: [], enemies: [], bullets: []};
+const initPack = { players: [], enemies: [], bullets: [], obstacles: [] };
+const removePack = { players: [], enemies: [], bullets: [], obstacles: [] };
 
 class Entity {
   constructor() {
@@ -40,27 +40,111 @@ class Entity {
         players: initPack.players,
         enemies: initPack.enemies,
         bullets: initPack.bullets,
+        obstacles: initPack.obstacles,
       },
       removePack: {
         players: removePack.players,
         enemies: removePack.enemies,
         bullets: removePack.bullets,
+        obstacles: removePack.obstacles,
       },
       updatePack: {
         players: Player.updatePlayers(),
         enemies: Enemy.updateEnemies(),
         bullets: Bullet.updateBullets(),
+        obstacles: Obstacle.updateObstacles(),
       },
     };
     initPack.players = [];
     initPack.enemies = [];
     initPack.bullets = [];
+    initPack.obstacles = [];
     removePack.players = [];
     removePack.enemies = [];
     removePack.bullets = [];
+    removePack.obstacles = [];
     return packs;
   }
 }
+
+class Obstacle extends Entity {
+  constructor(config) {
+    super();
+      this.id = generateId();
+      this.x = config.x;
+      this.y = config.y;
+      this.width = config.width;
+      this.height = config.height;
+      this.toRemove = false;
+      this.speedY = -5;
+      initPack.obstacles.push(this.getInitPack());
+      Obstacle.obstacles[this.id] = this;
+      console.log('New obstacle:', this);
+  }
+  update() {
+    if (this.y < -this.height - 5) {
+      this.toRemove = true;
+    }
+    super.update();
+  }
+  getInitPack() {
+    return {
+      id: this.id,
+      x: this.x,
+      y: this.y,
+      width: this.width,
+      height: this.height,
+    };
+  }
+  getUpdatePack() {
+    return {
+      id: this.id,
+      x: this.x,
+      y: this.y,
+    };
+  }
+  static getAllInitPack() {
+    const existingObstacles = [];
+    for (let id in Obstacle.obstacles) {
+      existingObstacles.push(Obstacle.obstacles[id].getInitPack());
+    }
+    return existingObstacles;
+  }
+  static updateObstacles() {
+    // Periodically generate new obstacles
+
+    if (Math.random() <= Obstacle.chanceToGenerate) {
+      // TODO: obstacle x and y depend on viewport which will vary between clients...
+      // probably just want a "map" width
+      const x = getRandomInt(0, 500);
+      const y = 505; // TODO: this will need to be below the viewport
+      const height = getRandomInt(25, 100);
+      const width = getRandomInt(25, 100);
+      new Obstacle({
+        x: x,
+        y: y,
+        height: height,
+        width: width
+      });
+    }
+
+    const pack = [];
+    for (let id in Obstacle.obstacles) {
+      let obstacle = Obstacle.obstacles[id];
+      obstacle.update();
+      if (obstacle.toRemove) {
+        delete Obstacle.obstacles[id];
+        removePack.obstacles.push(obstacle.id);
+      } else {
+        pack.push(obstacle.getUpdatePack());
+      }
+    }
+    return pack;
+  }
+}
+Obstacle.obstacles = {};
+// Chance is once per 2 seconds
+Obstacle.chanceToGenerate = 1 / (2 * FPS);
 
 class Bullet extends Entity {
   constructor(config) {
@@ -408,6 +492,7 @@ class Player extends Entity {
       players: Player.getAllInitPack(),
       enemies: Enemy.getAllInitPack(),
       bullets: Bullet.getAllInitPack(),
+      obstacles: Obstacle.getAllInitPack(),
     });
     /** broadcast the new player to all other players once on creation instead
      * of adding the new player to the initPack in the constructor, to avoid
