@@ -28,11 +28,12 @@ class Entity {
     const y = -this.y + point.y - 8; // TODO: replace hard-coded canvas margin
     return (Math.atan2(y, x) / Math.PI) * 180;
   }
-  getDistance(point) {
-    return Math.sqrt(
-      Math.pow(this.x - point.x, 2) + Math.pow(this.y - point.y, 2)
-    );
-  };
+  overlaps(target) {
+    return this.x < target.x + target.width &&
+           this.x + this.width > target.x &&
+           this.y < target.y + target.height &&
+           this.y + this.height > target.y
+  }
   static getFrameUpdateData() {
     const packs = {
       initPack: {
@@ -87,13 +88,7 @@ class Bullet extends Entity {
     // TODO: quadtree
     for (let id in Enemy.enemies) {
       let enemy = Enemy.enemies[id];
-      if (
-        this.parent !== enemy.id &&
-        this.x < enemy.x + enemy.width &&
-        this.x + this.width > enemy.x &&
-        this.y < enemy.y + enemy.height &&
-        this.y + this.height > enemy.y
-      ) {
+      if (this.parent !== enemy.id && this.overlaps(enemy)) {
         enemy.hp -= this.damage;
         if (enemy.hp <= 0) {
           // enemy removal handled in Enemy class
@@ -110,13 +105,7 @@ class Bullet extends Entity {
       let player = Player.players[id];
       const playerIds = Object.keys(Player.players);
       // no friendly fire ;)
-      if (
-        !playerIds.includes(this.parent) &&
-        this.x < player.x + player.width &&
-        this.x + this.width > player.x &&
-        this.y < player.y + player.height &&
-        this.y + this.height > player.y
-      ) {
+      if (!playerIds.includes(this.parent) && this.overlaps(player)) {
         player.hp -= this.damage;
         this.toRemove = true;
       }
