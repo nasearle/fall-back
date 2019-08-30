@@ -336,7 +336,7 @@ class Enemy extends Entity {
       // TODO: enemy x depends on viewport width which will vary between clients...
       // probably just want a "map" width
       const x = getRandomInt(0, 500);
-      // new Enemy(id, x);
+      new Enemy(id, x);
     }
 
     // Increase enemy generation rate
