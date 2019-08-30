@@ -163,6 +163,11 @@
         const numEnemies = Object.keys(enemies).length;
         document.querySelector('span#num-enemies').textContent = numEnemies;
 
+        if (players[selfId]) {
+          document.querySelector('span#player-score').textContent =
+            players[selfId].score;
+        }
+
         ctx.clearRect(0, 0, 500, 500);
         for (let i in players) {
           const player = players[i];
