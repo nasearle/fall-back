@@ -4,8 +4,8 @@ const removePack = { players: [], enemies: [], bullets: [], obstacles: [] };
 class Entity {
   constructor() {
     this.id = '';
-    this.x = 250;
-    this.y = 250;
+    this.x = 250; //TODO: don't spawn player on obstacle
+    this.y = 250; //TODO: don't spawn player on obstacle
     this.speedX = 0;
     this.speedY = 0;
     // this.lastUpdateTime = new Date().getTime();
@@ -77,7 +77,7 @@ class Obstacle extends Entity {
       this.width = config.width;
       this.height = config.height;
       this.toRemove = false;
-      this.speedY = -5;
+      this.speedY = -1;
       initPack.obstacles.push(this.getInitPack());
       Obstacle.obstacles[this.id] = this;
       console.log('New obstacle:', this);
@@ -248,7 +248,7 @@ class Enemy extends Entity {
   constructor(id, x) {
     super();
     this.id = id;
-    this.x = x;
+    this.x = x;  //TODO: don't spawn on obstacle
     this.y = -5; // Just beyond top of screen, TODO: should be related to sprite height
     this.width = 32;
     this.height = 32;
@@ -336,7 +336,7 @@ class Enemy extends Entity {
       // TODO: enemy x depends on viewport width which will vary between clients...
       // probably just want a "map" width
       const x = getRandomInt(0, 500);
-      new Enemy(id, x);
+      // new Enemy(id, x);
     }
 
     // Increase enemy generation rate
@@ -405,7 +405,7 @@ class Player extends Entity {
         this.toRemove = true;
       } else {
         this.hp = this.hpMax;
-        this.x = Math.random() * 500;
+        this.x = Math.random() * 500; //TODO: don't spawn on obstacle
         this.y = Math.random() * 150 + 350; // spawn in bottom part of map
       }
     }
@@ -421,21 +421,58 @@ class Player extends Entity {
     }
   }
   updateSpeed() {
+    // check collisions in each direction individually to preserve the speed of
+    // collision-free directions
+    // TODO: handle corner-to-corner collisions
     if (this.pressingRight) {
       this.speedX = this.maxSpeed;
+      if (this.checkCollisionsWithObjects(this.x + this.speedX, this.y)) {
+        this.speedX = 0;
+      }
     } else if (this.pressingLeft) {
       this.speedX = -this.maxSpeed;
+      if (this.checkCollisionsWithObjects(this.x + this.speedX, this.y)) {
+        this.speedX = 0;
+      }
     } else {
       this.speedX = 0;
     }
 
     if (this.pressingUp) {
       this.speedY = -this.maxSpeed;
+      if (this.checkCollisionsWithObjects(this.x, this.y + this.speedY)) {
+        this.speedY = -1;
+      }
     } else if (this.pressingDown) {
       this.speedY = this.maxSpeed;
+      if (this.checkCollisionsWithObjects(this.x, this.y + this.speedY)) {
+        this.speedY = -1;
+      }
     } else {
-      this.speedY = 0;
+      this.speedY = -1;
     }
+  }
+  checkCollisionsWithObjects(futureX, futureY) {
+    const playerFutureCoords = {
+      x: futureX,
+      y: futureY,
+      width: this.width,
+      height: this.height
+    };
+
+    for (let i in Obstacle.obstacles) {
+      const obstacle = Obstacle.obstacles[i];
+      const obstacleFutureCoords = {
+        x: obstacle.x,
+        y: obstacle.y + obstacle.speedY,
+        width: obstacle.width,
+        height: obstacle.height
+      }
+      if (Entity.overlaps(playerFutureCoords, obstacleFutureCoords)) {
+        return obstacle;
+      }
+    }
+    return false;
   }
   shootBullet(angle) {
     new Bullet({
@@ -472,9 +509,9 @@ class Player extends Entity {
       height: this.height,
       hp: this.hp,
       hpMax: this.hpMax,
-      score: this.score
+      score: this.score,
     };
-  };
+  }
   getUpdatePack() {
     return {
       id: this.id,
@@ -494,7 +531,7 @@ class Player extends Entity {
     ];
   }
   static onConnect(socket) {
-    const player = new Player(socket.id);
+    const player = new Player(socket.id); //TODO: don't spawn on obstacle
     socket.on('keyPress', data => {
       player.setPressingKey(data.inputId, data.state); // e.g. 'right', true
     });
