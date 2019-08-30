@@ -421,17 +421,37 @@ class Player extends Entity {
     }
   }
   updateSpeed() {
+    // TODO: fix bug that causes player to teleport to a side if two objects are
+    // touching and both are in a collision path
     // check collisions in each direction individually to preserve the speed of
     // collision-free directions
-    // TODO: handle corner-to-corner collisions
     if (this.pressingRight) {
       this.speedX = this.maxSpeed;
-      if (this.checkCollisionsWithObjects(this.x + this.speedX, this.y)) {
+      // check collisions with future +x position and current y position
+      const collisionObject = this.checkCollisionsWithObjects(
+        this.x + this.speedX,
+        this.y
+      );
+      // if there will be a collision in this x-direction...
+      if (collisionObject) {
+        // set the player flush with the obstacle's left side...
+        this.x = collisionObject.x - this.width;
+        // and set just the x-speed to 0 (allowing y-speed to continue unless
+        // it's a direct corner collision, in which case the collision check
+        // with the future y position will also trigger and set y-speed to 0)
         this.speedX = 0;
       }
     } else if (this.pressingLeft) {
       this.speedX = -this.maxSpeed;
-      if (this.checkCollisionsWithObjects(this.x + this.speedX, this.y)) {
+      // check collisions with future -x position and current y position
+      const collisionObject = this.checkCollisionsWithObjects(
+        this.x + this.speedX,
+        this.y
+      );
+      if (collisionObject) {
+        // only difference with above is that player position is flush with the
+        // obstacle's right side
+        this.x = collisionObject.x + collisionObject.width;
         this.speedX = 0;
       }
     } else {
@@ -440,13 +460,30 @@ class Player extends Entity {
 
     if (this.pressingUp) {
       this.speedY = -this.maxSpeed;
-      if (this.checkCollisionsWithObjects(this.x, this.y + this.speedY)) {
-        this.speedY = -1;
+      // check collisions with future -y position and current x position
+      const collisionObject = this.checkCollisionsWithObjects(
+        this.x,
+        this.y + this.speedY
+      );
+      if (collisionObject) {
+        // set player flush with bottom of obstacle (if it's a direct corner
+        // collision, the player will be moved out to the corner because of the
+        // checks above)
+        this.y = collisionObject.y + collisionObject.height;
+        // set y-speed to obstacle's speed
+        this.speedY = collisionObject.speedY;
       }
     } else if (this.pressingDown) {
       this.speedY = this.maxSpeed;
-      if (this.checkCollisionsWithObjects(this.x, this.y + this.speedY)) {
-        this.speedY = -1;
+      const collisionObject = this.checkCollisionsWithObjects(
+        this.x,
+        this.y + this.speedY
+      );
+      if (collisionObject) {
+        // -1 pixel to avoid a bug in top collisions that detects an overlap
+        // directly at collisionObject.y - this.height
+        this.y = collisionObject.y - this.height - 1;
+        this.speedY = collisionObject.speedY;
       }
     } else {
       this.speedY = -1;
@@ -460,6 +497,7 @@ class Player extends Entity {
       height: this.height
     };
 
+    // TODO: only check obstacles in the same quadtree or grid area as player
     for (let i in Obstacle.obstacles) {
       const obstacle = Obstacle.obstacles[i];
       const obstacleFutureCoords = {
