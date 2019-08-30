@@ -385,7 +385,8 @@ class Player extends Entity {
     this.pressingUp = false;
     this.pressingDown = false;
     this.pressingShoot = false;
-    this.mouseAngle = 0;
+    this.mouseX = 0;
+    this.mouseY = 0;
     this.maxSpeed = 10;
     this.hp = 100;
     this.hpMax = 100;
@@ -416,7 +417,8 @@ class Player extends Entity {
     const timeDifference = currentTime - this.timeLastShot;
     // Note: this.pressingShoot only triggered if the click is down during an update loop
     if (this.pressingShoot && timeDifference > this.coolDown) {
-      this.shootBullet(this.mouseAngle);
+      const mouseAngle = this.getAngle({x: this.mouseX, y: this.mouseY});
+      this.shootBullet(mouseAngle);
       this.timeLastShot = currentTime;
     }
   }
@@ -535,7 +537,8 @@ class Player extends Entity {
     } else if (inputId === 'shoot') {
       this.pressingShoot = state;
     } else if (inputId === 'mouseAngle') {
-      this.mouseAngle = this.getAngle(state);
+      this.mouseX = state.x;
+      this.mouseY = state.y;
     }
   }
   getInitPack() {
