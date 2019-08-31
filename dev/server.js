@@ -1,19 +1,33 @@
 "use strict";
 
 const SOCKETS = {};
+const GAMES = {};
 const FPS = 25
 
 /* Using a slightly hacky work around for including dependencies because we
    can't use require() inside the sandbox environment. The comment below will
    be replaced with file contents on build */
-//=require lib/**/*.js
+/* ORDER MATTERS HERE */
+//=require lib/util.js
+//=require lib/entity.js
+//=require lib/entities/*.js
+//=require lib/game.js
 
 // Game loop
 setInterval(() => {
-  const packs = Entity.getFrameUpdateData();
-  io.emit('init', packs.initPack);
-  io.emit('update', packs.updatePack);
-  io.emit('remove', packs.removePack);
+  for (let id in GAMES) {
+    const game = GAMES[id];
+    const packs = game.getFrameUpdateData();
+    io.to(game.room).emit('init', packs.initPack);
+    io.to(game.room).emit('update', packs.updatePack);
+    io.to(game.room).emit('remove', packs.removePack);
+
+    // Delete empty games (otherwise they will remain with logic continuing
+    // for all non-player entities). TODO: this should only be checked in
+    // onDisconnect events, and not every frame. However, currently player
+    // states are not always accessible in onDisconnect. See comment in Player.update
+    Game.deleteIfEmpty(id);
+  }
 }, 1000 / FPS);
 
 
