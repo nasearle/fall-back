@@ -3,12 +3,13 @@ class Enemy extends Entity {
     super();
     this.id = id;
     this.gameId = gameId;
-    this.x = x;  //TODO: don't spawn on obstacle
+    this.targetId = Player.getRandomPlayer(this.gameId).id;
+    this.x = x; //TODO: don't spawn on obstacle
     this.y = -5; // Just beyond top of screen, TODO: should be related to sprite height
     this.width = 32;
     this.height = 32;
     // Keep speed low and march chance high for smoother movement?
-    this.maxSpeed = 5;
+    this.maxSpeed = 2;
     this.hp = 30;
     this.hpMax = 30;
     this.damage = 10;
@@ -22,29 +23,92 @@ class Enemy extends Entity {
     if (this.hp <= 0) {
       this.toRemove = true;
     }
-    this.updateSpeed();
+    const game = GAMES[this.gameId];
+    let targetPlayer = game.players[this.targetId];
+    // if the target player died or left the game, get a new target
+    if (!targetPlayer) {
+      targetPlayer = Player.getRandomPlayer(this.gameId);
+      if (targetPlayer) {
+        this.targetId = targetPlayer.id;
+      }
+    }
+    this.updateSpeed(targetPlayer);
     super.update();
-    // For now, enemies simply shoot at a player randomly
+    // For now, enemies simply shoot at their target player randomly
     if (Math.random() <= Enemy.chanceToShoot) {
-      const player = Player.getRandomPlayer(this.gameId);
-      if (player) {
-        const angle = this.getAngle(player);
+      if (targetPlayer) {
+        const angle = this.getAngle(targetPlayer);
         this.shootBullet(angle);
       }
     }
   }
-  updateSpeed() {
-    // For now, enemies simply march toward a player randomly
-    if (Math.random() <= Enemy.chanceToMarch) {
-      const player = Player.getRandomPlayer(this.gameId);
-      if (player) {
-        const angle = this.getAngle(player);
-        this.speedX = Math.cos((angle / 180) * Math.PI) * this.maxSpeed;
-        this.speedY = Math.sin((angle / 180) * Math.PI) * this.maxSpeed;
+  updateSpeed(targetPlayer) {
+    // TODO: fix teleportation bugs (same in Player)
+    // TODO: make enemies collide with each other so they don't stack
+    // switch to moving toward a target player instead of toward a random player
+    // to avoid the shakes
+    if (targetPlayer) {
+      const diffX = targetPlayer.x - this.x;
+      const diffY = targetPlayer.y - this.y;
+      // enemy moving right
+      // check if diff between player and enemy position is at least half the
+      // maxSpeed of the enemy to prevent the enemy shaking back and forth
+      if (diffX > this.maxSpeed / 2) {
+        this.speedX = this.maxSpeed;
+        // see Player.updateSpeed() for explanation of collision logic
+        const collisionObject = Entity.checkCollisionsWithObstacles(
+          this,
+          this.x + this.speedX,
+          this.y
+        );
+        if (collisionObject) {
+          this.x = collisionObject.x - this.width;
+          this.speedX = 0;
+        }
+        // enemy moving left
+      } else if (diffX < -this.maxSpeed / 2) {
+        this.speedX = -this.maxSpeed;
+        const collisionObject = Entity.checkCollisionsWithObstacles(
+          this,
+          this.x + this.speedX,
+          this.y
+        );
+        if (collisionObject) {
+          this.x = collisionObject.x + collisionObject.width;
+          this.speedX = 0;
+        }
+      } else {
+        this.speedX = 0;
       }
-    } else {
-      this.speedX = 0;
-      this.speedY = 0;
+      // enemy moving up
+      if (diffY < -this.maxSpeed / 2) {
+        this.speedY = -this.maxSpeed;
+        const collisionObject = Entity.checkCollisionsWithObstacles(
+          this,
+          this.x,
+          this.y + this.speedY
+        );
+        if (collisionObject) {
+          this.y = collisionObject.y + collisionObject.height;
+          this.speedY = collisionObject.speedY;
+        }
+        // enemy moving down
+      } else if (diffY > this.maxSpeed / 2) {
+        this.speedY = this.maxSpeed;
+        const collisionObject = Entity.checkCollisionsWithObstacles(
+          this,
+          this.x,
+          this.y + this.speedY
+        );
+        if (collisionObject) {
+          // -1 pixel to avoid a bug in top collisions that detects an overlap
+          // directly at collisionObject.y - this.height
+          this.y = collisionObject.y - this.height - 1;
+          this.speedY = collisionObject.speedY;
+        }
+      } else {
+        this.speedY = -1;
+      }
     }
   }
   shootBullet(angle) {
@@ -66,7 +130,7 @@ class Enemy extends Entity {
       y: this.y,
       width: this.width,
       height: this.height,
-      hp: this.hp
+      hp: this.hp,
     };
   }
   getUpdatePack() {
@@ -74,14 +138,17 @@ class Enemy extends Entity {
       id: this.id,
       x: this.x,
       y: this.y,
-      hp: this.hp
+      hp: this.hp,
     };
   }
   static updateAll(gameId) {
     // Periodically generate new enemies
     const game = GAMES[gameId];
     const numEnemies = Object.keys(game.enemies).length; // could cache this
-    if (Math.random() <= game.chanceForEnemiesToGenerate && numEnemies < Enemy.numCap) {
+    if (
+      Math.random() <= game.chanceForEnemiesToGenerate &&
+      numEnemies < Enemy.numCap
+    ) {
       const id = generateId();
       // TODO: enemy x depends on viewport width which will vary between clients...
       // probably just want a "map" width

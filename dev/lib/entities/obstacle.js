@@ -1,17 +1,17 @@
 class Obstacle extends Entity {
   constructor(config) {
     super();
-      this.id = generateId();
-      this.gameId = config.gameId;
-      this.x = config.x;
-      this.y = config.y;
-      this.width = config.width;
-      this.height = config.height;
-      this.toRemove = false;
-      this.speedY = -1;
+    this.id = generateId();
+    this.gameId = config.gameId;
+    this.x = config.x;
+    this.y = config.y;
+    this.width = config.width;
+    this.height = config.height;
+    this.toRemove = false;
+    this.speedY = -1;
 
-      GAMES[this.gameId].obstacles[this.id] = this;
-      GAMES[this.gameId].initPack.obstacles.push(this.getInitPack());
+    GAMES[this.gameId].obstacles[this.id] = this;
+    GAMES[this.gameId].initPack.obstacles.push(this.getInitPack());
   }
   update() {
     if (this.y < -this.height - 5) {
