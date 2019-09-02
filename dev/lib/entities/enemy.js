@@ -1,6 +1,7 @@
 class Enemy extends Entity {
   constructor(id, gameId, x) {
     super();
+    this.type = 'enemy';
     this.id = id;
     this.gameId = gameId;
     this.targetId = Player.getRandomPlayer(this.gameId).id;
@@ -14,6 +15,10 @@ class Enemy extends Entity {
     this.hpMax = 30;
     this.damage = 10;
     this.toRemove = false;
+    this.weapon = {
+      damage: 10,
+      speed: 10,
+    };
 
     console.log(`New enemy in game ${gameId}:`, this);
     GAMES[gameId].enemies[this.id] = this;
@@ -113,14 +118,8 @@ class Enemy extends Entity {
   }
   shootBullet(angle) {
     new Bullet({
-      parent: this.id,
-      gameId: this.gameId,
       angle: angle,
-      x: this.x,
-      y: this.y,
-      speedX: 10, // move enemy bullet speed to config?
-      speedY: 10, // move enemy bullet speed to config?
-      damage: this.damage,
+      parent: this,
     });
   }
   getInitPack() {
