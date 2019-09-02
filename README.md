@@ -2,7 +2,7 @@
 
 A simple multiplayer web game created for the [Js13kGames coding competition](https://js13kgames.com/). The entire game (code, assets, and storage) is under 13kB.
 
-A live version can be found at TODO:
+A live version can be found at [https://fall-back.herokuapp.com](https://fall-back.herokuapp.com) (this may take a a few moments to start up).
 
 ## Running locally
 
