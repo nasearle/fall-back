@@ -1,6 +1,7 @@
 class Player extends Entity {
     constructor(id, gameId) {
       super();
+      this.type = 'player';
       this.id = id;
       this.gameId = gameId;
       this.width = 32;
@@ -16,11 +17,14 @@ class Player extends Entity {
       this.hp = 100;
       this.hpMax = 100;
       this.lives = 3;
-      this.damage = 10; // can base this on the current weapon / power up
-      this.coolDown = 400; // can base this on the current weapon / power up // TODO: should be in terms of FPS
-      this.timeLastShot = 0;
       this.score = 0;
       this.toRemove = false;
+      this.weapon = {
+        damage: 10,
+        speed: 30,
+        timeLastShot: 0,
+        coolDown: 400, // milliseconds, indepedent of FPS
+      };
 
       console.log(`[Player constructor] New player created: ${id}, adding to game: ${gameId}`);
       GAMES[gameId].players[id] = this;
@@ -42,13 +46,9 @@ class Player extends Entity {
       this.updateSpeed();
       super.update();
 
-      const currentTime = new Date().getTime();
-      const timeDifference = currentTime - this.timeLastShot;
       // Note: this.pressingShoot only triggered if the click is down during an update loop
-      if (this.pressingShoot && timeDifference > this.coolDown) {
-        const mouseAngle = this.getAngle({x: this.mouseX, y: this.mouseY});
-        this.shootBullet(mouseAngle);
-        this.timeLastShot = currentTime;
+      if (this.pressingShoot) {
+        this.attemptShootBullet();
       }
     }
     updateSpeed() {
@@ -134,15 +134,18 @@ class Player extends Entity {
     }
     shootBullet(angle) {
       new Bullet({
-        gameId: this.gameId,
-        parent: this.id,
         angle: angle,
-        x: this.x,
-        y: this.y,
-        speedX: 30, // move player bullet speed to config?
-        speedY: 30, // move player bullet speed to config?
-        damage: this.damage,
+        parent: this,
       });
+    }
+    attemptShootBullet() {
+      const currentTime = new Date().getTime();
+      const timeDifference = currentTime - this.weapon.timeLastShot;
+      if (timeDifference > this.weapon.coolDown) {
+        const mouseAngle = this.getAngle({x: this.mouseX, y: this.mouseY});
+        this.shootBullet(mouseAngle);
+        this.weapon.timeLastShot = currentTime;
+      }
     }
     setPressingKey(inputId, state) {
       if (inputId == 'right') {
