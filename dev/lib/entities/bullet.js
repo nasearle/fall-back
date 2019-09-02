@@ -24,10 +24,12 @@ class Bullet extends Entity {
     }
     super.update();
     const game = GAMES[this.gameId];
-    // // TODO: quadtree
+    const enemyIds = ids(game.enemies);
+    // TODO: quadtree
     for (let id in game.enemies) {
       let enemy = game.enemies[id];
-      if (this.parent !== enemy.id && Entity.overlaps(this, enemy)) {
+      const parentIdString = `${this.parent}`;
+      if (!enemyIds.includes(parentIdString) && Entity.overlaps(this, enemy)) {
         enemy.hp -= this.damage;
         if (enemy.hp <= 0) {
           // enemy removal handled in Enemy class
@@ -39,17 +41,17 @@ class Bullet extends Entity {
         this.toRemove = true;
       }
     }
-    // // TODO: quadtree
+    // TODO: quadtree
     for (let id in game.obstacles) {
       let obstacle = game.obstacles[id];
       if (Entity.overlaps(this, obstacle)) {
         this.toRemove = true;
       }
     }
+    const playerIds = ids(game.players);
     // TODO: quadtree
     for (let id in game.players) {
       let player = game.players[id];
-      const playerIds = Object.keys(game.players);
       // no friendly fire ;)
       if (!playerIds.includes(this.parent) && Entity.overlaps(this, player)) {
         player.hp -= this.damage;

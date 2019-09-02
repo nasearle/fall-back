@@ -1,29 +1,29 @@
 class Player extends Entity {
     constructor(id, gameId) {
-        super();
-        this.id = id;
-        this.gameId = gameId;
-        this.width = 32;
-        this.height = 32;
-        this.pressingRight = false;
-        this.pressingLeft = false;
-        this.pressingUp = false;
-        this.pressingDown = false;
-        this.pressingShoot = false;
-        this.mouseX = 0;
-        this.mouseY = 0;
-        this.maxSpeed = 10;
-        this.hp = 100;
-        this.hpMax = 100;
-        this.lives = 3;
-        this.damage = 10; // can base this on the current weapon / power up
-        this.coolDown = 400; // can base this on the current weapon / power up // TODO: should be in terms of FPS
-        this.timeLastShot = 0;
-        this.score = 0;
-        this.toRemove = false;
+      super();
+      this.id = id;
+      this.gameId = gameId;
+      this.width = 32;
+      this.height = 32;
+      this.pressingRight = false;
+      this.pressingLeft = false;
+      this.pressingUp = false;
+      this.pressingDown = false;
+      this.pressingShoot = false;
+      this.mouseX = 0;
+      this.mouseY = 0;
+      this.maxSpeed = 10;
+      this.hp = 100;
+      this.hpMax = 100;
+      this.lives = 3;
+      this.damage = 10; // can base this on the current weapon / power up
+      this.coolDown = 400; // can base this on the current weapon / power up // TODO: should be in terms of FPS
+      this.timeLastShot = 0;
+      this.score = 0;
+      this.toRemove = false;
 
-        console.log(`[Player constructor] New player created: ${id}, adding to game: ${gameId}`);
-        GAMES[gameId].players[id] = this;
+      console.log(`[Player constructor] New player created: ${id}, adding to game: ${gameId}`);
+      GAMES[gameId].players[id] = this;
     }
     update() {
       if (this.hp <= 0) {
@@ -31,7 +31,7 @@ class Player extends Entity {
         if (this.lives < 0) {
           // TODO: should mark as "dead" instead. Deleting players
           // * prevents access to their state that could still be rendered (score, etc.)
-          // * prevents access to thier state in onDisconnect (saving to DB, deleting game, etc.)
+          // * prevents access to their state in onDisconnect (saving to DB, deleting game, etc.)
           this.toRemove = true;
         } else {
           this.hp = this.hpMax;
@@ -60,7 +60,8 @@ class Player extends Entity {
         this.speedX = this.maxSpeed;
 
         // check collisions with future +x position and current y position
-        const collisionObject = this.checkCollisionsWithObstacles(
+        const collisionObject = Entity.checkCollisionsWithObstacles(
+          this,
           this.x + this.speedX,
           this.y
         );
@@ -78,7 +79,8 @@ class Player extends Entity {
         this.speedX = -this.maxSpeed;
 
         // check collisions with future -x position and current y position
-        const collisionObject = this.checkCollisionsWithObstacles(
+        const collisionObject = Entity.checkCollisionsWithObstacles(
+          this,
           this.x + this.speedX,
           this.y
         );
@@ -97,7 +99,8 @@ class Player extends Entity {
         this.speedY = -this.maxSpeed;
 
         // check collisions with future -y position and current x position
-        const collisionObject = this.checkCollisionsWithObstacles(
+        const collisionObject = Entity.checkCollisionsWithObstacles(
+          this,
           this.x,
           this.y + this.speedY
         );
@@ -113,7 +116,8 @@ class Player extends Entity {
       } else if (this.pressingDown) {
         this.speedY = this.maxSpeed;
 
-        const collisionObject = this.checkCollisionsWithObstacles(
+        const collisionObject = Entity.checkCollisionsWithObstacles(
+          this,
           this.x,
           this.y + this.speedY
         );
@@ -127,30 +131,6 @@ class Player extends Entity {
       } else {
         this.speedY = -1;
       }
-    }
-    checkCollisionsWithObstacles(futureX, futureY) {
-      const playerFutureCoords = {
-        x: futureX,
-        y: futureY,
-        width: this.width,
-        height: this.height
-      };
-
-      // TODO: only check obstacles in the same quadtree or grid area as player
-      const game = GAMES[this.gameId];
-      for (let i in game.obstacles) {
-        const obstacle = game.obstacles[i];
-        const obstacleFutureCoords = {
-          x: obstacle.x,
-          y: obstacle.y + obstacle.speedY,
-          width: obstacle.width,
-          height: obstacle.height
-        }
-        if (Entity.overlaps(playerFutureCoords, obstacleFutureCoords)) {
-          return obstacle;
-        }
-      }
-      return false;
     }
     shootBullet(angle) {
       new Bullet({
@@ -243,7 +223,7 @@ class Player extends Entity {
       console.log(`[onConnect] Subscribing player to room: ${game.room}`);
       socket.join(game.room);
     }
-    // Find a player based on thier socket.id
+    // Find a player based on their socket.id
     static findPlayerById(id) {
       const gameIds = ids(GAMES);
       for (let i = 0; i < gameIds.length; i++) {
