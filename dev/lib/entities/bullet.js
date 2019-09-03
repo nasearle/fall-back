@@ -46,7 +46,7 @@ class Bullet extends Entity {
       }
     }
 
-    /* Collisions with enemies */
+    /* Collisions with obstacles */
     for (let id in game.obstacles) {
       let obstacle = game.obstacles[id];
       if (Entity.overlaps(this, obstacle)) {
