@@ -2,14 +2,17 @@ class Game {
     constructor() {
       this.id = generateId();
       this.room = `room-${this.id}`;
-      this.initPack = { players: [], enemies: [], bullets: [], obstacles: [] };
-      this.removePack = { players: [], enemies: [], bullets: [], obstacles: [] };
+      this.initPack =   { players: [], enemies: [], bullets: [],
+                          obstacles: [], items: [] };
+      this.removePack = { players: [], enemies: [], bullets: [],
+                          obstacles: [], items: [] };
       this.updatePack = {};
 
       this.players = {};
       this.bullets = {};
       this.obstacles = {};
       this.enemies = {};
+      this.items = {};
 
       // Moved from Enemy class, since this will vary by game
       // Chance starts at once per 5 seconds
@@ -70,6 +73,7 @@ class Game {
     'enemies': Enemy,
     'bullets': Bullet,
     'obstacles': Obstacle,
+    'items': Item,
   };
 
   /* Not using module.exports because require() is unavailable in the sandbox environment */

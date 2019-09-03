@@ -13,7 +13,7 @@ class Bullet extends Entity {
     this.speedX = Math.cos((this.angle / 180) * Math.PI) * parent.weapon.speed;
     this.speedY = Math.sin((this.angle / 180) * Math.PI) * parent.weapon.speed;
     this.timer = 0;
-    this.damage = parent.weapon.damage; // comes from the Player, based on weapon
+    this.damage = parent.weapon.damage;
     this.toRemove = false;
 
     GAMES[this.gameId].bullets[this.id] = this;
