@@ -4,6 +4,9 @@ class Enemy extends Entity {
     this.type = 'enemy';
     this.id = id;
     this.gameId = gameId;
+    // TODO: this line can cause a a crash if enemy spawns when players are dead
+    // since it doesn't check if(player). We could just remove it, and let the
+    // target player get assigned in the first update frame
     this.targetId = Player.getRandomPlayer(this.gameId).id;
     this.x = x; //TODO: don't spawn on obstacle
     this.y = -5; // Just beyond top of screen, TODO: should be related to sprite height
@@ -15,10 +18,10 @@ class Enemy extends Entity {
     this.hpMax = 30;
     this.damage = 10;
     this.toRemove = false;
-    this.weapon = {
-      damage: 10,
-      speed: 10,
-    };
+
+    // TODO: Could have enemy subclasses in the future
+    const weaponType = getWeightedRandomItem(Enemy.chancesForWeapons);
+    this.weapon = this.weapon = new Weapon(weaponType, this);
 
     console.log(`New enemy in game ${gameId}:`, this);
     GAMES[gameId].enemies[this.id] = this;
@@ -27,6 +30,14 @@ class Enemy extends Entity {
   update() {
     if (this.hp <= 0) {
       this.toRemove = true;
+      if (this.weapon.dropable) {
+        new Item({
+          gameId: this.gameId,
+          x: this.x,
+          y: this.y,
+          name: this.weapon.name,
+        });
+      }
     }
     const game = GAMES[this.gameId];
     let targetPlayer = game.players[this.targetId];
@@ -43,7 +54,7 @@ class Enemy extends Entity {
     if (Math.random() <= Enemy.chanceToShoot) {
       if (targetPlayer) {
         const angle = this.getAngle(targetPlayer);
-        this.shootBullet(angle);
+        this.weapon.attemptShoot(angle);
       }
     }
   }
@@ -116,12 +127,6 @@ class Enemy extends Entity {
       }
     }
   }
-  shootBullet(angle) {
-    new Bullet({
-      angle: angle,
-      parent: this,
-    });
-  }
   getInitPack() {
     return {
       id: this.id,
@@ -186,3 +191,11 @@ Enemy.chanceToShoot = 1 / FPS;
 Enemy.generationGradient = 0.05 * (1 / (15 * FPS));
 // Don't want too many enemies on screen or in memory
 Enemy.numCap = 50;
+// TODO: Could use enemy subclasses in the future
+// TODO: use lower numbers in production
+Enemy.chancesForWeapons = [
+  // chances should sum to 1
+  { name: 'shotgun',  chance: 0.10 },
+  { name: 'chaingun', chance: 0.10 },
+  { name: 'slowpoke', chance: 0.80 },
+];

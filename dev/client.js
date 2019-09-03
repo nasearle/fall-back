@@ -9,6 +9,7 @@
     const enemies = {};
     const bullets = {};
     const obstacles = {};
+    const items = {};
 
     const addPlayer = playerInfo => {
       const player = kontra.Sprite({
@@ -77,6 +78,23 @@
       obstacles[obstacle.id] = obstacle;
     };
 
+    const addItem = itemInfo => {
+      const item = kontra.Sprite({
+        type: 'item',
+        id: itemInfo.id,
+        x: itemInfo.x,
+        y: itemInfo.y,
+        width: itemInfo.width,
+        height: itemInfo.height,
+        color: itemInfo.color,
+        render() {
+          this.context.fillStyle = this.color;
+          this.context.fillRect(this.x, this.y, this.width, this.height);
+        },
+      });
+      items[item.id] = item;
+    };
+
     /**
      * Client module init
      */
@@ -110,6 +128,9 @@
         for (let i = 0; i < data.obstacles.length; i++) {
           addObstacle(data.obstacles[i]);
         }
+        for (let i = 0; i < data.items.length; i++) {
+          addItem(data.items[i]);
+        }
       });
 
       socket.on('update', data => {
@@ -140,6 +161,12 @@
           obstacles[obstacle.id].x = obstacle.x;
           obstacles[obstacle.id].y = obstacle.y;
         }
+        const itemsData = data.items;
+        for (let i = 0; i < itemsData.length; i++) {
+          let item = itemsData[i];
+          items[item.id].x = item.x;
+          items[item.id].y = item.y;
+        }
       });
 
       socket.on('remove', data => {
@@ -154,6 +181,9 @@
         }
         for (let i = 0; i < data.obstacles.length; i++) {
           delete obstacles[data.obstacles[i]];
+        }
+        for (let i = 0; i < data.items.length; i++) {
+          delete items[data.items[i]];
         }
       });
 
@@ -184,6 +214,10 @@
         for (let i in obstacles) {
           const obstacle = obstacles[i];
           obstacle.render();
+        }
+        for (let i in items) {
+          const item = items[i];
+          item.render();
         }
         window.requestAnimationFrame(renderLoop);
       };

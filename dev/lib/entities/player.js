@@ -19,12 +19,7 @@ class Player extends Entity {
       this.lives = 3;
       this.score = 0;
       this.toRemove = false;
-      this.weapon = {
-        damage: 10,
-        speed: 30,
-        timeLastShot: 0,
-        coolDown: 400, // milliseconds, indepedent of FPS
-      };
+      this.weapon = new Weapon('pistol', this);
 
       console.log(`[Player constructor] New player created: ${id}, adding to game: ${gameId}`);
       GAMES[gameId].players[id] = this;
@@ -43,12 +38,17 @@ class Player extends Entity {
           this.y = Math.random() * 150 + 350; // spawn in bottom part of map
         }
       }
+      if (this.weapon.ammo <= 0) {
+        // return to pistol when out of ammo
+        this.weapon = new Weapon('pistol', this);
+      }
       this.updateSpeed();
       super.update();
 
       // Note: this.pressingShoot only triggered if the click is down during an update loop
       if (this.pressingShoot) {
-        this.attemptShootBullet();
+        const mouseAngle = this.getAngle({x: this.mouseX, y: this.mouseY});
+        this.weapon.attemptShoot(mouseAngle);
       }
     }
     updateSpeed() {
@@ -132,21 +132,6 @@ class Player extends Entity {
         this.speedY = -1;
       }
     }
-    shootBullet(angle) {
-      new Bullet({
-        angle: angle,
-        parent: this,
-      });
-    }
-    attemptShootBullet() {
-      const currentTime = new Date().getTime();
-      const timeDifference = currentTime - this.weapon.timeLastShot;
-      if (timeDifference > this.weapon.coolDown) {
-        const mouseAngle = this.getAngle({x: this.mouseX, y: this.mouseY});
-        this.shootBullet(mouseAngle);
-        this.weapon.timeLastShot = currentTime;
-      }
-    }
     setPressingKey(inputId, state) {
       if (inputId == 'right') {
         this.pressingRight = state;
@@ -212,6 +197,7 @@ class Player extends Entity {
         enemies: Enemy.getAllInitPack(game.id, 'enemies'),
         bullets: Bullet.getAllInitPack(game.id, 'bullets'),
         obstacles: Obstacle.getAllInitPack(game.id, 'obstacles'),
+        items: Item.getAllInitPack(game.id, 'items'),
       });
 
       /** broadcast the new player to all other players once on creation instead

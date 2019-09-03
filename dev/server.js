@@ -11,6 +11,8 @@ const FPS = 25
 //=require lib/util.js
 //=require lib/entity.js
 //=require lib/entities/*.js
+//=require lib/weapons.js
+//=require lib/items.js
 //=require lib/game.js
 
 // Game loop
