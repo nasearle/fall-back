@@ -20,6 +20,7 @@ class Player extends Entity {
       this.score = 0;
       this.toRemove = false;
       this.weapon = new Weapon('pistol', this);
+      this.bulletSpeedModifier = 1;
 
       console.log(`[Player constructor] New player created: ${id}, adding to game: ${gameId}`);
       GAMES[gameId].players[id] = this;

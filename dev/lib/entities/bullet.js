@@ -10,8 +10,9 @@ class Bullet extends Entity {
     this.height = 10;
     this.x = parent.x + (parent.width  / 2) - (this.width  / 2);
     this.y = parent.y + (parent.height / 2) - (this.height / 2);
-    this.speedX = Math.cos((this.angle / 180) * Math.PI) * parent.weapon.speed;
-    this.speedY = Math.sin((this.angle / 180) * Math.PI) * parent.weapon.speed;
+    const speed = parent.weapon.speed * parent.bulletSpeedModifier;
+    this.speedX = Math.cos((this.angle / 180) * Math.PI) * speed;
+    this.speedY = Math.sin((this.angle / 180) * Math.PI) * speed;
     this.timer = 0;
     this.damage = parent.weapon.damage;
     this.toRemove = false;

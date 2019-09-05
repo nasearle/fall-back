@@ -69,16 +69,6 @@ Weapon.weapons = {
         shootFunction: Weapon.basicShoot,
         dropable: false,
     },
-    // default enemy gun, shoots slow
-    'slowpoke': {
-        damage: 10,
-        speed: 10,
-        timeLastShot: 0,
-        coolDown: 400,
-        ammo: 1, // not dropable, so just a placeholder
-        shootFunction: Weapon.basicShoot,
-        dropable: false,
-    },
     'chaingun': {
         damage: 10,
         speed: 30,

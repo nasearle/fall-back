@@ -16,8 +16,8 @@ class Enemy extends Entity {
     this.maxSpeed = 2;
     this.hp = 30;
     this.hpMax = 30;
-    this.damage = 10;
     this.toRemove = false;
+    this.bulletSpeedModifier = 0.4; // Want enemy bullets to be much slower
 
     // TODO: Could have enemy subclasses in the future
     const weaponType = getWeightedRandomItem(Enemy.chancesForWeapons);
@@ -197,5 +197,5 @@ Enemy.chancesForWeapons = [
   // chances should sum to 1
   { name: 'shotgun',  chance: 0.10 },
   { name: 'chaingun', chance: 0.10 },
-  { name: 'slowpoke', chance: 0.80 },
+  { name: 'pistol', chance: 0.80 },
 ];
