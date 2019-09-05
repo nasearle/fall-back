@@ -28,6 +28,7 @@ class Player extends Entity {
     update() {
       if (this.hp <= 0) {
         this.lives--;
+        this.resetWeapon();
         if (this.lives < 0) {
           // TODO: should mark as "dead" instead. Deleting players
           // * prevents access to their state that could still be rendered (score, etc.)
@@ -41,7 +42,7 @@ class Player extends Entity {
       }
       if (this.weapon.ammo <= 0) {
         // return to pistol when out of ammo
-        this.weapon = new Weapon('pistol', this);
+        this.resetWeapon();
       }
       this.updateSpeed();
       super.update();
@@ -169,6 +170,9 @@ class Player extends Entity {
         hp: this.hp,
         score: this.score,
       };
+    }
+    resetWeapon() {
+      this.weapon = new Weapon('pistol', this);
     }
     static countPlayers(gameId) {
       return Object.keys(GAMES[gameId].players).length;
