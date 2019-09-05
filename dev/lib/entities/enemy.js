@@ -77,8 +77,8 @@ class Enemy extends Entity {
           this.x + this.speedX,
           this.y
         );
+        // set just the speed and not the position to avoid teleportation bug
         if (collisionObject) {
-          this.x = collisionObject.x - this.width;
           this.speedX = 0;
         }
         // enemy moving left
@@ -90,7 +90,6 @@ class Enemy extends Entity {
           this.y
         );
         if (collisionObject) {
-          this.x = collisionObject.x + collisionObject.width;
           this.speedX = 0;
         }
       } else {
