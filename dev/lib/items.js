@@ -1,7 +1,7 @@
 class Item extends Entity {
     constructor(config) {
         super();
-        this.id = generateId(); // TODO: will need to do something more unique
+        this.id = generateId();
         this.gameId = config.gameId;
         this.x = config.x;
         this.y = config.y;
