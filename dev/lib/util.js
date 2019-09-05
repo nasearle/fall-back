@@ -5,7 +5,14 @@ function getRandomInt(min, max) {
 }
 
 function generateId() {
-  return getRandomInt(100000, 999999);
+    let   result           = '';
+    const characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length;
+    const idLength = 20;
+    for ( var i = 0; i < idLength; i++ ) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
 }
 
 function ids(object) {

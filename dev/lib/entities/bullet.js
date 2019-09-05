@@ -4,7 +4,7 @@ class Bullet extends Entity {
     const { parent, angle } = config;
     this.parent = parent;
     this.angle = angle;
-    this.id = generateId(); // TODO: will need to do something more unique
+    this.id = generateId();
     this.gameId = parent.gameId;
     this.width = 10;
     this.height = 10;
