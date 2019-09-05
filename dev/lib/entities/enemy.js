@@ -54,7 +54,7 @@ class Enemy extends Entity {
     if (Math.random() <= Enemy.chanceToShoot) {
       if (targetPlayer) {
         const angle = this.getAngle(targetPlayer);
-        this.weapon.attemptShoot(angle);
+        // this.weapon.attemptShoot(angle);
       }
     }
   }
@@ -66,39 +66,11 @@ class Enemy extends Entity {
     if (targetPlayer) {
       const diffX = targetPlayer.x - this.x;
       const diffY = targetPlayer.y - this.y;
-      // enemy moving right
-      // check if diff between player and enemy position is at least half the
-      // maxSpeed of the enemy to prevent the enemy shaking back and forth
-      if (diffX > this.maxSpeed / 2) {
-        this.speedX = this.maxSpeed;
-        // see Player.updateSpeed() for explanation of collision logic
-        const collisionObject = Entity.checkCollisionsWithObstacles(
-          this,
-          this.x + this.speedX,
-          this.y
-        );
-        if (collisionObject) {
-          this.x = collisionObject.x - this.width;
-          this.speedX = 0;
-        }
-        // enemy moving left
-      } else if (diffX < -this.maxSpeed / 2) {
-        this.speedX = -this.maxSpeed;
-        const collisionObject = Entity.checkCollisionsWithObstacles(
-          this,
-          this.x + this.speedX,
-          this.y
-        );
-        if (collisionObject) {
-          this.x = collisionObject.x + collisionObject.width;
-          this.speedX = 0;
-        }
-      } else {
-        this.speedX = 0;
-      }
+      let topCollision = false;
       // enemy moving up
       if (diffY < -this.maxSpeed / 2) {
         this.speedY = -this.maxSpeed;
+        // see Player.updateSpeed() for explanation of collision logic
         const collisionObject = Entity.checkCollisionsWithObstacles(
           this,
           this.x,
@@ -108,7 +80,7 @@ class Enemy extends Entity {
           this.y = collisionObject.y + collisionObject.height;
           this.speedY = collisionObject.speedY;
         }
-        // enemy moving down
+      // enemy moving down
       } else if (diffY > this.maxSpeed / 2) {
         this.speedY = this.maxSpeed;
         const collisionObject = Entity.checkCollisionsWithObstacles(
@@ -116,7 +88,10 @@ class Enemy extends Entity {
           this.x,
           this.y + this.speedY
         );
+        // using a flag in top-collisions to avoid teleportation bug in
+        // x-direction collision checks
         if (collisionObject) {
+          topCollision = true;
           // -1 pixel to avoid a bug in top collisions that detects an overlap
           // directly at collisionObject.y - this.height
           this.y = collisionObject.y - this.height - 1;
@@ -124,6 +99,35 @@ class Enemy extends Entity {
         }
       } else {
         this.speedY = -1;
+      }
+      // enemy moving right
+      // check if diff between player and enemy position is at least half the
+      // maxSpeed of the enemy to prevent the enemy shaking back and forth
+      if (diffX > this.maxSpeed / 2) {
+        this.speedX = this.maxSpeed;
+        const collisionObject = Entity.checkCollisionsWithObstacles(
+          this,
+          this.x + this.speedX,
+          this.y
+        );
+        if (collisionObject && !topCollision) {
+          this.x = collisionObject.x - this.width;
+          this.speedX = 0;
+        }
+      // enemy moving left
+      } else if (diffX < -this.maxSpeed / 2) {
+        this.speedX = -this.maxSpeed;
+        const collisionObject = Entity.checkCollisionsWithObstacles(
+          this,
+          this.x + this.speedX,
+          this.y
+        );
+        if (collisionObject && !topCollision) {
+          this.x = collisionObject.x + collisionObject.width;
+          this.speedX = 0;
+        }
+      } else {
+        this.speedX = 0;
       }
     }
   }
