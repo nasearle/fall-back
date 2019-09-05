@@ -77,7 +77,7 @@ class Enemy extends Entity {
           this.x + this.speedX,
           this.y
         );
-        // set just the speed and not the position to avoid teleportation bug
+        // set just the speed and not the position to avoid teleportation bug (#30)
         if (collisionObject) {
           this.speedX = 0;
         }
