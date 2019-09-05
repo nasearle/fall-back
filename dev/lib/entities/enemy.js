@@ -54,7 +54,7 @@ class Enemy extends Entity {
     if (Math.random() <= Enemy.chanceToShoot) {
       if (targetPlayer) {
         const angle = this.getAngle(targetPlayer);
-        // this.weapon.attemptShoot(angle);
+        this.weapon.attemptShoot(angle);
       }
     }
   }
