@@ -8,10 +8,11 @@ class Enemy extends Entity {
     // since it doesn't check if(player). We could just remove it, and let the
     // target player get assigned in the first update frame
     this.targetId = Player.getRandomPlayer(this.gameId).id;
-    this.x = x; //TODO: don't spawn on obstacle
-    this.y = -5; // Just beyond top of screen, TODO: should be related to sprite height
     this.width = 32;
     this.height = 32;
+    this.x = x; //TODO: don't spawn on obstacle
+    this.y = -this.height -5; // Just beyond top of screen
+
     // Keep speed low and march chance high for smoother movement?
     this.maxSpeed = 2;
     this.hp = 30;
@@ -153,9 +154,9 @@ class Enemy extends Entity {
       numEnemies < Enemy.numCap
     ) {
       const id = generateId();
-      // TODO: enemy x depends on viewport width which will vary between clients...
-      // probably just want a "map" width
-      const x = getRandomInt(0, 500);
+      // TODO: enemy x depends on viewport width which will vary between clients
+      // see issue #34
+      const x = getRandomInt(0, 1800);
       new Enemy(id, gameId, x);
     }
 

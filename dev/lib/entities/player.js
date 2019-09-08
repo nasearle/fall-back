@@ -36,8 +36,10 @@ class Player extends Entity {
           this.toRemove = true;
         } else {
           this.hp = this.hpMax;
-          this.x = Math.random() * 500; //TODO: don't spawn on obstacle
-          this.y = Math.random() * 150 + 350; // spawn in bottom part of map
+          //TODO: don't spawn on obstacle
+          // Also see issue #34 - different client sizes complicate spawning ranges
+          this.x = Math.random() * 700;
+          this.y = Math.random() * 150 + 350;
         }
       }
       if (this.weapon.ammo <= 0) {

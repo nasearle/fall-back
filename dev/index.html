@@ -3,25 +3,30 @@
 <head>
     <title>Fall Back!</title>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
 <main>
-  <canvas id="ctx" width="500" height="500" style="border: 1px solid black "></canvas>
+  <canvas id="ctx" width="500" height="500"></canvas>
 
-  <div id="stats">
-    <!-- Maybe keep, but useful for debugging now -->
-    <p>Number of enemies:
-        <strong>
-            <span id="num-enemies"><!-- dynamic --></span>
-        </strong>
-    </p>
-    <p>Score:
-      <strong>
-        <span id="player-score"><!-- dynamic --></span>
-      </strong>
-    </p>
+  <!-- Everything that isn't canvas should overlay on top of it -->
+  <div class="overlay">
+      <div id="stats">
+          <!-- Maybe keep, but useful for debugging now -->
+          <p>Number of enemies:
+              <strong>
+                  <span id="num-enemies"><!-- dynamic --></span>
+              </strong>
+          </p>
+          <p>Score:
+            <strong>
+              <span id="player-score"><!-- dynamic --></span>
+            </strong>
+          </p>
+        </div>
   </div>
+
 </main>
 
 <script src="/socket.io/socket.io.js"></script>
