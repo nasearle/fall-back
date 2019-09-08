@@ -16,17 +16,19 @@
       socket = io({ upgrade: false, transports: ["websocket"] });
 
       const CANVAS = document.querySelector('canvas#ctx');
-      const ctx = CANVAS.getContext('2d');
-      ctx.font = '30px Roboto';
-
-      function setCanvasSize() {
+      const CTX = CANVAS.getContext('2d');
+      function setCanvasDetails() {
         // Different on different browsers?
         CANVAS.width = Math.min(window.innerWidth, document.body.clientWidth);
         // Why -5? Because as we know too well, CSS is Satan
         CANVAS.height = Math.min(window.innerHeight, document.body.clientHeight) - 5;
+
+        // Canvas settings get reset on resize
+        CTX.font = '12px Roboto';
+        CTX.textAlign = 'center';
       }
-      window.onresize = setCanvasSize;
-      setCanvasSize();
+      window.onresize = setCanvasDetails;
+      setCanvasDetails();
 
       socket.on('newPlayer', playerInfo => {
         new PlayerSprite(playerInfo);
@@ -137,7 +139,7 @@
         }
         teamScoreElem.textContent = teamScore;
 
-        ctx.clearRect(0, 0, CANVAS.width, CANVAS.height);
+        CTX.clearRect(0, 0, CANVAS.width, CANVAS.height);
         for (let i in PlayerSprite.sprites) {
           const player = PlayerSprite.sprites[i];
           player.render();
