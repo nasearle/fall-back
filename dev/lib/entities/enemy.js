@@ -1,8 +1,8 @@
 class Enemy extends Entity {
-  constructor(id, gameId, x) {
+  constructor(gameId, x) {
     super();
     this.type = 'enemy';
-    this.id = id;
+    this.id = generateId();
     this.gameId = gameId;
     // TODO: this line can cause a a crash if enemy spawns when players are dead
     // since it doesn't check if(player). We could just remove it, and let the
@@ -10,7 +10,8 @@ class Enemy extends Entity {
     this.targetId = Player.getRandomPlayer(this.gameId).id;
     this.width = 32;
     this.height = 32;
-    this.x = x; //TODO: don't spawn on obstacle
+    // TODO: x depends on viewport which varies between clients, see issue #34
+    this.x = getRandomInt(0, 1800); //TODO: don't spawn on obstacle
     this.y = -this.height -5; // Just beyond top of screen
 
     // Keep speed low and march chance high for smoother movement?
@@ -153,11 +154,7 @@ class Enemy extends Entity {
       Math.random() <= game.chanceForEnemiesToGenerate &&
       numEnemies < Enemy.numCap
     ) {
-      const id = generateId();
-      // TODO: enemy x depends on viewport width which will vary between clients
-      // see issue #34
-      const x = getRandomInt(0, 1800);
-      new Enemy(id, gameId, x);
+      new Enemy(gameId);
     }
 
     // Increase enemy generation rate.
