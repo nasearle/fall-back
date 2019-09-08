@@ -20,6 +20,7 @@ class Enemy extends Entity {
     this.hpMax = 30;
     this.toRemove = false;
     this.bulletSpeedModifier = 0.4; // Want enemy bullets to be much slower
+    this.color = '#8548BF';
 
     // TODO: Could have enemy subclasses in the future
     const weaponType = getWeightedRandomItem(Enemy.chancesForWeapons);
@@ -139,6 +140,7 @@ class Enemy extends Entity {
       width: this.width,
       height: this.height,
       hp: this.hp,
+      color: this.color,
     };
   }
   getUpdatePack() {
@@ -152,7 +154,7 @@ class Enemy extends Entity {
   static updateAll(gameId) {
     // Periodically generate new enemies
     const game = GAMES[gameId];
-    const numEnemies = Object.keys(game.enemies).length; // could cache this
+    const numEnemies = numIds(game.enemies);
     if (
       Math.random() <= game.chanceForEnemiesToGenerate &&
       numEnemies < Enemy.numCap

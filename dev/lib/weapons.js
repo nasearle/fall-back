@@ -77,7 +77,7 @@ Weapon.weapons = {
         ammo: 100,
         shootFunction: Weapon.basicShoot,
         dropable: true,
-        color: 'red',
+        color: '#BF4882',
     },
     'shotgun': {
         damage: 20,
@@ -87,7 +87,7 @@ Weapon.weapons = {
         ammo: 20,
         shootFunction: Weapon.spreadShot,
         dropable: true,
-        color: 'blue',
+        color: '#7900ED',
     }
 };
 

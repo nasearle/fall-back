@@ -16,6 +16,7 @@ class Bullet extends Entity {
     this.timer = 0;
     this.damage = parent.weapon.damage;
     this.toRemove = false;
+    this.color = this.parent.color;
 
     GAMES[this.gameId].bullets[this.id] = this;
     GAMES[this.gameId].initPack.bullets.push(this.getInitPack());
@@ -74,6 +75,7 @@ class Bullet extends Entity {
       id: this.id,
       x: this.x,
       y: this.y,
+      color: this.color,
     };
   }
   getUpdatePack() {
