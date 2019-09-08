@@ -194,10 +194,12 @@ Enemy.generationGradient = 0.05 * (1 / (15 * FPS));
 // Don't want too many enemies on screen or in memory
 Enemy.numCap = 50;
 // TODO: Could use enemy subclasses in the future
-// TODO: use lower numbers in production
 Enemy.chancesForWeapons = [
   // chances should sum to 1
-  { name: 'shotgun',  chance: 0.10 },
-  { name: 'chaingun', chance: 0.10 },
-  { name: 'pistol', chance: 0.80 },
+  { name: 'shotgun',  chance: 0.05 },
+  { name: 'chaingun', chance: 0.05 },
+  { name: 'rifle', chance: 0.05 },
+  { name: 'burstshot', chance: 0.05 },
+  { name: 'flamethrower', chance: 0.05 },
+  { name: 'pistol', chance: 0.75 },
 ];
