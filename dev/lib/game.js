@@ -53,7 +53,7 @@ class Game {
       }
     }
     static findOrCreateGame() {
-        console.log('[findOrCreateGame] Current games:', GAMES);
+        console.log('[findOrCreateGame] Current games:', ids(GAMES).length);
         console.log('[findOrCreateGame] Searching for available games...');
         const maxPlayersPerGame = 4;
         const gameIds = ids(GAMES);
