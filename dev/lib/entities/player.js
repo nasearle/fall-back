@@ -22,6 +22,11 @@ class Player extends Entity {
       this.weapon = new Weapon('pistol', this);
       this.bulletSpeedModifier = 1;
 
+      // Mostly works, but sometimes there is a desync (esp. on refresh) and
+      // people can end up with the same color. TODO: make more reliable
+      const numExistingPlayers = numIds(GAMES[gameId].players);
+      this.color = Player.colors[numExistingPlayers];
+
       console.log(`[Player constructor] New player created: ${id}, adding to game: ${gameId}`);
       GAMES[gameId].players[id] = this;
     }
@@ -162,6 +167,7 @@ class Player extends Entity {
         hp: this.hp,
         hpMax: this.hpMax,
         score: this.score,
+        color: this.color,
       };
     }
     getUpdatePack() {
@@ -177,7 +183,7 @@ class Player extends Entity {
       this.weapon = new Weapon('pistol', this);
     }
     static countPlayers(gameId) {
-      return Object.keys(GAMES[gameId].players).length;
+      return numIds(GAMES[gameId].players);
     }
     static getRandomPlayer(gameId) {
       const countPlayers = Player.countPlayers(gameId);
@@ -261,5 +267,7 @@ class Player extends Entity {
       // seems like it would happen automatically
     }
   }
+//                red,       blue,      green,     orange
+Player.colors = ['#FF5733', '#16489E', '#33FF57', '#FFBD33'];
 
 /* Not using module.exports because require() is unavailable in the sandbox environment */

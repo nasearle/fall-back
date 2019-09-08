@@ -3,11 +3,8 @@ class PlayerSprite extends kontra.Sprite {
     super(config);
     this.type = "player";
     this.render = function() {
-      this.context.strokeStyle = "green";
-      this.context.strokeRect(this.x, this.y, this.width, this.height);
-      // just to see where x & y are in the rect (top left)
-      this.context.fillStyle = "black";
-      this.context.fillRect(this.x, this.y, 5, 5);
+      this.context.fillStyle = this.color;
+      this.context.fillRect(this.x, this.y, this.width, this.height);
     };
     PlayerSprite.sprites[this.id] = this;
   }
@@ -31,6 +28,7 @@ class BulletSprite extends kontra.Sprite {
     super(config);
     this.type = "bullet";
     this.render = function() {
+      this.context.fillStyle = this.color;
       this.context.fillRect(this.x, this.y, 10, 10);
     };
     BulletSprite.sprites[this.id] = this;
@@ -43,7 +41,7 @@ class ObstacleSprite extends kontra.Sprite {
     super(config);
     this.type = "obstacle";
     this.render = function() {
-      this.context.fillStyle = "grey";
+      this.context.fillStyle = this.color;
       this.context.fillRect(this.x, this.y, this.width, this.height);
     };
     ObstacleSprite.sprites[this.id] = this;

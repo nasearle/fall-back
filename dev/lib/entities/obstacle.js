@@ -10,6 +10,7 @@ class Obstacle extends Entity {
     this.height = config.height || getRandomInt(25, 150);
     this.toRemove = false;
     this.speedY = -1;
+    this.color = '#8F9EB2';
 
     GAMES[this.gameId].obstacles[this.id] = this;
     GAMES[this.gameId].initPack.obstacles.push(this.getInitPack());
@@ -27,6 +28,7 @@ class Obstacle extends Entity {
       y: this.y,
       width: this.width,
       height: this.height,
+      color: this.color,
     };
   }
   getUpdatePack() {
