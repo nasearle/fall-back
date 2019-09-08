@@ -190,7 +190,7 @@ class Player extends Entity {
       console.log(`[onConnect] Searching for available games...`);
       const game = Game.findOrCreateGame();
 
-      console.log(`[onConnect] Adding player to: ${game.id}`, game);
+      console.log(`[onConnect] Adding player to game ${game.id}`);
       const player = new Player(socket.id, game.id);
 
       socket.on('keyPress', data => {

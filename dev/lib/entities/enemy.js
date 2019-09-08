@@ -25,7 +25,6 @@ class Enemy extends Entity {
     const weaponType = getWeightedRandomItem(Enemy.chancesForWeapons);
     this.weapon = this.weapon = new Weapon(weaponType, this);
 
-    console.log(`New enemy in game ${gameId}:`, this);
     GAMES[gameId].enemies[this.id] = this;
     GAMES[gameId].initPack.enemies.push(this.getInitPack());
   }
