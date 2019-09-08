@@ -4,8 +4,8 @@ class Obstacle extends Entity {
     this.id = generateId();
     this.gameId = config.gameId;
     // TODO: x and y depend on viewport which will vary between clients, see issue #34
-    this.x = config.x || getRandomInt(0, 1800);
-    this.y = config.y || 1000; // TODO: this will need to be below the viewport
+    this.x = config.x || getRandomInt(0, MAP_WIDTH);
+    this.y = config.y || MAP_HEIGHT; // TODO: this will need to be below the viewport
     this.width = config.width || getRandomInt(25, 100);
     this.height = config.height || getRandomInt(25, 100);
     this.toRemove = false;

@@ -11,7 +11,7 @@ class Enemy extends Entity {
     this.width = 32;
     this.height = 32;
     // TODO: x depends on viewport which varies between clients, see issue #34
-    this.x = getRandomInt(0, 1800); //TODO: don't spawn on obstacle
+    this.x = getRandomInt(0, MAP_WIDTH); //TODO: don't spawn on obstacle
     this.y = -this.height -5; // Just beyond top of screen
 
     // Keep speed low and march chance high for smoother movement?
