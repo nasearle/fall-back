@@ -13,7 +13,7 @@
     "serve": "npm run build && npm start"
   },
   "watch": {
-    "serve": "dev/*"
+    "serve": "dev/**/*"
   },
   "keywords": [
     "js13kgames",

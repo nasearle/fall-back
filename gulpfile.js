@@ -14,7 +14,7 @@ const paths = {
         css: `dev/**/*.css`,
         js: `dev/**/*.js`,
         assets: `dev/assets/**`,
-        lib: `dev/lib/*`
+        lib: `dev/lib/**/*`
     },
     dist: {
         base: 'public',
