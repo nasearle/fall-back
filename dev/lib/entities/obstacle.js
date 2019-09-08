@@ -39,10 +39,10 @@ class Obstacle extends Entity {
     // Periodically generate new obstacles
 
     if (Math.random() <= Obstacle.chanceToGenerate) {
-      // TODO: obstacle x and y depend on viewport which will vary between clients...
-      // probably just want a "map" width
-      const x = getRandomInt(0, 500);
-      const y = 505; // TODO: this will need to be below the viewport
+      // TODO: obstacle x and y depend on viewport which will vary between clients
+      // see issue #34
+      const x = getRandomInt(0, 1800);
+      const y = 1000; // TODO: this will need to be below the viewport
       const height = getRandomInt(25, 100);
       const width = getRandomInt(25, 100);
       new Obstacle({

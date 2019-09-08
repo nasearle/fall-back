@@ -15,10 +15,18 @@
     function init() {
       socket = io({ upgrade: false, transports: ["websocket"] });
 
-      const ctx = document
-        .querySelector('canvas#ctx')
-        .getContext('2d');
+      const CANVAS = document.querySelector('canvas#ctx');
+      const ctx = CANVAS.getContext('2d');
       ctx.font = '30px Roboto';
+
+      function setCanvasSize() {
+        // Different on different browsers?
+        CANVAS.width = Math.min(window.innerWidth, document.body.clientWidth);
+        // Why -5? Because as we know too well, CSS is Satan
+        CANVAS.height = Math.min(window.innerHeight, document.body.clientHeight) - 5;
+      }
+      window.onresize = setCanvasSize;
+      setCanvasSize();
 
       socket.on('newPlayer', playerInfo => {
         new PlayerSprite(playerInfo);
@@ -112,7 +120,7 @@
             PlayerSprite.sprites[selfId].score;
         }
 
-        ctx.clearRect(0, 0, 500, 500);
+        ctx.clearRect(0, 0, CANVAS.width, CANVAS.height);
         for (let i in PlayerSprite.sprites) {
           const player = PlayerSprite.sprites[i];
           player.render();
