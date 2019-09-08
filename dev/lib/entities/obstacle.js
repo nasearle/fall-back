@@ -3,10 +3,11 @@ class Obstacle extends Entity {
     super();
     this.id = generateId();
     this.gameId = config.gameId;
-    this.x = config.x;
-    this.y = config.y;
-    this.width = config.width;
-    this.height = config.height;
+    // TODO: x and y depend on viewport which will vary between clients, see issue #34
+    this.x = config.x || getRandomInt(0, 1800);
+    this.y = config.y || 1000; // TODO: this will need to be below the viewport
+    this.width = config.width || getRandomInt(25, 100);
+    this.height = config.height || getRandomInt(25, 100);
     this.toRemove = false;
     this.speedY = -1;
 
@@ -39,19 +40,7 @@ class Obstacle extends Entity {
     // Periodically generate new obstacles
 
     if (Math.random() <= Obstacle.chanceToGenerate) {
-      // TODO: obstacle x and y depend on viewport which will vary between clients
-      // see issue #34
-      const x = getRandomInt(0, 1800);
-      const y = 1000; // TODO: this will need to be below the viewport
-      const height = getRandomInt(25, 100);
-      const width = getRandomInt(25, 100);
-      new Obstacle({
-        gameId: gameId,
-        x: x,
-        y: y,
-        height: height,
-        width: width
-      });
+      new Obstacle({ gameId: gameId });
     }
 
     const pack = [];
