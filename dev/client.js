@@ -16,16 +16,18 @@
       socket = io({ upgrade: false, transports: ["websocket"] });
 
       const CANVAS = document.querySelector('canvas#ctx');
-      const ctx = CANVAS.getContext('2d');
-      ctx.font = '30px Roboto';
-
-      function setCanvasSize() {
+      const CTX = CANVAS.getContext('2d');
+      function setCanvasDetails() {
         // Different on different browsers?
         CANVAS.width = Math.min(window.innerWidth, document.body.clientWidth);
         CANVAS.height = Math.min(window.innerHeight, document.body.clientHeight);
+
+        // Canvas settings get reset on resize
+        CTX.font = '12px Roboto';
+        CTX.textAlign = 'center';
       }
-      window.onresize = setCanvasSize;
-      setCanvasSize();
+      window.onresize = setCanvasDetails;
+      setCanvasDetails();
 
       /* Full screen capability */
       document.fullscreenElement = document.fullscreenElement    ||

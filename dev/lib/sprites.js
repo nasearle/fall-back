@@ -67,6 +67,13 @@ class ItemSprite extends kontra.Sprite {
     this.render = function() {
       this.context.fillStyle = this.color;
       this.context.fillRect(this.x, this.y, this.width, this.height);
+
+      // Label
+      const offsetX = this.width / 2; // Text is center aligned @ item center
+      const offsetY = -5;
+      const labelX = this.x + offsetX;
+      const labelY = this.y + offsetY;
+      this.context.fillText(this.name, labelX, labelY);
     };
     ItemSprite.sprites[this.id] = this;
   }
