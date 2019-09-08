@@ -906,1402 +906,1402 @@ function GameLoop({fps = 60, clearCanvas = true, update, render} = {}) {
   return loop;
 }
 
-/**
- * A minimalistic keyboard API. You can use it move the main sprite or respond to a key press.
- *
- * ```js
- * import { initKeys, keyPressed } from 'kontra';
- *
- * // this function must be called first before keyboard
- * // functions will work
- * initKeys();
- *
- * function update() {
- *   if (keyPressed('left')) {
- *     // move left
- *   }
- * }
- * ```
- * @sectionName Keyboard
- */
-
-/**
- * Below is a list of keys that are provided by default. If you need to extend this list, you can use the [keyMap](#keyMap) property.
- *
- * - a-z
- * - 0-9
- * - enter, esc, space, left, up, right, down
- * @sectionName Available Keys
- */
-
-let callbacks$1 = {};
-let pressedKeys = {};
-
-/**
- * A map of keycodes to key names. Add to this object to expand the list of [available keys](#available-keys).
- *
- * ```js
- * import { keyMap, bindKeys } from 'kontra';
- *
- * keyMap[34] = 'pageDown';
- *
- * bindKeys('pageDown', function(e) {
- *   // handle pageDown key
- * });
- * ```
- * @property {Object} keyMap
- */
-let keyMap = {
-  // named keys
-  13: 'enter',
-  27: 'esc',
-  32: 'space',
-  37: 'left',
-  38: 'up',
-  39: 'right',
-  40: 'down'
-};
-
-/**
- * Execute a function that corresponds to a keyboard key.
- *
- * @param {KeyboardEvent} evt
- */
-function keydownEventHandler(evt) {
-  let key = keyMap[evt.which];
-  pressedKeys[key] = true;
-
-  if (callbacks$1[key]) {
-    callbacks$1[key](evt);
-  }
-}
-
-/**
- * Set the released key to not being pressed.
- *
- * @param {KeyboardEvent} evt
- */
-function keyupEventHandler(evt) {
-  pressedKeys[ keyMap[evt.which] ] = false;
-}
-
-/**
- * Reset pressed keys.
- */
-function blurEventHandler() {
-  pressedKeys = {};
-}
-
-/**
- * Initialize keyboard event listeners. This function must be called before using other keyboard functions.
- * @function initKeys
- */
-function initKeys() {
-  let i;
-
-  // alpha keys
-  // @see https://stackoverflow.com/a/43095772/2124254
-  for (i = 0; i < 26; i++) {
-    // rollupjs considers this a side-effect (for now), so we'll do it in the
-    // initKeys function
-    // @see https://twitter.com/lukastaegert/status/1107011988515893249?s=20
-    keyMap[65+i] = (10 + i).toString(36);
-  }
-
-  // numeric keys
-  for (i = 0; i < 10; i++) {
-    keyMap[48+i] = ''+i;
-  }
-
-  window.addEventListener('keydown', keydownEventHandler);
-  window.addEventListener('keyup', keyupEventHandler);
-  window.addEventListener('blur', blurEventHandler);
-}
-
-/**
- * Bind a set of keys that will call the callback function when they are pressed. Takes a single key or an array of keys. Is passed the original KeyboardEvent as a parameter.
- *
- * ```js
- * import { initKeys, bindKeys } from 'kontra';
- *
- * initKeys();
- *
- * bindKeys('p', function(e) {
- *   // pause the game
- * });
- * bindKeys(['enter', 'space'], function(e) {
- *   e.preventDefault();
- *   // fire gun
- * });
- * ```
- * @function bindKeys
- *
- * @param {String|String[]} keys - Key or keys to bind.
- */
-function bindKeys(keys, callback) {
-  // smaller than doing `Array.isArray(keys) ? keys : [keys]`
-  [].concat(keys).map(key => callbacks$1[key] = callback);
-}
-
-/**
- * Remove the callback function for a bound set of keys. Takes a single key or an array of keys.
- *
- * ```js
- * import { unbindKeys } from 'kontra';
- *
- * unbindKeys('left');
- * unbindKeys(['enter', 'space']);
- * ```
- * @function unbindKeys
- *
- * @param {String|String[]} keys - Key or keys to unbind.
- */
-function unbindKeys(keys) {
-  // 0 is the smallest falsy value
-  [].concat(keys).map(key => callbacks$1[key] = 0);
-}
-
-/**
- * Check if a key is currently pressed. Use during an `update()` function to perform actions each frame.
- *
- * ```js
- * import { Sprite, initKeys, keyPressed } from 'kontra';
- *
- * initKeys();
- *
- * let sprite = Sprite({
- *   update: function() {
- *     if (keyPressed('left')){
- *       // left arrow pressed
- *     }
- *     else if (keyPressed('right')) {
- *       // right arrow pressed
- *     }
- *
- *     if (keyPressed('up')) {
- *       // up arrow pressed
- *     }
- *     else if (keyPressed('down')) {
- *       // down arrow pressed
- *     }
- *   }
- * });
- * ```
- * @function keyPressed
- *
- * @param {String} key - Key to check for pressed state.
- *
- * @returns {Boolean} `true` if the key is pressed, `false` otherwise.
- */
-function keyPressed(key) {
-  return !!pressedKeys[key];
-}
-
-/**
- * A plugin system based on the [interceptor pattern](https://en.wikipedia.org/wiki/Interceptor_pattern), designed to share reusable code such as more advance collision detection or a 2D physics engine.
- *
- * ```js
- * import { registerPlugin, Sprite } from 'kontra';
- * import loggingPlugin from 'path/to/plugin/code.js'
- *
- * // register a plugin that adds logging to all Sprites
- * registerPlugin(Sprite, loggingPlugin);
- * ```
- * @sectionName Plugin
- */
-
-/**
- * @docs docs/api_docs/plugin.js
- */
-
-/**
- * Get the kontra object method name from the plugin.
- *
- * @param {String} methodName - Before/After function name
- *
- * @returns {String}
- */
-function getMethod(methodName) {
-  let methodTitle = methodName.substr( methodName.search(/[A-Z]/) );
-  return methodTitle[0].toLowerCase() + methodTitle.substr(1);
-}
-
-/**
- * Remove an interceptor.
- *
- * @param {function[]} interceptors - Before/After interceptor list
- * @param {function} fn - Interceptor function
- */
-function removeInterceptor(interceptors, fn) {
-  let index = interceptors.indexOf(fn);
-  if (index !== -1) {
-    interceptors.splice(index, 1);
-  }
-}
-
-/**
- * Register a plugin to run a set of functions before or after the Kontra object functions.
- * @function registerPlugin
- *
- * @param {Object} kontraObj - Kontra object to attach the plugin to.
- * @param {Object} pluginObj - Plugin object with before and after intercept functions.
- */
-function registerPlugin(kontraObj, pluginObj) {
-  let objectProto = kontraObj.prototype;
-
-  if (!objectProto) return;
-
-  // create interceptor list and functions
-  if (!objectProto._inc) {
-    objectProto._inc = {};
-    objectProto._bInc = function beforePlugins(context, method, ...args) {
-      return this._inc[method].before.reduce((acc, fn) => {
-        let newArgs = fn(context, ...acc);
-        return newArgs ? newArgs : acc;
-      }, args);
-    };
-    objectProto._aInc = function afterPlugins(context, method, result, ...args) {
-      return this._inc[method].after.reduce((acc, fn) => {
-        let newResult = fn(context, acc, ...args);
-        return newResult ? newResult : acc;
-      }, result);
-    };
-  }
-
-  // add plugin to interceptors
-  Object.getOwnPropertyNames(pluginObj).forEach(methodName => {
-    let method = getMethod(methodName);
-
-    if (!objectProto[method]) return;
-
-    // override original method
-    if (!objectProto['_o' + method]) {
-      objectProto['_o' + method] = objectProto[method];
-
-      objectProto[method] = function interceptedFn(...args) {
-
-        // call before interceptors
-        let alteredArgs = this._bInc(this, method, ...args);
-
-        let result = objectProto['_o' + method].call(this, ...alteredArgs);
-
-        // call after interceptors
-        return this._aInc(this, method, result, ...args);
-      };
-    }
-
-    // create interceptors for the method
-    if (!objectProto._inc[method]) {
-      objectProto._inc[method] = {
-        before: [],
-        after: []
-      };
-    }
-
-    if (methodName.startsWith('before')) {
-      objectProto._inc[method].before.push(pluginObj[methodName]);
-    }
-    else if (methodName.startsWith('after')) {
-      objectProto._inc[method].after.push(pluginObj[methodName]);
-    }
-  });
-}
-
-/**
- * Unregister a plugin from a Kontra object.
- * @function unregisterPlugin
- *
- * @param {Object} kontraObj - Kontra object to detach plugin from.
- * @param {Object} pluginObj - The plugin object that was passed during registration.
- */
-function unregisterPlugin(kontraObj, pluginObj) {
-  let objectProto = kontraObj.prototype;
-
-  if (!objectProto || !objectProto._inc) return;
-
-  // remove plugin from interceptors
-  Object.getOwnPropertyNames(pluginObj).forEach(methodName => {
-    let method = getMethod(methodName);
-
-    if (methodName.startsWith('before')) {
-      removeInterceptor(objectProto._inc[method].before, pluginObj[methodName]);
-    }
-    else if (methodName.startsWith('after')) {
-      removeInterceptor(objectProto._inc[method].after, pluginObj[methodName]);
-    }
-  });
-}
-
-/**
- * Safely extend the functionality of a Kontra object. Any properties that already exist on the Kontra object will not be added.
- *
- * ```js
- * import { extendObject, Vector } from 'kontra';
- *
- * // add a subtract function to all Vectors
- * extendObject(Vector, {
- *   subtract(vec) {
- *     return Vector(this.x - vec.x, this.y - vec.y);
- *   }
- * });
- * ```
- * @function extendObject
- *
- * @param {Object} kontraObj - Kontra object to extend
- * @param {Object} properties - Properties to add.
- */
-function extendObject(kontraObj, properties) {
-  let objectProto = kontraObj.prototype;
-
-  if (!objectProto) return;
-
-  Object.getOwnPropertyNames(properties).forEach(prop => {
-    if (!objectProto[prop]) {
-      objectProto[prop] = properties[prop];
-    }
-  });
-}
-
-/**
- * A simple pointer API. You can use it move the main sprite or respond to a pointer event. Works with both mouse and touch events.
- *
- * Pointer events can be added on a global level or on individual sprites or objects. Before an object can receive pointer events, you must tell the pointer which objects to track and the object must haven been rendered to the canvas using `object.render()`.
- *
- * After an object is tracked and rendered, you can assign it an `onDown()`, `onUp()`, or `onOver()` functions which will be called whenever a pointer down, up, or over event happens on the object.
- *
- * ```js
- * import { initPointer, track, Sprite } from 'kontra';
- *
- * // this function must be called first before pointer
- * // functions will work
- * initPointer();
- *
- * let sprite = Sprite({
- *   onDown: function() {
- *     // handle on down events on the sprite
- *   },
- *   onUp: function() {
- *     // handle on up events on the sprite
- *   },
- *   onOver: function() {
- *     // handle on over events on the sprite
- *   }
- * });
- *
- * track(sprite);
- * sprite.render();
- * ```
- *
- * By default, the pointer is treated as a circle and will check for collisions against objects assuming they are rectangular (have a width and height property).
- *
- * If you need to perform a different type of collision detection, assign the object a `collidesWithPointer()` function and it will be called instead. The function is passed the pointer object. Use this function to determine how the pointer circle should collide with the object.
- *
- * ```js
- * import { Sprite } from 'kontra';
-
- * let sprite = Srite({
- *   x: 10,
- *   y: 10,
- *   radius: 10
- *   collidesWithPointer: function(pointer) {
- *     // perform a circle v circle collision test
- *     let dx = pointer.x - this.x;
- *     let dy = pointer.y - this.y;
- *     return Math.sqrt(dx * dx + dy * dy) < this.radius;
- *   }
- * });
- * ```
- * @sectionName Pointer
- */
-
-// save each object as they are rendered to determine which object
-// is on top when multiple objects are the target of an event.
-// we'll always use the last frame's object order so we know
-// the finalized order of all objects, otherwise an object could ask
-// if it's being hovered when it's rendered first even if other objects
-// would block it later in the render order
-let thisFrameRenderOrder = [];
-let lastFrameRenderOrder = [];
-
-let callbacks$2 = {};
-let trackedObjects = [];
-let pressedButtons = {};
-
-/**
- * Below is a list of buttons that you can use.
- *
- * - left, middle, right
- * @sectionName Available Buttons
- */
-let buttonMap = {
-  0: 'left',
-  1: 'middle',
-  2: 'right'
-};
-
-/**
- * Object containing the `radius` and current `x` and `y` position of the pointer relative to the top-left corner of the canvas.
- *
- * ```js
- * import { initPointer, pointer } from 'kontra';
- *
- * initPointer();
- *
- * console.log(pointer);  //=> { x: 100, y: 200, radius: 5 };
- * ```
- * @property {Object} pointer
- */
-let pointer = {
-  x: 0,
-  y: 0,
-  radius: 5  // arbitrary size
-};
-
-/**
- * Detection collision between a rectangle and a circlevt.
- * @see https://yal.cc/rectangle-circle-intersection-test/
- *
- * @param {Object} object - Object to check collision against.
- */
-function circleRectCollision(object) {
-  let x = object.x;
-  let y = object.y;
-  if (object.anchor) {
-    x -= object.width * object.anchor.x;
-    y -= object.height * object.anchor.y;
-  }
-
-  let dx = pointer.x - Math.max(x, Math.min(pointer.x, x + object.width));
-  let dy = pointer.y - Math.max(y, Math.min(pointer.y, y + object.height));
-  return (dx * dx + dy * dy) < (pointer.radius * pointer.radius);
-}
-
-/**
- * Get the first on top object that the pointer collides with.
- *
- * @returns {Object} First object to collide with the pointer.
- */
-function getCurrentObject() {
-
-  // if pointer events are required on the very first frame or without a game
-  // loop, use the current frame order array
-  let frameOrder = (lastFrameRenderOrder.length ? lastFrameRenderOrder : thisFrameRenderOrder);
-  let length = frameOrder.length - 1;
-  let object, collides;
-
-  for (let i = length; i >= 0; i--) {
-    object = frameOrder[i];
-
-    if (object.collidesWithPointer) {
-      collides = object.collidesWithPointer(pointer);
-    }
-    else {
-      collides = circleRectCollision(object);
-    }
-
-    if (collides) {
-      return object;
-    }
-  }
-}
-
-/**
- * Execute the onDown callback for an object.
- *
- * @param {MouseEvent|TouchEvent} evt
- */
-function pointerDownHandler(evt) {
-
-  // touchstart should be treated like a left mouse button
-  let button = evt.button !== undefined ? buttonMap[evt.button] : 'left';
-  pressedButtons[button] = true;
-  pointerHandler(evt, 'onDown');
-}
-
-/**
- * Execute the onUp callback for an object.
- *
- * @param {MouseEvent|TouchEvent} evt
- */
-function pointerUpHandler(evt) {
-  let button = evt.button !== undefined ? buttonMap[evt.button] : 'left';
-  pressedButtons[button] = false;
-  pointerHandler(evt, 'onUp');
-}
-
-/**
- * Track the position of the mousevt.
- *
- * @param {MouseEvent|TouchEvent} evt
- */
-function mouseMoveHandler(evt) {
-  pointerHandler(evt, 'onOver');
-}
-
-/**
- * Reset pressed buttons.
- */
-function blurEventHandler$1() {
-  pressedButtons = {};
-}
-
-/**
- * Find the first object for the event and execute it's callback function
- *
- * @param {MouseEvent|TouchEvent} evt
- * @param {string} eventName - Which event was called.
- */
-function pointerHandler(evt, eventName) {
-  let canvas = getCanvas();
-
-  if (!canvas) return;
-
-  let clientX, clientY;
-
-  if (['touchstart', 'touchmove', 'touchend'].indexOf(evt.type) !== -1) {
-    clientX = (evt.touches[0] || evt.changedTouches[0]).clientX;
-    clientY = (evt.touches[0] || evt.changedTouches[0]).clientY;
-  } else {
-    clientX = evt.clientX;
-    clientY = evt.clientY;
-  }
-
-  let ratio = canvas.height / canvas.offsetHeight;
-  let rect = canvas.getBoundingClientRect();
-  let x = (clientX - rect.left) * ratio;
-  let y = (clientY - rect.top) * ratio;
-
-  pointer.x = x;
-  pointer.y = y;
-
-  evt.preventDefault();
-  let object = getCurrentObject();
-  if (object && object[eventName]) {
-    object[eventName](evt);
-  }
-
-  if (callbacks$2[eventName]) {
-    callbacks$2[eventName](evt, object);
-  }
-}
-
-/**
- * Initialize pointer event listeners. This function must be called before using other pointer functions.
- * @function initPointer
- */
-function initPointer() {
-  let canvas = getCanvas();
-
-  canvas.addEventListener('mousedown', pointerDownHandler);
-  canvas.addEventListener('touchstart', pointerDownHandler);
-  canvas.addEventListener('mouseup', pointerUpHandler);
-  canvas.addEventListener('touchend', pointerUpHandler);
-  canvas.addEventListener('blur', blurEventHandler$1);
-  canvas.addEventListener('mousemove', mouseMoveHandler);
-  canvas.addEventListener('touchmove', mouseMoveHandler);
-
-  // reset object render order on every new frame
-  on('tick', () => {
-    lastFrameRenderOrder.length = 0;
-
-    thisFrameRenderOrder.map(object => {
-      lastFrameRenderOrder.push(object);
-    });
-
-    thisFrameRenderOrder.length = 0;
-  });
-}
-
-/**
- * Begin tracking pointer events for a set of objects. Takes a single object or an array of objects.
- *
- * ```js
- * import { initPointer, track } from 'kontra';
- *
- * initPointer();
- *
- * track(obj);
- * track([obj1, obj2]);
- * ```
- * @function track
- *
- * @param {Object|Object[]} objects - Objects to track.
- */
-function track(objects) {
-  [].concat(objects).map(object => {
-
-    // override the objects render function to keep track of render order
-    if (!object._r) {
-      object._r = object.render;
-
-      object.render = function() {
-        thisFrameRenderOrder.push(this);
-        this._r();
-      };
-
-      trackedObjects.push(object);
-    }
-  });
-}
-
-/**
-* Remove the callback function for a bound set of objects.
- *
- * ```js
- * import { untrack } from 'kontra';
- *
- * untrack(obj);
- * untrack([obj1, obj2]);
- * ```
- * @function untrack
- *
- * @param {Object|Object[]} objects - Object or objects to stop tracking.
- */
-function untrack(objects) {
-  [].concat(objects).map(object => {
-
-    // restore original render function to no longer track render order
-    object.render = object._r;
-    object._r = 0;  // 0 is the shortest falsy value
-
-    let index = trackedObjects.indexOf(object);
-    if (index !== -1) {
-      trackedObjects.splice(index, 1);
-    }
-  });
-}
-
-/**
- * Check to see if the pointer is currently over the object. Since multiple objects may be rendered on top of one another, only the top most object under the pointer will return true.
- *
- * ```js
- * import { initPointer, track, pointer, pointerOver, Sprite } from 'kontra';
- *
- * initPointer();
- *
- * let sprite1 = Sprite({
- *   x: 10,
- *   y: 10,
- *   width: 10,
- *   height: 10
- * });
- * let sprite2 = Sprite({
- *   x: 15,
- *   y: 10,
- *   width: 10,
- *   height: 10
- * });
- *
- * track([sprite1, sprite2]);
- *
- * sprite1.render();
- * sprite2.render();
- *
- * pointer.x = 14;
- * pointer.y = 15;
- *
- * console.log(pointerOver(sprite1));  //=> false
- * console.log(pointerOver(sprite2));  //=> true
- * ```
- * @function pointerOver
- *
- * @param {Object} object - The object to check if the pointer is over.
- *
- * @returns {Boolean} `true` if the pointer is currently over the object, `false` otherwise.
- */
-function pointerOver(object) {
-  if (!trackedObjects.includes(object)) return false;
-
-  return getCurrentObject() === object;
-}
-
-/**
- * Register a function to be called on all pointer down events. Is passed the original Event and the target object (if there is one).
- *
- * ```js
- * import { initPointer, onPointerDown } from 'kontra';
- *
- * initPointer();
- *
- * onPointerDown(function(e, object) {
- *   // handle pointer down
- * })
- * ```
- * @function onPointerDown
- *
- * @param {Function} callback - Function to call on pointer down.
- */
-function onPointerDown(callback) {
-  callbacks$2.onDown = callback;
-}
-
-/**
-* Register a function to be called on all pointer up events. Is passed the original Event and the target object (if there is one).
- *
- * ```js
- * import { initPointer, onPointerUp } from 'kontra';
- *
- * initPointer();
- *
- * onPointerUp(function(e, object) {
- *   // handle pointer up
- * })
- * ```
- * @function onPointerUp
- *
- * @param {Function} callback - Function to call on pointer up.
- */
-function onPointerUp(callback) {
-  callbacks$2.onUp = callback;
-}
-
-/**
- * Check if a button is currently pressed. Use during an `update()` function to perform actions each frame.
- *
- * ```js
- * import { initPointer, pointerPressed } from 'kontra';
- *
- * initPointer();
- *
- * Sprite({
- *   update: function() {
- *     if (pointerPressed('left')){
- *       // left mouse button pressed
- *     }
- *     else if (pointerPressed('right')) {
- *       // right mouse button pressed
- *     }
- *   }
- * });
- * ```
- * @function pointerPressed
- *
- * @param {String} button - Button to check for pressed state.
- *
- * @returns {Boolean} `true` if the button is pressed, `false` otherwise.
- */
-function pointerPressed(button) {
-  return !!pressedButtons[button]
-}
-
-/**
- * A fast and memory efficient [object pool](https://gameprogrammingpatterns.com/object-pool.html) for sprite reuse. Perfect for particle systems or SHUMPs. The pool starts out with just one object, but will grow in size to accommodate as many objects as are needed.
- *
- * <canvas width="600" height="200" id="pool-example"></canvas>
- * <script src="assets/js/pool.js"></script>
- * @class Pool
- *
- * @param {Object} properties - Properties of the pool.
- * @param {Function} properties.create - Function that returns a new object to be added to the pool when there are no more alive objects.
- * @param {Number} [properties.maxSize=1024] - The maximum number of objects allowed in the pool. The pool will never grow beyond this size.
- */
-class Pool {
-  /**
-   * @docs docs/api_docs/pool.js
-   */
-
-  constructor({create, maxSize = 1024} = {}) {
-
-    // check for the correct structure of the objects added to pools so we know that the
-    // rest of the pool code will work without errors
-    // @if DEBUG
-    let obj;
-    if (!create ||
-        ( !( obj = create() ) ||
-          !( obj.update && obj.init &&
-             obj.isAlive )
-       )) {
-      throw Error('Must provide create() function which returns an object with init(), update(), and isAlive() functions');
-    }
-    // @endif
-
-    // c = create, i = inUse
-    this._c = create;
-    this._i = 0;
-
-    /**
-     * All objects currently in the pool, both alive and not alive.
-     * @memberof Pool
-     * @property {Object[]} objects
-     */
-    this.objects = [create()]; // start the pool with an object
-
-    /**
-     * The number of alive objects.
-     * @memberof Pool
-     * @property {Number} size
-     */
-    this.size = 1;
-
-    /**
-     * The maximum number of objects allowed in the pool. The pool will never grow beyond this size.
-     * @memberof Pool
-     * @property {Number} maxSize
-     */
-    this.maxSize = maxSize;
-  }
-
-  /**
-   * Get and return an object from the pool. The properties parameter will be passed directly to the objects `init()` function. If you're using a kontra.Sprite, you should also pass the `ttl` property to designate how many frames you want the object to be alive for.
-   *
-   * If you want to control when the sprite is ready for reuse, pass `Infinity` for `ttl`. You'll need to set the sprites `ttl` to `0` when you're ready for the sprite to be reused.
-   *
-   * ```js
-   * // exclude-tablist
-   * let sprite = pool.get({
-   *   // the object will get these properties and values
-   *   x: 100,
-   *   y: 200,
-   *   width: 20,
-   *   height: 40,
-   *   color: 'red',
-   *
-   *   // pass Infinity for ttl to prevent the object from being reused
-   *   // until you set it back to 0
-   *   ttl: Infinity
-   * });
-   * ```
-   * @memberof Pool
-   * @function get
-   *
-   * @param {Object} properties - Properties to pass to the objects `init()` function.
-   *
-   * @returns {Object} The newly initialized object.
-   */
-  get(properties = {}) {
-    // the pool is out of objects if the first object is in use and it can't grow
-    if (this.objects.length == this._i) {
-      if (this.size === this.maxSize) {
-        return;
-      }
-      // double the size of the array by filling it with twice as many objects
-      else {
-        for (let x = 0; x < this.size && this.objects.length < this.maxSize; x++) {
-          this.objects.unshift(this._c());
-        }
-
-        this.size = this.objects.length;
-      }
-    }
-
-    // save off first object in pool to reassign to last object after unshift
-    let obj = this.objects.shift();
-    obj.init(properties);
-    this.objects.push(obj);
-    this._i++;
-    return obj
-  }
-
-  /**
-   * Returns an array of all alive objects. Useful if you need to do special processing on all alive objects outside of the pool, such as add all alive objects to a kontra.Quadtree.
-   * @memberof Pool
-   * @function getAliveObjects
-   *
-   * @returns {Object[]} An Array of all alive objects.
-   */
-  getAliveObjects() {
-    return this.objects.slice(this.objects.length - this._i);
-  }
-
-  /**
-   * Clear the object pool. Removes all objects from the pool and resets its [size](#size) to 1.
-   * @memberof Pool
-   * @function clear
-   */
-  clear() {
-    this._i = this.objects.length = 0;
-    this.size = 1;
-    this.objects.push(this._c());
-  }
-
-  /**
-   * Update all alive objects in the pool by calling the objects `update()` function. This function also manages when each object should be recycled, so it is recommended that you do not call the objects `update()` function outside of this function.
-   * @memberof Pool
-   * @function update
-   *
-   * @param {Number} [dt] - Time since last update.
-   */
-  update(dt) {
-    let i = this.size - 1;
-    let obj;
-
-    // If the user kills an object outside of the update cycle, the pool won't know of
-    // the change until the next update and this._i won't be decremented. If the user then
-    // gets an object when this._i is the same size as objects.length, this._i will increment
-    // and this statement will evaluate to -1.
-    //
-    // I don't like having to go through the pool to kill an object as it forces you to
-    // know which object came from which pool. Instead, we'll just prevent the index from
-    // going below 0 and accept the fact that this._i may be out of sync for a frame.
-    let index = Math.max(this.objects.length - this._i, 0);
-
-    // only iterate over the objects that are alive
-    while (i >= index) {
-      obj = this.objects[i];
-
-      obj.update(dt);
-
-      // if the object is dead, move it to the front of the pool
-      if (!obj.isAlive()) {
-        this.objects = this.objects.splice(i, 1).concat(this.objects);
-        this._i--;
-        index++;
-      }
-      else {
-        i--;
-      }
-    }
-  }
-
-  /**
-   * Render all alive objects in the pool by calling the objects `render()` function.
-   * @memberof Pool
-   * @function render
-   */
-  render() {
-    let index = Math.max(this.objects.length - this._i, 0);
-
-    for (let i = this.size - 1; i >= index; i--) {
-      this.objects[i].render();
-    }
-  }
-}
-
-
-function poolFactory(properties) {
-  return new Pool(properties);
-}
-poolFactory.prototype = Pool.prototype;
-poolFactory.class = Pool;
-
-/**
- * Determine which subnodes the object intersects with
- *
- * @param {Object} object - Object to check.
- * @param {Object} bounds - Bounds of the quadtree.
- *
- * @returns {Number[]} List of all subnodes object intersects.
- */
-function getIndices(object, bounds) {
-  let indices = [];
-
-  let verticalMidpoint = bounds.x + bounds.width / 2;
-  let horizontalMidpoint = bounds.y + bounds.height / 2;
-
-  // save off quadrant checks for reuse
-  let intersectsTopQuadrants = object.y < horizontalMidpoint && object.y + object.height >= bounds.y;
-  let intersectsBottomQuadrants = object.y + object.height >= horizontalMidpoint && object.y < bounds.y + bounds.height;
-
-  // object intersects with the left quadrants
-  if (object.x < verticalMidpoint && object.x + object.width >= bounds.x) {
-    if (intersectsTopQuadrants) {  // top left
-      indices.push(0);
-    }
-
-    if (intersectsBottomQuadrants) {  // bottom left
-      indices.push(2);
-    }
-  }
-
-  // object intersects with the right quadrants
-  if (object.x + object.width >= verticalMidpoint && object.x < bounds.x + bounds.width) {  // top right
-    if (intersectsTopQuadrants) {
-      indices.push(1);
-    }
-
-    if (intersectsBottomQuadrants) {  // bottom right
-      indices.push(3);
-    }
-  }
-
-  return indices;
-}
-
-/*
-The quadtree acts like an object pool in that it will create subnodes as objects are needed but it won't clean up the subnodes when it collapses to avoid garbage collection.
-
-The quadrant indices are numbered as follows (following a z-order curve):
-     |
-  0  |  1
- ----+----
-  2  |  3
-     |
-*/
-
-
-/**
- * A 2D [spatial partitioning](https://gameprogrammingpatterns.com/spatial-partition.html) data structure. Use it to quickly group objects by their position for faster access and collision checking.
- *
- * <canvas width="600" height="200" id="quadtree-example"></canvas>
- * <script src="assets/js/quadtree.js"></script>
- * @class Quadtree
- *
- * @param {Object} properties - Properties of the quadtree.
- * @param {Number} [properties.maxDepth=3] - Maximum node depth of the quadtree.
- * @param {Number} [properties.maxObjects=25] - Maximum number of objects a node can have before splitting.
- * @param {Object} [properties.bounds] - The 2D space (x, y, width, height) the quadtree occupies. Defaults to the entire canvas width and height.
- */
-class Quadtree {
-  /**
-   * @docs docs/api_docs/quadtree.js
-   */
-
-  constructor({maxDepth = 3, maxObjects = 25, bounds} = {}) {
-
-    /**
-     * Maximum node depth of the quadtree.
-     * @memberof Quadtree
-     * @property {Number} maxDepth
-     */
-    this.maxDepth = maxDepth;
-
-    /**
-     * Maximum number of objects a node can have before splitting.
-     * @memberof Quadtree
-     * @property {Number} maxObjects
-     */
-    this.maxObjects = maxObjects;
-
-    /**
-     * The 2D space (x, y, width, height) the quadtree occupies.
-     * @memberof Quadtree
-     * @property {Object} bounds
-     */
-    let canvas = getCanvas();
-    this.bounds = bounds || {
-      x: 0,
-      y: 0,
-      width: canvas.width,
-      height: canvas.height
-    };
-
-    // since we won't clean up any subnodes, we need to keep track of which nodes are
-    // currently the leaf node so we know which nodes to add objects to
-    // b = branch, d = depth, o = objects, s = subnodes, p = parent
-    this._b = false;
-    this._d = 0;
-    this._o = [];
-    this._s = [];
-    this._p = null;
-  }
-
-  /**
-   * Removes all objects from the quadtree. You should clear the quadtree every frame before adding all objects back into it.
-   * @memberof Quadtree
-   * @function clear
-   */
-  clear() {
-    this._s.map(function(subnode) {
-      subnode.clear();
-    });
-
-    this._b = false;
-    this._o.length = 0;
-  }
-
-  /**
-   * Get an array of all objects that belong to the same node as the passed in object.
-   *
-   * **Note:** if the passed in object is also part of the quadtree, it will not be returned in the results.
-   *
-   * ```js
-   * import { Sprite, Quadtree } from 'kontra';
-   *
-   * let quadtree = Quadtree();
-   * let player = Sprite({
-   *   // ...
-   * });
-   * let enemy1 = Sprite({
-   *   // ...
-   * });
-   * let enemy2 = Sprite({
-   *   // ...
-   * });
-   *
-   * quadtree.add(player, enemy1, enemy2);
-   * quadtree.get(player);  //=> [enemy1]
-   * ```
-   * @memberof Quadtree
-   * @function get
-   *
-   * @param {Object} object - Object to use for finding other objects. The object must have the properties `x`, `y`, `width`, and `height` so that its position in the quadtree can be calculated.
-   *
-   * @returns {Object[]} A list of objects in the same node as the object, not including the object itself.
-   */
-  get(object) {
-    // since an object can belong to multiple nodes we should not add it multiple times
-    let objects = new Set();
-    let indices, i;
-
-    // traverse the tree until we get to a leaf node
-    while (this._s.length && this._b) {
-      indices = getIndices(object, this.bounds);
-
-      for (i = 0; i < indices.length; i++) {
-        this._s[ indices[i] ].get(object).forEach(obj => objects.add(obj));
-      }
-
-      return Array.from(objects);
-    }
-
-    // don't add the object to the return list
-    return this._o.filter(obj => obj !== object);
-  }
-
-  /**
-   * Add objects to the quadtree and group them by their position. Can take a single object, a list of objects, and an array of objects.
-   *
-   * ```js
-   * import { Quadtree, Sprite, Pool, GameLoop } from 'kontra';
-   *
-   * let quadtree = Quadtree();
-   * let bulletPool = Pool({
-   *   create: Sprite
-   * });
-   *
-   * let player = Sprite({
-   *   // ...
-   * });
-   * let enemy = Sprite({
-   *   // ...
-   * });
-   *
-   * // create some bullets
-   * for (let i = 0; i < 100; i++) {
-   *   bulletPool.get({
-   *     // ...
-   *   });
-   * }
-   *
-   * let loop = GameLoop({
-   *   update: function() {
-   *     quadtree.clear();
-   *     quadtree.add(player, enemy, bulletPool.getAliveObjects());
-   *   }
-   * });
-   * ```
-   * @memberof Quadtree
-   * @function add
-   *
-   * @param {Object|Object[]} objectsN - Objects to add to the quadtree.
-   */
-  add() {
-    let i, j, object, obj;
-
-    for (j = 0; j < arguments.length; j++) {
-      object = arguments[j];
-
-      // add a group of objects separately
-      if (Array.isArray(object)) {
-        this.add.apply(this, object);
-
-        continue;
-      }
-
-      // current node has subnodes, so we need to add this object into a subnode
-      if (this._b) {
-        this._a(object);
-
-        continue;
-      }
-
-      // this node is a leaf node so add the object to it
-      this._o.push(object);
-
-      // split the node if there are too many objects
-      if (this._o.length > this.maxObjects && this._d < this.maxDepth) {
-        this._sp();
-
-        // move all objects to their corresponding subnodes
-        for (i = 0; (obj = this._o[i]); i++) {
-          this._a(obj);
-        }
-
-        this._o.length = 0;
-      }
-    }
-  }
-
-  /**
-   * Add an object to a subnode.
-   *
-   * @param {Object} object - Object to add into a subnode
-   */
-  // @see https://github.com/jed/140bytes/wiki/Byte-saving-techniques#use-placeholder-arguments-instead-of-var
-  _a(object, indices, i) {
-    indices = getIndices(object, this.bounds);
-
-    // add the object to all subnodes it intersects
-    for (i = 0; i < indices.length; i++) {
-      this._s[ indices[i] ].add(object);
-    }
-  }
-
-  /**
-   * Split the node into four subnodes.
-   */
-  // @see https://github.com/jed/140bytes/wiki/Byte-saving-techniques#use-placeholder-arguments-instead-of-var
-  _sp(subWidth, subHeight, i) {
-    this._b = true;
-
-    // only split if we haven't split before
-    if (this._s.length) {
-      return;
-    }
-
-    subWidth = this.bounds.width / 2 | 0;
-    subHeight = this.bounds.height / 2 | 0;
-
-    for (i = 0; i < 4; i++) {
-      this._s[i] = quadtreeFactory({
-        bounds: {
-          x: this.bounds.x + (i % 2 === 1 ? subWidth : 0),  // nodes 1 and 3
-          y: this.bounds.y + (i >= 2 ? subHeight : 0),      // nodes 2 and 3
-          width: subWidth,
-          height: subHeight
-        },
-        maxDepth: this.maxDepth,
-        maxObjects: this.maxObjects,
-      });
-
-      // d = depth, p = parent
-      this._s[i]._d = this._d+1;
-      /* @if VISUAL_DEBUG */
-      this._s[i]._p = this;
-      /* @endif */
-    }
-  }
-
-  /**
-   * Draw the quadtree. Useful for visual debugging.
-   */
-   /* @if VISUAL_DEBUG **
-   render() {
-     // don't draw empty leaf nodes, always draw branch nodes and the first node
-     if (this._o.length || this._d === 0 ||
-         (this._p && this._p._b)) {
-
-       context.strokeStyle = 'red';
-       context.strokeRect(this.bounds.x, this.bounds.y, this.bounds.width, this.bounds.height);
-
-       if (this._s.length) {
-         for (let i = 0; i < 4; i++) {
-           this._s[i].render();
-         }
-       }
-     }
-   }
-   /* @endif */
-}
-
-function quadtreeFactory(properties) {
-  return new Quadtree(properties);
-}
-quadtreeFactory.prototype = Quadtree.prototype;
-quadtreeFactory.class = Quadtree;
-
-/**
- * A simple 2d vector object.
- *
- * ```js
- * import { Vector } from 'kontra';
- *
- * let vector = Vector(100, 200);
- * ```
- * @class Vector
- *
- * @param {Number} [x=0] - X coordinate of the vector.
- * @param {Number} [y=0] - Y coordinate of the vector.
- */
-class Vector {
-  constructor(x, y) {
-    this._x = x || 0;
-    this._y = y || 0;
-  }
-
-  /**
-   * Return a new Vector whose value is the addition of the current Vector and the passed in Vector. If `dt` is provided, the result is multiplied by the value.
-   * @memberof Vector
-   * @function add
-   *
-   * @param {kontra.Vector} vector - Vector to add to the current Vector.
-   * @param {Number} [dt=1] - Time since last update.
-   *
-   * @returns {kontra.Vector} A new kontra.Vector instance.
-   */
-  add(vec, dt) {
-    return vectorFactory(
-      this.x + (vec.x || 0) * (dt || 1),
-      this.y + (vec.y || 0) * (dt || 1)
-    );
-  }
-
-  /**
-   * Clamp the Vector between two points, preventing `x` and `y` from going below or above the minimum and maximum values. Perfect for keeping a sprite from going outside the game boundaries.
-   *
-   * ```js
-   * import { Vector } from 'kontra';
-   *
-   * let vector = Vector(100, 200);
-   * vector.clamp(0, 0, 200, 300);
-   *
-   * vector.x += 200;
-   * console.log(vector.x);  //=> 200
-   *
-   * vector.y -= 300;
-   * console.log(vector.y);  //=> 0
-   *
-   * vector.add({x: -500, y: 500});
-   * console.log(vector);    //=> {x: 0, y: 300}
-   * ```
-   * @memberof Vector
-   * @function clamp
-   *
-   * @param {Number} xMin - Minimum x value.
-   * @param {Number} yMin - Minimum y value.
-   * @param {Number} xMax - Maximum x value.
-   * @param {Number} yMax - Maximum y value.
-   */
-  clamp(xMin, yMin, xMax, yMax) {
-    this._c = true;
-    this._a = xMin;
-    this._b = yMin;
-    this._d = xMax;
-    this._e = yMax;
-  }
-
-  /**
-   * X coordinate of the vector.
-   * @memberof Vector
-   * @property {Number} x
-   */
-  get x() {
-    return this._x;
-  }
-
-  /**
-   * Y coordinate of the vector.
-   * @memberof Vector
-   * @property {Number} y
-   */
-  get y() {
-    return this._y;
-  }
-
-  set x(value) {
-    this._x = (this._c ? Math.min( Math.max(this._a, value), this._d ) : value);
-  }
-
-  set y(value) {
-    this._y = (this._c ? Math.min( Math.max(this._b, value), this._e ) : value);
-  }
-}
-
-function vectorFactory(x, y) {
-  return new Vector(x, y);
-}
-vectorFactory.prototype = Vector.prototype;
-vectorFactory.class = Vector;
+// /**
+//  * A minimalistic keyboard API. You can use it move the main sprite or respond to a key press.
+//  *
+//  * ```js
+//  * import { initKeys, keyPressed } from 'kontra';
+//  *
+//  * // this function must be called first before keyboard
+//  * // functions will work
+//  * initKeys();
+//  *
+//  * function update() {
+//  *   if (keyPressed('left')) {
+//  *     // move left
+//  *   }
+//  * }
+//  * ```
+//  * @sectionName Keyboard
+//  */
+
+// /**
+//  * Below is a list of keys that are provided by default. If you need to extend this list, you can use the [keyMap](#keyMap) property.
+//  *
+//  * - a-z
+//  * - 0-9
+//  * - enter, esc, space, left, up, right, down
+//  * @sectionName Available Keys
+//  */
+
+// let callbacks$1 = {};
+// let pressedKeys = {};
+
+// /**
+//  * A map of keycodes to key names. Add to this object to expand the list of [available keys](#available-keys).
+//  *
+//  * ```js
+//  * import { keyMap, bindKeys } from 'kontra';
+//  *
+//  * keyMap[34] = 'pageDown';
+//  *
+//  * bindKeys('pageDown', function(e) {
+//  *   // handle pageDown key
+//  * });
+//  * ```
+//  * @property {Object} keyMap
+//  */
+// let keyMap = {
+//   // named keys
+//   13: 'enter',
+//   27: 'esc',
+//   32: 'space',
+//   37: 'left',
+//   38: 'up',
+//   39: 'right',
+//   40: 'down'
+// };
+
+// /**
+//  * Execute a function that corresponds to a keyboard key.
+//  *
+//  * @param {KeyboardEvent} evt
+//  */
+// function keydownEventHandler(evt) {
+//   let key = keyMap[evt.which];
+//   pressedKeys[key] = true;
+
+//   if (callbacks$1[key]) {
+//     callbacks$1[key](evt);
+//   }
+// }
+
+// /**
+//  * Set the released key to not being pressed.
+//  *
+//  * @param {KeyboardEvent} evt
+//  */
+// function keyupEventHandler(evt) {
+//   pressedKeys[ keyMap[evt.which] ] = false;
+// }
+
+// /**
+//  * Reset pressed keys.
+//  */
+// function blurEventHandler() {
+//   pressedKeys = {};
+// }
+
+// /**
+//  * Initialize keyboard event listeners. This function must be called before using other keyboard functions.
+//  * @function initKeys
+//  */
+// function initKeys() {
+//   let i;
+
+//   // alpha keys
+//   // @see https://stackoverflow.com/a/43095772/2124254
+//   for (i = 0; i < 26; i++) {
+//     // rollupjs considers this a side-effect (for now), so we'll do it in the
+//     // initKeys function
+//     // @see https://twitter.com/lukastaegert/status/1107011988515893249?s=20
+//     keyMap[65+i] = (10 + i).toString(36);
+//   }
+
+//   // numeric keys
+//   for (i = 0; i < 10; i++) {
+//     keyMap[48+i] = ''+i;
+//   }
+
+//   window.addEventListener('keydown', keydownEventHandler);
+//   window.addEventListener('keyup', keyupEventHandler);
+//   window.addEventListener('blur', blurEventHandler);
+// }
+
+// /**
+//  * Bind a set of keys that will call the callback function when they are pressed. Takes a single key or an array of keys. Is passed the original KeyboardEvent as a parameter.
+//  *
+//  * ```js
+//  * import { initKeys, bindKeys } from 'kontra';
+//  *
+//  * initKeys();
+//  *
+//  * bindKeys('p', function(e) {
+//  *   // pause the game
+//  * });
+//  * bindKeys(['enter', 'space'], function(e) {
+//  *   e.preventDefault();
+//  *   // fire gun
+//  * });
+//  * ```
+//  * @function bindKeys
+//  *
+//  * @param {String|String[]} keys - Key or keys to bind.
+//  */
+// function bindKeys(keys, callback) {
+//   // smaller than doing `Array.isArray(keys) ? keys : [keys]`
+//   [].concat(keys).map(key => callbacks$1[key] = callback);
+// }
+
+// /**
+//  * Remove the callback function for a bound set of keys. Takes a single key or an array of keys.
+//  *
+//  * ```js
+//  * import { unbindKeys } from 'kontra';
+//  *
+//  * unbindKeys('left');
+//  * unbindKeys(['enter', 'space']);
+//  * ```
+//  * @function unbindKeys
+//  *
+//  * @param {String|String[]} keys - Key or keys to unbind.
+//  */
+// function unbindKeys(keys) {
+//   // 0 is the smallest falsy value
+//   [].concat(keys).map(key => callbacks$1[key] = 0);
+// }
+
+// /**
+//  * Check if a key is currently pressed. Use during an `update()` function to perform actions each frame.
+//  *
+//  * ```js
+//  * import { Sprite, initKeys, keyPressed } from 'kontra';
+//  *
+//  * initKeys();
+//  *
+//  * let sprite = Sprite({
+//  *   update: function() {
+//  *     if (keyPressed('left')){
+//  *       // left arrow pressed
+//  *     }
+//  *     else if (keyPressed('right')) {
+//  *       // right arrow pressed
+//  *     }
+//  *
+//  *     if (keyPressed('up')) {
+//  *       // up arrow pressed
+//  *     }
+//  *     else if (keyPressed('down')) {
+//  *       // down arrow pressed
+//  *     }
+//  *   }
+//  * });
+//  * ```
+//  * @function keyPressed
+//  *
+//  * @param {String} key - Key to check for pressed state.
+//  *
+//  * @returns {Boolean} `true` if the key is pressed, `false` otherwise.
+//  */
+// function keyPressed(key) {
+//   return !!pressedKeys[key];
+// }
+
+// /**
+//  * A plugin system based on the [interceptor pattern](https://en.wikipedia.org/wiki/Interceptor_pattern), designed to share reusable code such as more advance collision detection or a 2D physics engine.
+//  *
+//  * ```js
+//  * import { registerPlugin, Sprite } from 'kontra';
+//  * import loggingPlugin from 'path/to/plugin/code.js'
+//  *
+//  * // register a plugin that adds logging to all Sprites
+//  * registerPlugin(Sprite, loggingPlugin);
+//  * ```
+//  * @sectionName Plugin
+//  */
+
+// /**
+//  * @docs docs/api_docs/plugin.js
+//  */
+
+// /**
+//  * Get the kontra object method name from the plugin.
+//  *
+//  * @param {String} methodName - Before/After function name
+//  *
+//  * @returns {String}
+//  */
+// function getMethod(methodName) {
+//   let methodTitle = methodName.substr( methodName.search(/[A-Z]/) );
+//   return methodTitle[0].toLowerCase() + methodTitle.substr(1);
+// }
+
+// /**
+//  * Remove an interceptor.
+//  *
+//  * @param {function[]} interceptors - Before/After interceptor list
+//  * @param {function} fn - Interceptor function
+//  */
+// function removeInterceptor(interceptors, fn) {
+//   let index = interceptors.indexOf(fn);
+//   if (index !== -1) {
+//     interceptors.splice(index, 1);
+//   }
+// }
+
+// /**
+//  * Register a plugin to run a set of functions before or after the Kontra object functions.
+//  * @function registerPlugin
+//  *
+//  * @param {Object} kontraObj - Kontra object to attach the plugin to.
+//  * @param {Object} pluginObj - Plugin object with before and after intercept functions.
+//  */
+// function registerPlugin(kontraObj, pluginObj) {
+//   let objectProto = kontraObj.prototype;
+
+//   if (!objectProto) return;
+
+//   // create interceptor list and functions
+//   if (!objectProto._inc) {
+//     objectProto._inc = {};
+//     objectProto._bInc = function beforePlugins(context, method, ...args) {
+//       return this._inc[method].before.reduce((acc, fn) => {
+//         let newArgs = fn(context, ...acc);
+//         return newArgs ? newArgs : acc;
+//       }, args);
+//     };
+//     objectProto._aInc = function afterPlugins(context, method, result, ...args) {
+//       return this._inc[method].after.reduce((acc, fn) => {
+//         let newResult = fn(context, acc, ...args);
+//         return newResult ? newResult : acc;
+//       }, result);
+//     };
+//   }
+
+//   // add plugin to interceptors
+//   Object.getOwnPropertyNames(pluginObj).forEach(methodName => {
+//     let method = getMethod(methodName);
+
+//     if (!objectProto[method]) return;
+
+//     // override original method
+//     if (!objectProto['_o' + method]) {
+//       objectProto['_o' + method] = objectProto[method];
+
+//       objectProto[method] = function interceptedFn(...args) {
+
+//         // call before interceptors
+//         let alteredArgs = this._bInc(this, method, ...args);
+
+//         let result = objectProto['_o' + method].call(this, ...alteredArgs);
+
+//         // call after interceptors
+//         return this._aInc(this, method, result, ...args);
+//       };
+//     }
+
+//     // create interceptors for the method
+//     if (!objectProto._inc[method]) {
+//       objectProto._inc[method] = {
+//         before: [],
+//         after: []
+//       };
+//     }
+
+//     if (methodName.startsWith('before')) {
+//       objectProto._inc[method].before.push(pluginObj[methodName]);
+//     }
+//     else if (methodName.startsWith('after')) {
+//       objectProto._inc[method].after.push(pluginObj[methodName]);
+//     }
+//   });
+// }
+
+// /**
+//  * Unregister a plugin from a Kontra object.
+//  * @function unregisterPlugin
+//  *
+//  * @param {Object} kontraObj - Kontra object to detach plugin from.
+//  * @param {Object} pluginObj - The plugin object that was passed during registration.
+//  */
+// function unregisterPlugin(kontraObj, pluginObj) {
+//   let objectProto = kontraObj.prototype;
+
+//   if (!objectProto || !objectProto._inc) return;
+
+//   // remove plugin from interceptors
+//   Object.getOwnPropertyNames(pluginObj).forEach(methodName => {
+//     let method = getMethod(methodName);
+
+//     if (methodName.startsWith('before')) {
+//       removeInterceptor(objectProto._inc[method].before, pluginObj[methodName]);
+//     }
+//     else if (methodName.startsWith('after')) {
+//       removeInterceptor(objectProto._inc[method].after, pluginObj[methodName]);
+//     }
+//   });
+// }
+
+// /**
+//  * Safely extend the functionality of a Kontra object. Any properties that already exist on the Kontra object will not be added.
+//  *
+//  * ```js
+//  * import { extendObject, Vector } from 'kontra';
+//  *
+//  * // add a subtract function to all Vectors
+//  * extendObject(Vector, {
+//  *   subtract(vec) {
+//  *     return Vector(this.x - vec.x, this.y - vec.y);
+//  *   }
+//  * });
+//  * ```
+//  * @function extendObject
+//  *
+//  * @param {Object} kontraObj - Kontra object to extend
+//  * @param {Object} properties - Properties to add.
+//  */
+// function extendObject(kontraObj, properties) {
+//   let objectProto = kontraObj.prototype;
+
+//   if (!objectProto) return;
+
+//   Object.getOwnPropertyNames(properties).forEach(prop => {
+//     if (!objectProto[prop]) {
+//       objectProto[prop] = properties[prop];
+//     }
+//   });
+// }
+
+// /**
+//  * A simple pointer API. You can use it move the main sprite or respond to a pointer event. Works with both mouse and touch events.
+//  *
+//  * Pointer events can be added on a global level or on individual sprites or objects. Before an object can receive pointer events, you must tell the pointer which objects to track and the object must haven been rendered to the canvas using `object.render()`.
+//  *
+//  * After an object is tracked and rendered, you can assign it an `onDown()`, `onUp()`, or `onOver()` functions which will be called whenever a pointer down, up, or over event happens on the object.
+//  *
+//  * ```js
+//  * import { initPointer, track, Sprite } from 'kontra';
+//  *
+//  * // this function must be called first before pointer
+//  * // functions will work
+//  * initPointer();
+//  *
+//  * let sprite = Sprite({
+//  *   onDown: function() {
+//  *     // handle on down events on the sprite
+//  *   },
+//  *   onUp: function() {
+//  *     // handle on up events on the sprite
+//  *   },
+//  *   onOver: function() {
+//  *     // handle on over events on the sprite
+//  *   }
+//  * });
+//  *
+//  * track(sprite);
+//  * sprite.render();
+//  * ```
+//  *
+//  * By default, the pointer is treated as a circle and will check for collisions against objects assuming they are rectangular (have a width and height property).
+//  *
+//  * If you need to perform a different type of collision detection, assign the object a `collidesWithPointer()` function and it will be called instead. The function is passed the pointer object. Use this function to determine how the pointer circle should collide with the object.
+//  *
+//  * ```js
+//  * import { Sprite } from 'kontra';
+
+//  * let sprite = Srite({
+//  *   x: 10,
+//  *   y: 10,
+//  *   radius: 10
+//  *   collidesWithPointer: function(pointer) {
+//  *     // perform a circle v circle collision test
+//  *     let dx = pointer.x - this.x;
+//  *     let dy = pointer.y - this.y;
+//  *     return Math.sqrt(dx * dx + dy * dy) < this.radius;
+//  *   }
+//  * });
+//  * ```
+//  * @sectionName Pointer
+//  */
+
+// // save each object as they are rendered to determine which object
+// // is on top when multiple objects are the target of an event.
+// // we'll always use the last frame's object order so we know
+// // the finalized order of all objects, otherwise an object could ask
+// // if it's being hovered when it's rendered first even if other objects
+// // would block it later in the render order
+// let thisFrameRenderOrder = [];
+// let lastFrameRenderOrder = [];
+
+// let callbacks$2 = {};
+// let trackedObjects = [];
+// let pressedButtons = {};
+
+// /**
+//  * Below is a list of buttons that you can use.
+//  *
+//  * - left, middle, right
+//  * @sectionName Available Buttons
+//  */
+// let buttonMap = {
+//   0: 'left',
+//   1: 'middle',
+//   2: 'right'
+// };
+
+// /**
+//  * Object containing the `radius` and current `x` and `y` position of the pointer relative to the top-left corner of the canvas.
+//  *
+//  * ```js
+//  * import { initPointer, pointer } from 'kontra';
+//  *
+//  * initPointer();
+//  *
+//  * console.log(pointer);  //=> { x: 100, y: 200, radius: 5 };
+//  * ```
+//  * @property {Object} pointer
+//  */
+// let pointer = {
+//   x: 0,
+//   y: 0,
+//   radius: 5  // arbitrary size
+// };
+
+// /**
+//  * Detection collision between a rectangle and a circlevt.
+//  * @see https://yal.cc/rectangle-circle-intersection-test/
+//  *
+//  * @param {Object} object - Object to check collision against.
+//  */
+// function circleRectCollision(object) {
+//   let x = object.x;
+//   let y = object.y;
+//   if (object.anchor) {
+//     x -= object.width * object.anchor.x;
+//     y -= object.height * object.anchor.y;
+//   }
+
+//   let dx = pointer.x - Math.max(x, Math.min(pointer.x, x + object.width));
+//   let dy = pointer.y - Math.max(y, Math.min(pointer.y, y + object.height));
+//   return (dx * dx + dy * dy) < (pointer.radius * pointer.radius);
+// }
+
+// /**
+//  * Get the first on top object that the pointer collides with.
+//  *
+//  * @returns {Object} First object to collide with the pointer.
+//  */
+// function getCurrentObject() {
+
+//   // if pointer events are required on the very first frame or without a game
+//   // loop, use the current frame order array
+//   let frameOrder = (lastFrameRenderOrder.length ? lastFrameRenderOrder : thisFrameRenderOrder);
+//   let length = frameOrder.length - 1;
+//   let object, collides;
+
+//   for (let i = length; i >= 0; i--) {
+//     object = frameOrder[i];
+
+//     if (object.collidesWithPointer) {
+//       collides = object.collidesWithPointer(pointer);
+//     }
+//     else {
+//       collides = circleRectCollision(object);
+//     }
+
+//     if (collides) {
+//       return object;
+//     }
+//   }
+// }
+
+// /**
+//  * Execute the onDown callback for an object.
+//  *
+//  * @param {MouseEvent|TouchEvent} evt
+//  */
+// function pointerDownHandler(evt) {
+
+//   // touchstart should be treated like a left mouse button
+//   let button = evt.button !== undefined ? buttonMap[evt.button] : 'left';
+//   pressedButtons[button] = true;
+//   pointerHandler(evt, 'onDown');
+// }
+
+// /**
+//  * Execute the onUp callback for an object.
+//  *
+//  * @param {MouseEvent|TouchEvent} evt
+//  */
+// function pointerUpHandler(evt) {
+//   let button = evt.button !== undefined ? buttonMap[evt.button] : 'left';
+//   pressedButtons[button] = false;
+//   pointerHandler(evt, 'onUp');
+// }
+
+// /**
+//  * Track the position of the mousevt.
+//  *
+//  * @param {MouseEvent|TouchEvent} evt
+//  */
+// function mouseMoveHandler(evt) {
+//   pointerHandler(evt, 'onOver');
+// }
+
+// /**
+//  * Reset pressed buttons.
+//  */
+// function blurEventHandler$1() {
+//   pressedButtons = {};
+// }
+
+// /**
+//  * Find the first object for the event and execute it's callback function
+//  *
+//  * @param {MouseEvent|TouchEvent} evt
+//  * @param {string} eventName - Which event was called.
+//  */
+// function pointerHandler(evt, eventName) {
+//   let canvas = getCanvas();
+
+//   if (!canvas) return;
+
+//   let clientX, clientY;
+
+//   if (['touchstart', 'touchmove', 'touchend'].indexOf(evt.type) !== -1) {
+//     clientX = (evt.touches[0] || evt.changedTouches[0]).clientX;
+//     clientY = (evt.touches[0] || evt.changedTouches[0]).clientY;
+//   } else {
+//     clientX = evt.clientX;
+//     clientY = evt.clientY;
+//   }
+
+//   let ratio = canvas.height / canvas.offsetHeight;
+//   let rect = canvas.getBoundingClientRect();
+//   let x = (clientX - rect.left) * ratio;
+//   let y = (clientY - rect.top) * ratio;
+
+//   pointer.x = x;
+//   pointer.y = y;
+
+//   evt.preventDefault();
+//   let object = getCurrentObject();
+//   if (object && object[eventName]) {
+//     object[eventName](evt);
+//   }
+
+//   if (callbacks$2[eventName]) {
+//     callbacks$2[eventName](evt, object);
+//   }
+// }
+
+// /**
+//  * Initialize pointer event listeners. This function must be called before using other pointer functions.
+//  * @function initPointer
+//  */
+// function initPointer() {
+//   let canvas = getCanvas();
+
+//   canvas.addEventListener('mousedown', pointerDownHandler);
+//   canvas.addEventListener('touchstart', pointerDownHandler);
+//   canvas.addEventListener('mouseup', pointerUpHandler);
+//   canvas.addEventListener('touchend', pointerUpHandler);
+//   canvas.addEventListener('blur', blurEventHandler$1);
+//   canvas.addEventListener('mousemove', mouseMoveHandler);
+//   canvas.addEventListener('touchmove', mouseMoveHandler);
+
+//   // reset object render order on every new frame
+//   on('tick', () => {
+//     lastFrameRenderOrder.length = 0;
+
+//     thisFrameRenderOrder.map(object => {
+//       lastFrameRenderOrder.push(object);
+//     });
+
+//     thisFrameRenderOrder.length = 0;
+//   });
+// }
+
+// /**
+//  * Begin tracking pointer events for a set of objects. Takes a single object or an array of objects.
+//  *
+//  * ```js
+//  * import { initPointer, track } from 'kontra';
+//  *
+//  * initPointer();
+//  *
+//  * track(obj);
+//  * track([obj1, obj2]);
+//  * ```
+//  * @function track
+//  *
+//  * @param {Object|Object[]} objects - Objects to track.
+//  */
+// function track(objects) {
+//   [].concat(objects).map(object => {
+
+//     // override the objects render function to keep track of render order
+//     if (!object._r) {
+//       object._r = object.render;
+
+//       object.render = function() {
+//         thisFrameRenderOrder.push(this);
+//         this._r();
+//       };
+
+//       trackedObjects.push(object);
+//     }
+//   });
+// }
+
+// /**
+// * Remove the callback function for a bound set of objects.
+//  *
+//  * ```js
+//  * import { untrack } from 'kontra';
+//  *
+//  * untrack(obj);
+//  * untrack([obj1, obj2]);
+//  * ```
+//  * @function untrack
+//  *
+//  * @param {Object|Object[]} objects - Object or objects to stop tracking.
+//  */
+// function untrack(objects) {
+//   [].concat(objects).map(object => {
+
+//     // restore original render function to no longer track render order
+//     object.render = object._r;
+//     object._r = 0;  // 0 is the shortest falsy value
+
+//     let index = trackedObjects.indexOf(object);
+//     if (index !== -1) {
+//       trackedObjects.splice(index, 1);
+//     }
+//   });
+// }
+
+// /**
+//  * Check to see if the pointer is currently over the object. Since multiple objects may be rendered on top of one another, only the top most object under the pointer will return true.
+//  *
+//  * ```js
+//  * import { initPointer, track, pointer, pointerOver, Sprite } from 'kontra';
+//  *
+//  * initPointer();
+//  *
+//  * let sprite1 = Sprite({
+//  *   x: 10,
+//  *   y: 10,
+//  *   width: 10,
+//  *   height: 10
+//  * });
+//  * let sprite2 = Sprite({
+//  *   x: 15,
+//  *   y: 10,
+//  *   width: 10,
+//  *   height: 10
+//  * });
+//  *
+//  * track([sprite1, sprite2]);
+//  *
+//  * sprite1.render();
+//  * sprite2.render();
+//  *
+//  * pointer.x = 14;
+//  * pointer.y = 15;
+//  *
+//  * console.log(pointerOver(sprite1));  //=> false
+//  * console.log(pointerOver(sprite2));  //=> true
+//  * ```
+//  * @function pointerOver
+//  *
+//  * @param {Object} object - The object to check if the pointer is over.
+//  *
+//  * @returns {Boolean} `true` if the pointer is currently over the object, `false` otherwise.
+//  */
+// function pointerOver(object) {
+//   if (!trackedObjects.includes(object)) return false;
+
+//   return getCurrentObject() === object;
+// }
+
+// /**
+//  * Register a function to be called on all pointer down events. Is passed the original Event and the target object (if there is one).
+//  *
+//  * ```js
+//  * import { initPointer, onPointerDown } from 'kontra';
+//  *
+//  * initPointer();
+//  *
+//  * onPointerDown(function(e, object) {
+//  *   // handle pointer down
+//  * })
+//  * ```
+//  * @function onPointerDown
+//  *
+//  * @param {Function} callback - Function to call on pointer down.
+//  */
+// function onPointerDown(callback) {
+//   callbacks$2.onDown = callback;
+// }
+
+// /**
+// * Register a function to be called on all pointer up events. Is passed the original Event and the target object (if there is one).
+//  *
+//  * ```js
+//  * import { initPointer, onPointerUp } from 'kontra';
+//  *
+//  * initPointer();
+//  *
+//  * onPointerUp(function(e, object) {
+//  *   // handle pointer up
+//  * })
+//  * ```
+//  * @function onPointerUp
+//  *
+//  * @param {Function} callback - Function to call on pointer up.
+//  */
+// function onPointerUp(callback) {
+//   callbacks$2.onUp = callback;
+// }
+
+// /**
+//  * Check if a button is currently pressed. Use during an `update()` function to perform actions each frame.
+//  *
+//  * ```js
+//  * import { initPointer, pointerPressed } from 'kontra';
+//  *
+//  * initPointer();
+//  *
+//  * Sprite({
+//  *   update: function() {
+//  *     if (pointerPressed('left')){
+//  *       // left mouse button pressed
+//  *     }
+//  *     else if (pointerPressed('right')) {
+//  *       // right mouse button pressed
+//  *     }
+//  *   }
+//  * });
+//  * ```
+//  * @function pointerPressed
+//  *
+//  * @param {String} button - Button to check for pressed state.
+//  *
+//  * @returns {Boolean} `true` if the button is pressed, `false` otherwise.
+//  */
+// function pointerPressed(button) {
+//   return !!pressedButtons[button]
+// }
+
+// /**
+//  * A fast and memory efficient [object pool](https://gameprogrammingpatterns.com/object-pool.html) for sprite reuse. Perfect for particle systems or SHUMPs. The pool starts out with just one object, but will grow in size to accommodate as many objects as are needed.
+//  *
+//  * <canvas width="600" height="200" id="pool-example"></canvas>
+//  * <script src="assets/js/pool.js"></script>
+//  * @class Pool
+//  *
+//  * @param {Object} properties - Properties of the pool.
+//  * @param {Function} properties.create - Function that returns a new object to be added to the pool when there are no more alive objects.
+//  * @param {Number} [properties.maxSize=1024] - The maximum number of objects allowed in the pool. The pool will never grow beyond this size.
+//  */
+// class Pool {
+//   /**
+//    * @docs docs/api_docs/pool.js
+//    */
+
+//   constructor({create, maxSize = 1024} = {}) {
+
+//     // check for the correct structure of the objects added to pools so we know that the
+//     // rest of the pool code will work without errors
+//     // @if DEBUG
+//     let obj;
+//     if (!create ||
+//         ( !( obj = create() ) ||
+//           !( obj.update && obj.init &&
+//              obj.isAlive )
+//        )) {
+//       throw Error('Must provide create() function which returns an object with init(), update(), and isAlive() functions');
+//     }
+//     // @endif
+
+//     // c = create, i = inUse
+//     this._c = create;
+//     this._i = 0;
+
+//     /**
+//      * All objects currently in the pool, both alive and not alive.
+//      * @memberof Pool
+//      * @property {Object[]} objects
+//      */
+//     this.objects = [create()]; // start the pool with an object
+
+//     /**
+//      * The number of alive objects.
+//      * @memberof Pool
+//      * @property {Number} size
+//      */
+//     this.size = 1;
+
+//     /**
+//      * The maximum number of objects allowed in the pool. The pool will never grow beyond this size.
+//      * @memberof Pool
+//      * @property {Number} maxSize
+//      */
+//     this.maxSize = maxSize;
+//   }
+
+//   /**
+//    * Get and return an object from the pool. The properties parameter will be passed directly to the objects `init()` function. If you're using a kontra.Sprite, you should also pass the `ttl` property to designate how many frames you want the object to be alive for.
+//    *
+//    * If you want to control when the sprite is ready for reuse, pass `Infinity` for `ttl`. You'll need to set the sprites `ttl` to `0` when you're ready for the sprite to be reused.
+//    *
+//    * ```js
+//    * // exclude-tablist
+//    * let sprite = pool.get({
+//    *   // the object will get these properties and values
+//    *   x: 100,
+//    *   y: 200,
+//    *   width: 20,
+//    *   height: 40,
+//    *   color: 'red',
+//    *
+//    *   // pass Infinity for ttl to prevent the object from being reused
+//    *   // until you set it back to 0
+//    *   ttl: Infinity
+//    * });
+//    * ```
+//    * @memberof Pool
+//    * @function get
+//    *
+//    * @param {Object} properties - Properties to pass to the objects `init()` function.
+//    *
+//    * @returns {Object} The newly initialized object.
+//    */
+//   get(properties = {}) {
+//     // the pool is out of objects if the first object is in use and it can't grow
+//     if (this.objects.length == this._i) {
+//       if (this.size === this.maxSize) {
+//         return;
+//       }
+//       // double the size of the array by filling it with twice as many objects
+//       else {
+//         for (let x = 0; x < this.size && this.objects.length < this.maxSize; x++) {
+//           this.objects.unshift(this._c());
+//         }
+
+//         this.size = this.objects.length;
+//       }
+//     }
+
+//     // save off first object in pool to reassign to last object after unshift
+//     let obj = this.objects.shift();
+//     obj.init(properties);
+//     this.objects.push(obj);
+//     this._i++;
+//     return obj
+//   }
+
+//   /**
+//    * Returns an array of all alive objects. Useful if you need to do special processing on all alive objects outside of the pool, such as add all alive objects to a kontra.Quadtree.
+//    * @memberof Pool
+//    * @function getAliveObjects
+//    *
+//    * @returns {Object[]} An Array of all alive objects.
+//    */
+//   getAliveObjects() {
+//     return this.objects.slice(this.objects.length - this._i);
+//   }
+
+//   /**
+//    * Clear the object pool. Removes all objects from the pool and resets its [size](#size) to 1.
+//    * @memberof Pool
+//    * @function clear
+//    */
+//   clear() {
+//     this._i = this.objects.length = 0;
+//     this.size = 1;
+//     this.objects.push(this._c());
+//   }
+
+//   /**
+//    * Update all alive objects in the pool by calling the objects `update()` function. This function also manages when each object should be recycled, so it is recommended that you do not call the objects `update()` function outside of this function.
+//    * @memberof Pool
+//    * @function update
+//    *
+//    * @param {Number} [dt] - Time since last update.
+//    */
+//   update(dt) {
+//     let i = this.size - 1;
+//     let obj;
+
+//     // If the user kills an object outside of the update cycle, the pool won't know of
+//     // the change until the next update and this._i won't be decremented. If the user then
+//     // gets an object when this._i is the same size as objects.length, this._i will increment
+//     // and this statement will evaluate to -1.
+//     //
+//     // I don't like having to go through the pool to kill an object as it forces you to
+//     // know which object came from which pool. Instead, we'll just prevent the index from
+//     // going below 0 and accept the fact that this._i may be out of sync for a frame.
+//     let index = Math.max(this.objects.length - this._i, 0);
+
+//     // only iterate over the objects that are alive
+//     while (i >= index) {
+//       obj = this.objects[i];
+
+//       obj.update(dt);
+
+//       // if the object is dead, move it to the front of the pool
+//       if (!obj.isAlive()) {
+//         this.objects = this.objects.splice(i, 1).concat(this.objects);
+//         this._i--;
+//         index++;
+//       }
+//       else {
+//         i--;
+//       }
+//     }
+//   }
+
+//   /**
+//    * Render all alive objects in the pool by calling the objects `render()` function.
+//    * @memberof Pool
+//    * @function render
+//    */
+//   render() {
+//     let index = Math.max(this.objects.length - this._i, 0);
+
+//     for (let i = this.size - 1; i >= index; i--) {
+//       this.objects[i].render();
+//     }
+//   }
+// }
+
+
+// function poolFactory(properties) {
+//   return new Pool(properties);
+// }
+// poolFactory.prototype = Pool.prototype;
+// poolFactory.class = Pool;
+
+// /**
+//  * Determine which subnodes the object intersects with
+//  *
+//  * @param {Object} object - Object to check.
+//  * @param {Object} bounds - Bounds of the quadtree.
+//  *
+//  * @returns {Number[]} List of all subnodes object intersects.
+//  */
+// function getIndices(object, bounds) {
+//   let indices = [];
+
+//   let verticalMidpoint = bounds.x + bounds.width / 2;
+//   let horizontalMidpoint = bounds.y + bounds.height / 2;
+
+//   // save off quadrant checks for reuse
+//   let intersectsTopQuadrants = object.y < horizontalMidpoint && object.y + object.height >= bounds.y;
+//   let intersectsBottomQuadrants = object.y + object.height >= horizontalMidpoint && object.y < bounds.y + bounds.height;
+
+//   // object intersects with the left quadrants
+//   if (object.x < verticalMidpoint && object.x + object.width >= bounds.x) {
+//     if (intersectsTopQuadrants) {  // top left
+//       indices.push(0);
+//     }
+
+//     if (intersectsBottomQuadrants) {  // bottom left
+//       indices.push(2);
+//     }
+//   }
+
+//   // object intersects with the right quadrants
+//   if (object.x + object.width >= verticalMidpoint && object.x < bounds.x + bounds.width) {  // top right
+//     if (intersectsTopQuadrants) {
+//       indices.push(1);
+//     }
+
+//     if (intersectsBottomQuadrants) {  // bottom right
+//       indices.push(3);
+//     }
+//   }
+
+//   return indices;
+// }
+
+// /*
+// The quadtree acts like an object pool in that it will create subnodes as objects are needed but it won't clean up the subnodes when it collapses to avoid garbage collection.
+
+// The quadrant indices are numbered as follows (following a z-order curve):
+//      |
+//   0  |  1
+//  ----+----
+//   2  |  3
+//      |
+// */
+
+
+// /**
+//  * A 2D [spatial partitioning](https://gameprogrammingpatterns.com/spatial-partition.html) data structure. Use it to quickly group objects by their position for faster access and collision checking.
+//  *
+//  * <canvas width="600" height="200" id="quadtree-example"></canvas>
+//  * <script src="assets/js/quadtree.js"></script>
+//  * @class Quadtree
+//  *
+//  * @param {Object} properties - Properties of the quadtree.
+//  * @param {Number} [properties.maxDepth=3] - Maximum node depth of the quadtree.
+//  * @param {Number} [properties.maxObjects=25] - Maximum number of objects a node can have before splitting.
+//  * @param {Object} [properties.bounds] - The 2D space (x, y, width, height) the quadtree occupies. Defaults to the entire canvas width and height.
+//  */
+// class Quadtree {
+//   /**
+//    * @docs docs/api_docs/quadtree.js
+//    */
+
+//   constructor({maxDepth = 3, maxObjects = 25, bounds} = {}) {
+
+//     /**
+//      * Maximum node depth of the quadtree.
+//      * @memberof Quadtree
+//      * @property {Number} maxDepth
+//      */
+//     this.maxDepth = maxDepth;
+
+//     /**
+//      * Maximum number of objects a node can have before splitting.
+//      * @memberof Quadtree
+//      * @property {Number} maxObjects
+//      */
+//     this.maxObjects = maxObjects;
+
+//     /**
+//      * The 2D space (x, y, width, height) the quadtree occupies.
+//      * @memberof Quadtree
+//      * @property {Object} bounds
+//      */
+//     let canvas = getCanvas();
+//     this.bounds = bounds || {
+//       x: 0,
+//       y: 0,
+//       width: canvas.width,
+//       height: canvas.height
+//     };
+
+//     // since we won't clean up any subnodes, we need to keep track of which nodes are
+//     // currently the leaf node so we know which nodes to add objects to
+//     // b = branch, d = depth, o = objects, s = subnodes, p = parent
+//     this._b = false;
+//     this._d = 0;
+//     this._o = [];
+//     this._s = [];
+//     this._p = null;
+//   }
+
+//   /**
+//    * Removes all objects from the quadtree. You should clear the quadtree every frame before adding all objects back into it.
+//    * @memberof Quadtree
+//    * @function clear
+//    */
+//   clear() {
+//     this._s.map(function(subnode) {
+//       subnode.clear();
+//     });
+
+//     this._b = false;
+//     this._o.length = 0;
+//   }
+
+//   /**
+//    * Get an array of all objects that belong to the same node as the passed in object.
+//    *
+//    * **Note:** if the passed in object is also part of the quadtree, it will not be returned in the results.
+//    *
+//    * ```js
+//    * import { Sprite, Quadtree } from 'kontra';
+//    *
+//    * let quadtree = Quadtree();
+//    * let player = Sprite({
+//    *   // ...
+//    * });
+//    * let enemy1 = Sprite({
+//    *   // ...
+//    * });
+//    * let enemy2 = Sprite({
+//    *   // ...
+//    * });
+//    *
+//    * quadtree.add(player, enemy1, enemy2);
+//    * quadtree.get(player);  //=> [enemy1]
+//    * ```
+//    * @memberof Quadtree
+//    * @function get
+//    *
+//    * @param {Object} object - Object to use for finding other objects. The object must have the properties `x`, `y`, `width`, and `height` so that its position in the quadtree can be calculated.
+//    *
+//    * @returns {Object[]} A list of objects in the same node as the object, not including the object itself.
+//    */
+//   get(object) {
+//     // since an object can belong to multiple nodes we should not add it multiple times
+//     let objects = new Set();
+//     let indices, i;
+
+//     // traverse the tree until we get to a leaf node
+//     while (this._s.length && this._b) {
+//       indices = getIndices(object, this.bounds);
+
+//       for (i = 0; i < indices.length; i++) {
+//         this._s[ indices[i] ].get(object).forEach(obj => objects.add(obj));
+//       }
+
+//       return Array.from(objects);
+//     }
+
+//     // don't add the object to the return list
+//     return this._o.filter(obj => obj !== object);
+//   }
+
+//   /**
+//    * Add objects to the quadtree and group them by their position. Can take a single object, a list of objects, and an array of objects.
+//    *
+//    * ```js
+//    * import { Quadtree, Sprite, Pool, GameLoop } from 'kontra';
+//    *
+//    * let quadtree = Quadtree();
+//    * let bulletPool = Pool({
+//    *   create: Sprite
+//    * });
+//    *
+//    * let player = Sprite({
+//    *   // ...
+//    * });
+//    * let enemy = Sprite({
+//    *   // ...
+//    * });
+//    *
+//    * // create some bullets
+//    * for (let i = 0; i < 100; i++) {
+//    *   bulletPool.get({
+//    *     // ...
+//    *   });
+//    * }
+//    *
+//    * let loop = GameLoop({
+//    *   update: function() {
+//    *     quadtree.clear();
+//    *     quadtree.add(player, enemy, bulletPool.getAliveObjects());
+//    *   }
+//    * });
+//    * ```
+//    * @memberof Quadtree
+//    * @function add
+//    *
+//    * @param {Object|Object[]} objectsN - Objects to add to the quadtree.
+//    */
+//   add() {
+//     let i, j, object, obj;
+
+//     for (j = 0; j < arguments.length; j++) {
+//       object = arguments[j];
+
+//       // add a group of objects separately
+//       if (Array.isArray(object)) {
+//         this.add.apply(this, object);
+
+//         continue;
+//       }
+
+//       // current node has subnodes, so we need to add this object into a subnode
+//       if (this._b) {
+//         this._a(object);
+
+//         continue;
+//       }
+
+//       // this node is a leaf node so add the object to it
+//       this._o.push(object);
+
+//       // split the node if there are too many objects
+//       if (this._o.length > this.maxObjects && this._d < this.maxDepth) {
+//         this._sp();
+
+//         // move all objects to their corresponding subnodes
+//         for (i = 0; (obj = this._o[i]); i++) {
+//           this._a(obj);
+//         }
+
+//         this._o.length = 0;
+//       }
+//     }
+//   }
+
+//   /**
+//    * Add an object to a subnode.
+//    *
+//    * @param {Object} object - Object to add into a subnode
+//    */
+//   // @see https://github.com/jed/140bytes/wiki/Byte-saving-techniques#use-placeholder-arguments-instead-of-var
+//   _a(object, indices, i) {
+//     indices = getIndices(object, this.bounds);
+
+//     // add the object to all subnodes it intersects
+//     for (i = 0; i < indices.length; i++) {
+//       this._s[ indices[i] ].add(object);
+//     }
+//   }
+
+//   /**
+//    * Split the node into four subnodes.
+//    */
+//   // @see https://github.com/jed/140bytes/wiki/Byte-saving-techniques#use-placeholder-arguments-instead-of-var
+//   _sp(subWidth, subHeight, i) {
+//     this._b = true;
+
+//     // only split if we haven't split before
+//     if (this._s.length) {
+//       return;
+//     }
+
+//     subWidth = this.bounds.width / 2 | 0;
+//     subHeight = this.bounds.height / 2 | 0;
+
+//     for (i = 0; i < 4; i++) {
+//       this._s[i] = quadtreeFactory({
+//         bounds: {
+//           x: this.bounds.x + (i % 2 === 1 ? subWidth : 0),  // nodes 1 and 3
+//           y: this.bounds.y + (i >= 2 ? subHeight : 0),      // nodes 2 and 3
+//           width: subWidth,
+//           height: subHeight
+//         },
+//         maxDepth: this.maxDepth,
+//         maxObjects: this.maxObjects,
+//       });
+
+//       // d = depth, p = parent
+//       this._s[i]._d = this._d+1;
+//       /* @if VISUAL_DEBUG */
+//       this._s[i]._p = this;
+//       /* @endif */
+//     }
+//   }
+
+//   /**
+//    * Draw the quadtree. Useful for visual debugging.
+//    */
+//    /* @if VISUAL_DEBUG **
+//    render() {
+//      // don't draw empty leaf nodes, always draw branch nodes and the first node
+//      if (this._o.length || this._d === 0 ||
+//          (this._p && this._p._b)) {
+
+//        context.strokeStyle = 'red';
+//        context.strokeRect(this.bounds.x, this.bounds.y, this.bounds.width, this.bounds.height);
+
+//        if (this._s.length) {
+//          for (let i = 0; i < 4; i++) {
+//            this._s[i].render();
+//          }
+//        }
+//      }
+//    }
+//    /* @endif */
+// }
+
+// function quadtreeFactory(properties) {
+//   return new Quadtree(properties);
+// }
+// quadtreeFactory.prototype = Quadtree.prototype;
+// quadtreeFactory.class = Quadtree;
+
+// /**
+//  * A simple 2d vector object.
+//  *
+//  * ```js
+//  * import { Vector } from 'kontra';
+//  *
+//  * let vector = Vector(100, 200);
+//  * ```
+//  * @class Vector
+//  *
+//  * @param {Number} [x=0] - X coordinate of the vector.
+//  * @param {Number} [y=0] - Y coordinate of the vector.
+//  */
+// class Vector {
+//   constructor(x, y) {
+//     this._x = x || 0;
+//     this._y = y || 0;
+//   }
+
+//   /**
+//    * Return a new Vector whose value is the addition of the current Vector and the passed in Vector. If `dt` is provided, the result is multiplied by the value.
+//    * @memberof Vector
+//    * @function add
+//    *
+//    * @param {kontra.Vector} vector - Vector to add to the current Vector.
+//    * @param {Number} [dt=1] - Time since last update.
+//    *
+//    * @returns {kontra.Vector} A new kontra.Vector instance.
+//    */
+//   add(vec, dt) {
+//     return vectorFactory(
+//       this.x + (vec.x || 0) * (dt || 1),
+//       this.y + (vec.y || 0) * (dt || 1)
+//     );
+//   }
+
+//   /**
+//    * Clamp the Vector between two points, preventing `x` and `y` from going below or above the minimum and maximum values. Perfect for keeping a sprite from going outside the game boundaries.
+//    *
+//    * ```js
+//    * import { Vector } from 'kontra';
+//    *
+//    * let vector = Vector(100, 200);
+//    * vector.clamp(0, 0, 200, 300);
+//    *
+//    * vector.x += 200;
+//    * console.log(vector.x);  //=> 200
+//    *
+//    * vector.y -= 300;
+//    * console.log(vector.y);  //=> 0
+//    *
+//    * vector.add({x: -500, y: 500});
+//    * console.log(vector);    //=> {x: 0, y: 300}
+//    * ```
+//    * @memberof Vector
+//    * @function clamp
+//    *
+//    * @param {Number} xMin - Minimum x value.
+//    * @param {Number} yMin - Minimum y value.
+//    * @param {Number} xMax - Maximum x value.
+//    * @param {Number} yMax - Maximum y value.
+//    */
+//   clamp(xMin, yMin, xMax, yMax) {
+//     this._c = true;
+//     this._a = xMin;
+//     this._b = yMin;
+//     this._d = xMax;
+//     this._e = yMax;
+//   }
+
+//   /**
+//    * X coordinate of the vector.
+//    * @memberof Vector
+//    * @property {Number} x
+//    */
+//   get x() {
+//     return this._x;
+//   }
+
+//   /**
+//    * Y coordinate of the vector.
+//    * @memberof Vector
+//    * @property {Number} y
+//    */
+//   get y() {
+//     return this._y;
+//   }
+
+//   set x(value) {
+//     this._x = (this._c ? Math.min( Math.max(this._a, value), this._d ) : value);
+//   }
+
+//   set y(value) {
+//     this._y = (this._c ? Math.min( Math.max(this._b, value), this._e ) : value);
+//   }
+// }
+
+// function vectorFactory(x, y) {
+//   return new Vector(x, y);
+// }
+// vectorFactory.prototype = Vector.prototype;
+// vectorFactory.class = Vector;
 
 /**
  * A versatile way to update and draw your game objects. It can handle simple rectangles, images, and sprite sheet animations. It can be used for your main player object as well as tiny particles in a particle engine.
@@ -3140,526 +3140,526 @@ function setStoreItem(key, value) {
   }
 }
 
-/**
- * Retrieve an item from localStorage and convert it back to its original type.
- * @function getStoreItem
- *
- * @param {String} key - Name of the key of the item to retrieve.
- *
- * @returns {*} The retrieved item.
- */
-function getStoreItem(key) {
-  let value = localStorage.getItem(key);
-
-  try {
-    value = JSON.parse(value);
-  }
-  catch(e) {}
-
-  return value;
-}
-
-/**
- * A tile engine for managing and drawing tilesets.
- *
- * <figure>
- *   <a href="assets/imgs/mapPack_tilesheet.png">
- *     <img src="assets/imgs/mapPack_tilesheet.png" alt="Tileset to create an overworld map in various seasons.">
- *   </a>
- *   <figcaption>Tileset image courtesy of <a href="https://kenney.nl/assets">Kenney</a>.</figcaption>
- * </figure>
- * @sectionName TileEngine
- *
- * @param {Object} properties - Properties of the tile engine.
- * @param {Number} properties.width - Width of the tile map (in number of tiles).
- * @param {Number} properties.height - Height of the tile map (in number of tiles).
- * @param {Number} properties.tilewidth - Width of a single tile (in pixels).
- * @param {Number} properties.tileheight - Height of a single tile (in pixels).
- * @param {Canvas​Rendering​Context2D} [properties.context] - The context the tile engine should draw to. Defaults to [core.getContext()](api/core#getContext)
- *
- * @param {Object[]} properties.tilesets - Array of tileset objects.
- * @param {Number} properties.tilesetN.firstgid - First tile index of the tileset. The first tileset will have a firstgid of 1 as 0 represents an empty tile.
- * @param {String|HTMLImageElement} properties.tilesetN.image - Relative path to the HTMLImageElement or an HTMLImageElement. If passing a relative path, the image file must have been [loaded](./assets) first.
- * @param {Number} [properties.tilesetN.margin=0] - The amount of whitespace between each tile (in pixels).
- * @param {Number} [properties.tilesetN.tilewidth] - Width of the tileset (in pixels). Defaults to properties.tilewidth.
- * @param {Number} [properties.tilesetN.tileheight] - Height of the tileset (in pixels). Defaults to properties.tileheight.
- * @param {String} [properties.tilesetN.source] - Relative path to the source JSON file. The source JSON file must have been [loaded](./assets) first.
- * @param {Number} [properties.tilesetN.columns] - Number of columns in the tileset image.
- *
- * @param {Object[]} properties.layers - Array of layer objects.
- * @param {String} properties.layerN.name - Unique name of the layer.
- * @param {Number[]} properties.layerN.data - 1D array of tile indices.
- * @param {Boolean} [properties.layerN.visible=true] - If the layer should be drawn or not.
- * @param {Number} [properties.layerN.opacity=1] - Percent opacity of the layer.
- */
-
-/**
- * @docs docs/api_docs/tileEngine.js
- */
-
-function TileEngine(properties = {}) {
-  let {
-    width,
-    height,
-    tilewidth,
-    tileheight,
-    context = getContext(),
-    tilesets,
-    layers
-  } = properties;
-
-  let mapwidth = width * tilewidth;
-  let mapheight = height * tileheight;
-
-  // create an off-screen canvas for pre-rendering the map
-  // @see http://jsperf.com/render-vs-prerender
-  let offscreenCanvas = document.createElement('canvas');
-  let offscreenContext = offscreenCanvas.getContext('2d');
-  offscreenCanvas.width = mapwidth;
-  offscreenCanvas.height = mapheight;
-
-  // map layer names to data
-  let layerMap = {};
-  let layerCanvases = {};
-
-  /**
-   * The width of tile map (in tiles).
-   * @memberof TileEngine
-   * @property {Number} width
-   */
-
-  /**
-   * The height of tile map (in tiles).
-   * @memberof TileEngine
-   * @property {Number} height
-   */
-
-  /**
-   * The width a tile (in pixels).
-   * @memberof TileEngine
-   * @property {Number} tilewidth
-   */
-
-  /**
-   * The height of a tile (in pixels).
-   * @memberof TileEngine
-   * @property {Number} tileheight
-   */
-
-  /**
-   * Array of all layers of the tile engine.
-   * @memberof TileEngine
-   * @property {Object[]} layers
-   */
-
-  /**
-   * Array of all tilesets of the tile engine.
-   * @memberof TileEngine
-   * @property {Object[]} tilesets
-   */
-
-  let tileEngine = Object.assign({
-
-    /**
-     * The context the tile engine will draw to.
-     * @memberof TileEngine
-     * @property {CanvasRenderingContext2D} context
-     */
-    context: context,
-
-    /**
-     * The width of the tile map (in pixels).
-     * @memberof TileEngine
-     * @property {Number} mapwidth
-     */
-    mapwidth: mapwidth,
-
-    /**
-     * The height of the tile map (in pixels).
-     * @memberof TileEngine
-     * @property {Number} mapheight
-     */
-    mapheight: mapheight,
-    _sx: 0,
-    _sy: 0,
-
-    /**
-     * X coordinate of the tile map camera.
-     * @memberof TileEngine
-     * @property {Number} sx
-     */
-    get sx() {
-      return this._sx;
-    },
-
-    /**
-     * Y coordinate of the tile map camera.
-     * @memberof TileEngine
-     * @property {Number} sy
-     */
-    get sy() {
-      return this._sy;
-    },
-
-    // when clipping an image, sx and sy must within the image region, otherwise
-    // Firefox and Safari won't draw it.
-    // @see http://stackoverflow.com/questions/19338032/canvas-indexsizeerror-index-or-size-is-negative-or-greater-than-the-allowed-a
-    set sx(value) {
-      this._sx = Math.min( Math.max(0, value), mapwidth - getCanvas().width );
-    },
-
-    set sy(value) {
-      this._sy = Math.min( Math.max(0, value), mapheight - getCanvas().height );
-    },
-
-    /**
-     * Render all visible layers.
-     * @memberof TileEngine
-     * @function render
-     */
-    render() {
-      render(offscreenCanvas);
-    },
-
-    /**
-     * Render a specific layer by name.
-     * @memberof TileEngine
-     * @function renderLayer
-     *
-     * @param {String} name - Name of the layer to render.
-     */
-    renderLayer(name) {
-      let canvas = layerCanvases[name];
-      let layer = layerMap[name];
-
-      if (!canvas) {
-        // cache the rendered layer so we can render it again without redrawing
-        // all tiles
-        canvas = document.createElement('canvas');
-        canvas.width = mapwidth;
-        canvas.height = mapheight;
-
-        layerCanvases[name] = canvas;
-        tileEngine._r(layer, canvas.getContext('2d'));
-      }
-
-      render(canvas);
-    },
-
-    /**
-     * Check if the object collides with the layer (shares a gird coordinate with any positive tile index in layers data). The object being checked must have the properties `x`, `y`, `width`, and `height` so that its position in the grid can be calculated. kontra.Sprite defines these properties for you.
-     *
-     * ```js
-     * import { TileEngine, Sprite } from 'kontra';
-     *
-     * let tileEngine = TileEngine({
-     *   tilewidth: 32,
-     *   tileheight: 32,
-     *   width: 4,
-     *   height: 4,
-     *   tilesets: [{
-     *     // ...
-     *   }],
-     *   layers: [{
-     *     name: 'collision',
-     *     data: [ 0,0,0,0,
-     *             0,1,4,0,
-     *             0,2,5,0,
-     *             0,0,0,0 ]
-     *   }]
-     * });
-     *
-     * let sprite = Sprite({
-     *   x: 50,
-     *   y: 20,
-     *   width: 5,
-     *   height: 5
-     * });
-     *
-     * tileEngine.layerCollidesWith('collision', sprite);  //=> false
-     *
-     * sprite.y = 28;
-     *
-     * tileEngine.layerCollidesWith('collision', sprite);  //=> true
-     * ```
-     * @memberof TileEngine
-     * @function layerCollidesWith
-     *
-     * @param {String} name - The name of the layer to check for collision.
-     * @param {Object} object - Object to check collision against.
-     *
-     * @returns {boolean} `true` if the object collides with a tile, `false` otherwise.
-     */
-    layerCollidesWith(name, object) {
-      let row = getRow(object.y);
-      let col = getCol(object.x);
-      let endRow = getRow(object.y + object.height);
-      let endCol = getCol(object.x + object.width);
-
-      let layer = layerMap[name];
-
-      // check all tiles
-      for (let r = row; r <= endRow; r++) {
-        for (let c = col; c <= endCol; c++) {
-          if (layer.data[c + r * this.width]) {
-            return true;
-          }
-        }
-      }
-
-      return false;
-    },
-
-    /**
-     * Get the tile at the specified layer using either x and y coordinates or row and column coordinates.
-     *
-     * ```js
-     * import { TileEngine } from 'kontra';
-     *
-     * let tileEngine = TileEngine({
-     *   tilewidth: 32,
-     *   tileheight: 32,
-     *   width: 4,
-     *   height: 4,
-     *   tilesets: [{
-     *     // ...
-     *   }],
-     *   layers: [{
-     *     name: 'collision',
-     *     data: [ 0,0,0,0,
-     *             0,1,4,0,
-     *             0,2,5,0,
-     *             0,0,0,0 ]
-     *   }]
-     * });
-     *
-     * tileEngine.tileAtLayer('collision', {x: 50, y: 50});  //=> 1
-     * tileEngine.tileAtLayer('collision', {row: 2, col: 1});  //=> 2
-     * ```
-     * @memberof TileEngine
-     * @function tileAtLayer
-     *
-     * @param {String} name - Name of the layer.
-     * @param {Object} position - Position of the tile in either {x, y} or {row, col} coordinates.
-     *
-     * @returns {Number} The tile index. Will return `-1` if no layer exists by the provided name.
-     */
-    tileAtLayer(name, position) {
-      let row = position.row || getRow(position.y);
-      let col = position.col || getCol(position.x);
-
-      if (layerMap[name]) {
-        return layerMap[name].data[col + row * tileEngine.width];
-      }
-
-      return -1;
-    },
-
-    /**
-     * Set the tile at the specified layer using either x and y coordinates or row and column coordinates.
-     *
-     * ```js
-     * import { TileEngine } from 'kontra';
-     *
-     * let tileEngine = TileEngine({
-     *   tilewidth: 32,
-     *   tileheight: 32,
-     *   width: 4,
-     *   height: 4,
-     *   tilesets: [{
-     *     // ...
-     *   }],
-     *   layers: [{
-     *     name: 'collision',
-     *     data: [ 0,0,0,0,
-     *             0,1,4,0,
-     *             0,2,5,0,
-     *             0,0,0,0 ]
-     *   }]
-     * });
-     *
-     * tileEngine.setTileAtLayer('collision', {row: 2, col: 1}, 10);
-     * tileEngine.tileAtLayer('collision', {row: 2, col: 1});  //=> 10
-     * ```
-     * @memberof TileEngine
-     * @function setTileAtLayer
-     *
-     * @param {String} name - Name of the layer.
-     * @param {Object} position - Position of the tile in either {x, y} or {row, col} coordinates.
-     * @param {Number} tile - Tile index to set.
-     */
-    setTileAtLayer(name, position, tile) {
-      let row = position.row || getRow(position.y);
-      let col = position.col || getCol(position.x);
-
-      if (layerMap[name]) {
-        layerMap[name].data[col + row * tileEngine.width] = tile;
-        prerender();
-      }
-    },
-
-    // expose for testing
-    _r: renderLayer,
-
-    // @if DEBUG
-    layerCanvases: layerCanvases
-    // @endif
-  }, properties);
-
-  // resolve linked files (source, image)
-  tileEngine.tilesets.map(tileset => {
-    // get the url of the Tiled JSON object (in this case, the properties object)
-    let url = (window.__k ? window.__k.dm.get(properties) : '') || window.location.href;
-
-    if (tileset.source) {
-      // @if DEBUG
-      if (!window.__k) {
-        throw Error(`You must use "load" or "loadData" to resolve tileset.source`);
-      }
-      // @endif
-
-      let source = window.__k.d[window.__k.u(tileset.source, url)];
-
-      // @if DEBUG
-      if (!source) {
-        throw Error(`You must load the tileset source "${tileset.source}" before loading the tileset`);
-      }
-      // @endif
-
-      Object.keys(source).map(key => {
-        tileset[key] = source[key];
-      });
-    }
-
-    if (''+tileset.image === tileset.image) {
-      // @if DEBUG
-      if (!window.__k) {
-        throw Error(`You must use "load" or "loadImage" to resolve tileset.image`);
-      }
-      // @endif
-
-      let image = window.__k.i[window.__k.u(tileset.image, url)];
-
-      // @if DEBUG
-      if (!image) {
-        throw Error(`You must load the image "${tileset.image}" before loading the tileset`);
-      }
-      // @endif
-
-      tileset.image = image;
-    }
-  });
-
-  /**
-   * Get the row from the y coordinate.
-   * @private
-   *
-   * @param {Number} y - Y coordinate.
-   *
-   * @return {Number}
-   */
-  function getRow(y) {
-    return (tileEngine.sy + y) / tileEngine.tileheight | 0;
-  }
-
-  /**
-   * Get the col from the x coordinate.
-   * @private
-   *
-   * @param {Number} x - X coordinate.
-   *
-   * @return {Number}
-   */
-  function getCol(x) {
-    return (tileEngine.sx + x) / tileEngine.tilewidth | 0;
-  }
-
-  /**
-   * Render a layer.
-   * @private
-   *
-   * @param {Object} layer - Layer data.
-   * @param {Context} context - Context to draw layer to.
-   */
-  function renderLayer(layer, context) {
-    context.save();
-    context.globalAlpha = layer.opacity;
-
-    layer.data.map((tile, index) => {
-
-      // skip empty tiles (0)
-      if (!tile) return;
-
-      // find the tileset the tile belongs to
-      // assume tilesets are ordered by firstgid
-      let tileset;
-      for (let i = tileEngine.tilesets.length-1; i >= 0; i--) {
-        tileset = tileEngine.tilesets[i];
-
-        if (tile / tileset.firstgid >= 1) {
-          break;
-        }
-      }
-
-      let tilewidth = tileset.tilewidth || tileEngine.tilewidth;
-      let tileheight = tileset.tileheight || tileEngine.tileheight;
-      let margin = tileset.margin || 0;
-
-      let image = tileset.image;
-
-      let offset = tile - tileset.firstgid;
-      let cols = tileset.columns ||
-        image.width / (tilewidth + margin) | 0;
-
-      let x = (index % tileEngine.width) * tilewidth;
-      let y = (index / tileEngine.width | 0) * tileheight;
-      let sx = (offset % cols) * (tilewidth + margin);
-      let sy = (offset / cols | 0) * (tileheight + margin);
-
-      context.drawImage(
-        image,
-        sx, sy, tilewidth, tileheight,
-        x, y, tilewidth, tileheight
-      );
-    });
-
-    context.restore();
-  }
-
-  /**
-   * Pre-render the tiles to make drawing fast.
-   * @private
-   */
-  function prerender() {
-    if (tileEngine.layers) {
-      tileEngine.layers.map(layer => {
-        layerMap[layer.name] = layer;
-
-        if (layer.visible !== false) {
-          tileEngine._r(layer, offscreenContext);
-        }
-      });
-    }
-  }
-
-  /**
-   * Render a tile engine canvas.
-   * @private
-   *
-   * @param {HTMLCanvasElement} canvas - Tile engine canvas to draw.
-   */
-  function render(canvas) {
-    let { width, height } = getCanvas();
-    tileEngine.context.drawImage(
-      canvas,
-      tileEngine.sx, tileEngine.sy, width, height,
-      0, 0, width, height
-    );
-  }
-
-  prerender();
-  return tileEngine;
-}
+// /**
+//  * Retrieve an item from localStorage and convert it back to its original type.
+//  * @function getStoreItem
+//  *
+//  * @param {String} key - Name of the key of the item to retrieve.
+//  *
+//  * @returns {*} The retrieved item.
+//  */
+// function getStoreItem(key) {
+//   let value = localStorage.getItem(key);
+
+//   try {
+//     value = JSON.parse(value);
+//   }
+//   catch(e) {}
+
+//   return value;
+// }
+
+// /**
+//  * A tile engine for managing and drawing tilesets.
+//  *
+//  * <figure>
+//  *   <a href="assets/imgs/mapPack_tilesheet.png">
+//  *     <img src="assets/imgs/mapPack_tilesheet.png" alt="Tileset to create an overworld map in various seasons.">
+//  *   </a>
+//  *   <figcaption>Tileset image courtesy of <a href="https://kenney.nl/assets">Kenney</a>.</figcaption>
+//  * </figure>
+//  * @sectionName TileEngine
+//  *
+//  * @param {Object} properties - Properties of the tile engine.
+//  * @param {Number} properties.width - Width of the tile map (in number of tiles).
+//  * @param {Number} properties.height - Height of the tile map (in number of tiles).
+//  * @param {Number} properties.tilewidth - Width of a single tile (in pixels).
+//  * @param {Number} properties.tileheight - Height of a single tile (in pixels).
+//  * @param {Canvas​Rendering​Context2D} [properties.context] - The context the tile engine should draw to. Defaults to [core.getContext()](api/core#getContext)
+//  *
+//  * @param {Object[]} properties.tilesets - Array of tileset objects.
+//  * @param {Number} properties.tilesetN.firstgid - First tile index of the tileset. The first tileset will have a firstgid of 1 as 0 represents an empty tile.
+//  * @param {String|HTMLImageElement} properties.tilesetN.image - Relative path to the HTMLImageElement or an HTMLImageElement. If passing a relative path, the image file must have been [loaded](./assets) first.
+//  * @param {Number} [properties.tilesetN.margin=0] - The amount of whitespace between each tile (in pixels).
+//  * @param {Number} [properties.tilesetN.tilewidth] - Width of the tileset (in pixels). Defaults to properties.tilewidth.
+//  * @param {Number} [properties.tilesetN.tileheight] - Height of the tileset (in pixels). Defaults to properties.tileheight.
+//  * @param {String} [properties.tilesetN.source] - Relative path to the source JSON file. The source JSON file must have been [loaded](./assets) first.
+//  * @param {Number} [properties.tilesetN.columns] - Number of columns in the tileset image.
+//  *
+//  * @param {Object[]} properties.layers - Array of layer objects.
+//  * @param {String} properties.layerN.name - Unique name of the layer.
+//  * @param {Number[]} properties.layerN.data - 1D array of tile indices.
+//  * @param {Boolean} [properties.layerN.visible=true] - If the layer should be drawn or not.
+//  * @param {Number} [properties.layerN.opacity=1] - Percent opacity of the layer.
+//  */
+
+// /**
+//  * @docs docs/api_docs/tileEngine.js
+//  */
+
+// function TileEngine(properties = {}) {
+//   let {
+//     width,
+//     height,
+//     tilewidth,
+//     tileheight,
+//     context = getContext(),
+//     tilesets,
+//     layers
+//   } = properties;
+
+//   let mapwidth = width * tilewidth;
+//   let mapheight = height * tileheight;
+
+//   // create an off-screen canvas for pre-rendering the map
+//   // @see http://jsperf.com/render-vs-prerender
+//   let offscreenCanvas = document.createElement('canvas');
+//   let offscreenContext = offscreenCanvas.getContext('2d');
+//   offscreenCanvas.width = mapwidth;
+//   offscreenCanvas.height = mapheight;
+
+//   // map layer names to data
+//   let layerMap = {};
+//   let layerCanvases = {};
+
+//   /**
+//    * The width of tile map (in tiles).
+//    * @memberof TileEngine
+//    * @property {Number} width
+//    */
+
+//   /**
+//    * The height of tile map (in tiles).
+//    * @memberof TileEngine
+//    * @property {Number} height
+//    */
+
+//   /**
+//    * The width a tile (in pixels).
+//    * @memberof TileEngine
+//    * @property {Number} tilewidth
+//    */
+
+//   /**
+//    * The height of a tile (in pixels).
+//    * @memberof TileEngine
+//    * @property {Number} tileheight
+//    */
+
+//   /**
+//    * Array of all layers of the tile engine.
+//    * @memberof TileEngine
+//    * @property {Object[]} layers
+//    */
+
+//   /**
+//    * Array of all tilesets of the tile engine.
+//    * @memberof TileEngine
+//    * @property {Object[]} tilesets
+//    */
+
+//   let tileEngine = Object.assign({
+
+//     /**
+//      * The context the tile engine will draw to.
+//      * @memberof TileEngine
+//      * @property {CanvasRenderingContext2D} context
+//      */
+//     context: context,
+
+//     /**
+//      * The width of the tile map (in pixels).
+//      * @memberof TileEngine
+//      * @property {Number} mapwidth
+//      */
+//     mapwidth: mapwidth,
+
+//     /**
+//      * The height of the tile map (in pixels).
+//      * @memberof TileEngine
+//      * @property {Number} mapheight
+//      */
+//     mapheight: mapheight,
+//     _sx: 0,
+//     _sy: 0,
+
+//     /**
+//      * X coordinate of the tile map camera.
+//      * @memberof TileEngine
+//      * @property {Number} sx
+//      */
+//     get sx() {
+//       return this._sx;
+//     },
+
+//     /**
+//      * Y coordinate of the tile map camera.
+//      * @memberof TileEngine
+//      * @property {Number} sy
+//      */
+//     get sy() {
+//       return this._sy;
+//     },
+
+//     // when clipping an image, sx and sy must within the image region, otherwise
+//     // Firefox and Safari won't draw it.
+//     // @see http://stackoverflow.com/questions/19338032/canvas-indexsizeerror-index-or-size-is-negative-or-greater-than-the-allowed-a
+//     set sx(value) {
+//       this._sx = Math.min( Math.max(0, value), mapwidth - getCanvas().width );
+//     },
+
+//     set sy(value) {
+//       this._sy = Math.min( Math.max(0, value), mapheight - getCanvas().height );
+//     },
+
+//     /**
+//      * Render all visible layers.
+//      * @memberof TileEngine
+//      * @function render
+//      */
+//     render() {
+//       render(offscreenCanvas);
+//     },
+
+//     /**
+//      * Render a specific layer by name.
+//      * @memberof TileEngine
+//      * @function renderLayer
+//      *
+//      * @param {String} name - Name of the layer to render.
+//      */
+//     renderLayer(name) {
+//       let canvas = layerCanvases[name];
+//       let layer = layerMap[name];
+
+//       if (!canvas) {
+//         // cache the rendered layer so we can render it again without redrawing
+//         // all tiles
+//         canvas = document.createElement('canvas');
+//         canvas.width = mapwidth;
+//         canvas.height = mapheight;
+
+//         layerCanvases[name] = canvas;
+//         tileEngine._r(layer, canvas.getContext('2d'));
+//       }
+
+//       render(canvas);
+//     },
+
+//     /**
+//      * Check if the object collides with the layer (shares a gird coordinate with any positive tile index in layers data). The object being checked must have the properties `x`, `y`, `width`, and `height` so that its position in the grid can be calculated. kontra.Sprite defines these properties for you.
+//      *
+//      * ```js
+//      * import { TileEngine, Sprite } from 'kontra';
+//      *
+//      * let tileEngine = TileEngine({
+//      *   tilewidth: 32,
+//      *   tileheight: 32,
+//      *   width: 4,
+//      *   height: 4,
+//      *   tilesets: [{
+//      *     // ...
+//      *   }],
+//      *   layers: [{
+//      *     name: 'collision',
+//      *     data: [ 0,0,0,0,
+//      *             0,1,4,0,
+//      *             0,2,5,0,
+//      *             0,0,0,0 ]
+//      *   }]
+//      * });
+//      *
+//      * let sprite = Sprite({
+//      *   x: 50,
+//      *   y: 20,
+//      *   width: 5,
+//      *   height: 5
+//      * });
+//      *
+//      * tileEngine.layerCollidesWith('collision', sprite);  //=> false
+//      *
+//      * sprite.y = 28;
+//      *
+//      * tileEngine.layerCollidesWith('collision', sprite);  //=> true
+//      * ```
+//      * @memberof TileEngine
+//      * @function layerCollidesWith
+//      *
+//      * @param {String} name - The name of the layer to check for collision.
+//      * @param {Object} object - Object to check collision against.
+//      *
+//      * @returns {boolean} `true` if the object collides with a tile, `false` otherwise.
+//      */
+//     layerCollidesWith(name, object) {
+//       let row = getRow(object.y);
+//       let col = getCol(object.x);
+//       let endRow = getRow(object.y + object.height);
+//       let endCol = getCol(object.x + object.width);
+
+//       let layer = layerMap[name];
+
+//       // check all tiles
+//       for (let r = row; r <= endRow; r++) {
+//         for (let c = col; c <= endCol; c++) {
+//           if (layer.data[c + r * this.width]) {
+//             return true;
+//           }
+//         }
+//       }
+
+//       return false;
+//     },
+
+//     /**
+//      * Get the tile at the specified layer using either x and y coordinates or row and column coordinates.
+//      *
+//      * ```js
+//      * import { TileEngine } from 'kontra';
+//      *
+//      * let tileEngine = TileEngine({
+//      *   tilewidth: 32,
+//      *   tileheight: 32,
+//      *   width: 4,
+//      *   height: 4,
+//      *   tilesets: [{
+//      *     // ...
+//      *   }],
+//      *   layers: [{
+//      *     name: 'collision',
+//      *     data: [ 0,0,0,0,
+//      *             0,1,4,0,
+//      *             0,2,5,0,
+//      *             0,0,0,0 ]
+//      *   }]
+//      * });
+//      *
+//      * tileEngine.tileAtLayer('collision', {x: 50, y: 50});  //=> 1
+//      * tileEngine.tileAtLayer('collision', {row: 2, col: 1});  //=> 2
+//      * ```
+//      * @memberof TileEngine
+//      * @function tileAtLayer
+//      *
+//      * @param {String} name - Name of the layer.
+//      * @param {Object} position - Position of the tile in either {x, y} or {row, col} coordinates.
+//      *
+//      * @returns {Number} The tile index. Will return `-1` if no layer exists by the provided name.
+//      */
+//     tileAtLayer(name, position) {
+//       let row = position.row || getRow(position.y);
+//       let col = position.col || getCol(position.x);
+
+//       if (layerMap[name]) {
+//         return layerMap[name].data[col + row * tileEngine.width];
+//       }
+
+//       return -1;
+//     },
+
+//     /**
+//      * Set the tile at the specified layer using either x and y coordinates or row and column coordinates.
+//      *
+//      * ```js
+//      * import { TileEngine } from 'kontra';
+//      *
+//      * let tileEngine = TileEngine({
+//      *   tilewidth: 32,
+//      *   tileheight: 32,
+//      *   width: 4,
+//      *   height: 4,
+//      *   tilesets: [{
+//      *     // ...
+//      *   }],
+//      *   layers: [{
+//      *     name: 'collision',
+//      *     data: [ 0,0,0,0,
+//      *             0,1,4,0,
+//      *             0,2,5,0,
+//      *             0,0,0,0 ]
+//      *   }]
+//      * });
+//      *
+//      * tileEngine.setTileAtLayer('collision', {row: 2, col: 1}, 10);
+//      * tileEngine.tileAtLayer('collision', {row: 2, col: 1});  //=> 10
+//      * ```
+//      * @memberof TileEngine
+//      * @function setTileAtLayer
+//      *
+//      * @param {String} name - Name of the layer.
+//      * @param {Object} position - Position of the tile in either {x, y} or {row, col} coordinates.
+//      * @param {Number} tile - Tile index to set.
+//      */
+//     setTileAtLayer(name, position, tile) {
+//       let row = position.row || getRow(position.y);
+//       let col = position.col || getCol(position.x);
+
+//       if (layerMap[name]) {
+//         layerMap[name].data[col + row * tileEngine.width] = tile;
+//         prerender();
+//       }
+//     },
+
+//     // expose for testing
+//     _r: renderLayer,
+
+//     // @if DEBUG
+//     layerCanvases: layerCanvases
+//     // @endif
+//   }, properties);
+
+//   // resolve linked files (source, image)
+//   tileEngine.tilesets.map(tileset => {
+//     // get the url of the Tiled JSON object (in this case, the properties object)
+//     let url = (window.__k ? window.__k.dm.get(properties) : '') || window.location.href;
+
+//     if (tileset.source) {
+//       // @if DEBUG
+//       if (!window.__k) {
+//         throw Error(`You must use "load" or "loadData" to resolve tileset.source`);
+//       }
+//       // @endif
+
+//       let source = window.__k.d[window.__k.u(tileset.source, url)];
+
+//       // @if DEBUG
+//       if (!source) {
+//         throw Error(`You must load the tileset source "${tileset.source}" before loading the tileset`);
+//       }
+//       // @endif
+
+//       Object.keys(source).map(key => {
+//         tileset[key] = source[key];
+//       });
+//     }
+
+//     if (''+tileset.image === tileset.image) {
+//       // @if DEBUG
+//       if (!window.__k) {
+//         throw Error(`You must use "load" or "loadImage" to resolve tileset.image`);
+//       }
+//       // @endif
+
+//       let image = window.__k.i[window.__k.u(tileset.image, url)];
+
+//       // @if DEBUG
+//       if (!image) {
+//         throw Error(`You must load the image "${tileset.image}" before loading the tileset`);
+//       }
+//       // @endif
+
+//       tileset.image = image;
+//     }
+//   });
+
+//   /**
+//    * Get the row from the y coordinate.
+//    * @private
+//    *
+//    * @param {Number} y - Y coordinate.
+//    *
+//    * @return {Number}
+//    */
+//   function getRow(y) {
+//     return (tileEngine.sy + y) / tileEngine.tileheight | 0;
+//   }
+
+//   /**
+//    * Get the col from the x coordinate.
+//    * @private
+//    *
+//    * @param {Number} x - X coordinate.
+//    *
+//    * @return {Number}
+//    */
+//   function getCol(x) {
+//     return (tileEngine.sx + x) / tileEngine.tilewidth | 0;
+//   }
+
+//   /**
+//    * Render a layer.
+//    * @private
+//    *
+//    * @param {Object} layer - Layer data.
+//    * @param {Context} context - Context to draw layer to.
+//    */
+//   function renderLayer(layer, context) {
+//     context.save();
+//     context.globalAlpha = layer.opacity;
+
+//     layer.data.map((tile, index) => {
+
+//       // skip empty tiles (0)
+//       if (!tile) return;
+
+//       // find the tileset the tile belongs to
+//       // assume tilesets are ordered by firstgid
+//       let tileset;
+//       for (let i = tileEngine.tilesets.length-1; i >= 0; i--) {
+//         tileset = tileEngine.tilesets[i];
+
+//         if (tile / tileset.firstgid >= 1) {
+//           break;
+//         }
+//       }
+
+//       let tilewidth = tileset.tilewidth || tileEngine.tilewidth;
+//       let tileheight = tileset.tileheight || tileEngine.tileheight;
+//       let margin = tileset.margin || 0;
+
+//       let image = tileset.image;
+
+//       let offset = tile - tileset.firstgid;
+//       let cols = tileset.columns ||
+//         image.width / (tilewidth + margin) | 0;
+
+//       let x = (index % tileEngine.width) * tilewidth;
+//       let y = (index / tileEngine.width | 0) * tileheight;
+//       let sx = (offset % cols) * (tilewidth + margin);
+//       let sy = (offset / cols | 0) * (tileheight + margin);
+
+//       context.drawImage(
+//         image,
+//         sx, sy, tilewidth, tileheight,
+//         x, y, tilewidth, tileheight
+//       );
+//     });
+
+//     context.restore();
+//   }
+
+//   /**
+//    * Pre-render the tiles to make drawing fast.
+//    * @private
+//    */
+//   function prerender() {
+//     if (tileEngine.layers) {
+//       tileEngine.layers.map(layer => {
+//         layerMap[layer.name] = layer;
+
+//         if (layer.visible !== false) {
+//           tileEngine._r(layer, offscreenContext);
+//         }
+//       });
+//     }
+//   }
+
+//   /**
+//    * Render a tile engine canvas.
+//    * @private
+//    *
+//    * @param {HTMLCanvasElement} canvas - Tile engine canvas to draw.
+//    */
+//   function render(canvas) {
+//     let { width, height } = getCanvas();
+//     tileEngine.context.drawImage(
+//       canvas,
+//       tileEngine.sx, tileEngine.sy, width, height,
+//       0, 0, width, height
+//     );
+//   }
+
+//   prerender();
+//   return tileEngine;
+// }
 
 let kontra = {
   Animation: animationFactory,
@@ -3685,35 +3685,35 @@ let kontra = {
 
   GameLoop,
 
-  keyMap,
-  initKeys,
-  bindKeys,
-  unbindKeys,
-  keyPressed,
+  // keyMap,
+  // initKeys,
+  // bindKeys,
+  // unbindKeys,
+  // keyPressed,
 
-  registerPlugin,
-  unregisterPlugin,
-  extendObject,
+  // registerPlugin,
+  // unregisterPlugin,
+  // extendObject,
 
-  initPointer,
-  pointer,
-  track,
-  untrack,
-  pointerOver,
-  onPointerDown,
-  onPointerUp,
-  pointerPressed,
+  // initPointer,
+  // pointer,
+  // track,
+  // untrack,
+  // pointerOver,
+  // onPointerDown,
+  // onPointerUp,
+  // pointerPressed,
 
-  Pool: poolFactory,
-  Quadtree: quadtreeFactory,
+  // Pool: poolFactory,
+  // Quadtree: quadtreeFactory,
   Sprite: spriteFactory,
   SpriteSheet: spriteSheetFactory,
 
-  setStoreItem,
-  getStoreItem,
+  // setStoreItem,
+  // getStoreItem,
 
-  TileEngine,
-  Vector: vectorFactory
+  // TileEngine,
+  // Vector: vectorFactory
 };
 
 return kontra;
