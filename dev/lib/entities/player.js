@@ -168,6 +168,7 @@ class Player extends Entity {
         hpMax: this.hpMax,
         score: this.score,
         color: this.color,
+        lives: this.lives,
       };
     }
     getUpdatePack() {
@@ -176,7 +177,11 @@ class Player extends Entity {
         x: this.x,
         y: this.y,
         hp: this.hp,
+        hpMax: this.hpMax,
         score: this.score,
+        lives: this.lives,
+        weaponName: this.weapon.name,
+        weaponAmmo: this.weapon.ammo,
       };
     }
     resetWeapon() {

@@ -12,19 +12,41 @@
 
   <!-- Everything that isn't canvas should overlay on top of it -->
   <div class="overlay">
-      <div id="stats">
-          <!-- Maybe keep, but useful for debugging now -->
-          <p>Number of enemies:
-              <strong>
-                  <span id="num-enemies"><!-- dynamic --></span>
-              </strong>
-          </p>
-          <p>Score:
-            <strong>
-              <span id="player-score"><!-- dynamic --></span>
-            </strong>
-          </p>
-        </div>
+
+      <section class="hud">
+          <div class="boxed">
+              <p>Number of enemies:
+                  <strong>
+                      <span id="num-enemies"><!-- dynamic --></span>
+                  </strong>
+              </p>
+              <p>Player score:
+                <strong>
+                    <span id="player-score"><!-- dynamic --></span>
+                </strong>
+              </p>
+              <p>Team score:
+                  <strong>
+                      <span id="team-score"><!-- dynamic --></span>
+                  </strong>
+              </p>
+            </div>
+
+            <div class="boxed">
+              <p>Lives:
+                <strong>
+                    <span id="player-lives"><!-- dynamic --></span>
+                </strong>
+              </p>
+              <p>Ammo:
+                  <strong>
+                      <span id="player-ammo"><!-- dynamic --></span>
+                  </strong>
+                  (<span id="player-weapon"><!-- dynamic --></span>)
+              </p>
+            </div>
+      </section>
+
   </div>
 
 </main>

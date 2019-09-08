@@ -63,6 +63,9 @@
           PlayerSprite.sprites[player.id].y = player.y;
           PlayerSprite.sprites[player.id].hp = player.hp;
           PlayerSprite.sprites[player.id].score = player.score;
+          PlayerSprite.sprites[player.id].lives = player.lives;
+          PlayerSprite.sprites[player.id].weaponName = player.weaponName;
+          PlayerSprite.sprites[player.id].weaponAmmo = player.weaponAmmo;
         }
         const enemiesData = data.enemies;
         for (let i = 0; i < enemiesData.length; i++) {
@@ -111,14 +114,28 @@
 
       // Use requestAnimationFrame to ensure paints happen performantly
       const renderLoop = () => {
-        // For debug
+
         const numEnemies = Object.keys(EnemySprite.sprites).length;
         document.querySelector('span#num-enemies').textContent = numEnemies;
 
-        if (PlayerSprite.sprites[selfId]) {
-          document.querySelector('span#player-score').textContent =
-            PlayerSprite.sprites[selfId].score;
+        let teamScore = 0;
+        const teamScoreElem = document.querySelector('span#team-score'   );
+        const playerScore   = document.querySelector('span#player-score' );
+        const playerLives   = document.querySelector('span#player-lives' );
+        const playerAmmo    = document.querySelector('span#player-ammo'  );
+        const playerWeapon  = document.querySelector('span#player-weapon');
+        for (let playerId in PlayerSprite.sprites) {
+          const player = PlayerSprite.sprites[playerId]
+          if (player.id === selfId) {
+            if (player.weaponAmmo > 1000) { player.weaponAmmo = '∞' }
+            playerScore.textContent  = player.score;
+            playerLives.textContent  = player.lives;
+            playerAmmo.textContent   = player.weaponAmmo;
+            playerWeapon.textContent = player.weaponName;
+          }
+          teamScore += player.score;
         }
+        teamScoreElem.textContent = teamScore;
 
         ctx.clearRect(0, 0, CANVAS.width, CANVAS.height);
         for (let i in PlayerSprite.sprites) {

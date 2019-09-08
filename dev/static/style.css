@@ -9,10 +9,6 @@ main {
     box-sizing: border-box;
 }
 
-/* canvas {
-
-} */
-
 .overlay {
     align-items: flex-start;
     display: flex;
@@ -23,4 +19,24 @@ main {
     position: absolute;
     top: 0;
     width: 100%;
+}
+
+.hud {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    padding: 10px 25px;
+}
+
+.boxed {
+    border: 1px solid black;
+    padding: 0 10px;
+}
+
+/* Prevent clicking from highlighting text */
+span, p {
+    -webkit-user-select: none; /* webkit (safari, chrome) browsers */
+    -moz-user-select: none; /* mozilla browsers */
+    -khtml-user-select: none; /* webkit (konqueror) browsers */
+    -ms-user-select: none; /* IE10+ */
 }
