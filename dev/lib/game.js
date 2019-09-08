@@ -20,6 +20,9 @@ class Game {
 
       console.log(`[Game constructor] New game created: ${this.id}`);
       GAMES[this.id] = this;
+
+      // Must be called after game is added to GAMES
+      this.createInitialObstacles();
     }
     getFrameUpdateData() {
       const packs = {
@@ -39,6 +42,15 @@ class Game {
         this.removePack[entityType] = [];
       }
       return packs;
+    }
+    createInitialObstacles() {
+      // Create some initial obstacles to prevent "empty" beginning screen
+      for (let i = 0; i < INITIAL_OBSTACLES; i++) {
+        new Obstacle({
+          gameId: this.id,
+          y: getRandomInt(0, MAP_HEIGHT),// overwrite default y, which is below viewport
+        });
+      }
     }
     static findOrCreateGame() {
         console.log('[findOrCreateGame] Current games:', GAMES);
