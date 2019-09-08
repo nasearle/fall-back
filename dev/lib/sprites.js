@@ -5,6 +5,17 @@ class PlayerSprite extends kontra.Sprite {
     this.render = function() {
       this.context.fillStyle = this.color;
       this.context.fillRect(this.x, this.y, this.width, this.height);
+
+      // Health bar
+      const fullHealthBarWidth = this.width * 1.1; // 10% wider than sprite
+      const offsetX = (this.width - fullHealthBarWidth) / 2;
+      const offsetY = -10;
+      const healthBarX = this.x + offsetX;
+      const healthBarY = this.y + offsetY;
+      const healthBarHeight = 5;
+      const healthPercentage = this.hp / this.hpMax;
+      const partialHealthBar = fullHealthBarWidth * healthPercentage;
+      this.context.fillRect(healthBarX, healthBarY, partialHealthBar, healthBarHeight);
     };
     PlayerSprite.sprites[this.id] = this;
   }
