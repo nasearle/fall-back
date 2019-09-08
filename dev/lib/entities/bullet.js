@@ -17,12 +17,13 @@ class Bullet extends Entity {
     this.damage = parent.weapon.damage;
     this.toRemove = false;
     this.color = this.parent.color;
+    this.ttl = 100; // time to leave
 
     GAMES[this.gameId].bullets[this.id] = this;
     GAMES[this.gameId].initPack.bullets.push(this.getInitPack());
   }
   update() {
-    if (this.timer++ > 100) {
+    if (this.timer++ > this.ttl) {
       this.toRemove = true;
     }
     super.update();
