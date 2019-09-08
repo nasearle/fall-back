@@ -41,6 +41,10 @@ class Enemy extends Entity {
         });
       }
     }
+    // Remove enemies that get stuck in obstacles and drift offscreen
+    else if (this.y < -this.height - 20) {
+      this.toRemove = true;
+    }
     const game = GAMES[this.gameId];
     let targetPlayer = game.players[this.targetId];
     // if the target player died or left the game, get a new target
