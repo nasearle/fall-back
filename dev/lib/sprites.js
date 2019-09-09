@@ -26,13 +26,16 @@ class EnemySprite extends kontra.Sprite {
   constructor(config) {
     super(config);
     this.type = 'enemy';
-    this.image = EnemySprite.image;
+    this.render = function() {
+      this.context.beginPath();
+      this.context.arc(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, 0, 2 * Math.PI);
+      this.context.strokeStyle = this.color;
+      this.context.stroke();
+    };
     EnemySprite.sprites[this.id] = this;
   }
 }
 EnemySprite.sprites = {};
-EnemySprite.image = new Image();
-EnemySprite.image.src = 'assets/alien-32.png';
 
 class BulletSprite extends kontra.Sprite {
   constructor(config) {

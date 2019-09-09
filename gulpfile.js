@@ -13,13 +13,11 @@ const paths = {
         html: `dev/**/*.html`,
         css: `dev/**/*.css`,
         js: `dev/**/*.js`,
-        assets: `dev/assets/**`,
         lib: `dev/lib/**/*`
     },
     dist: {
         base: 'public',
         dir: `public`,
-        assets: `public/assets`,
         all: `public/**/*`
     },
     zip: `public.zip`
@@ -57,12 +55,6 @@ function buildCssTask() {
         .pipe(dest(paths.dist.dir));
 }
 
-// TODO: optimize images if applicable
-function buildAssetsTask() {
-    return src(paths.src.assets)
-        .pipe(dest(paths.dist.assets));
-}
-
 function zipTask() {
     return src(paths.dist.all)
         .pipe(zip(paths.zip))
@@ -71,6 +63,6 @@ function zipTask() {
 
 exports.build = series(
     cleanTask,
-    parallel(buildJsTask, buildHtmlTask, buildCssTask, buildAssetsTask),
+    parallel(buildJsTask, buildHtmlTask, buildCssTask),
     zipTask
 );

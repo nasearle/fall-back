@@ -20,7 +20,7 @@ class Enemy extends Entity {
     this.hpMax = 30;
     this.toRemove = false;
     this.bulletSpeedModifier = 0.4; // Want enemy bullets to be much slower
-    this.color = '#8548BF';
+    this.color = '#FFF';
 
     // TODO: Could have enemy subclasses in the future
     const weaponType = getWeightedRandomItem(Enemy.chancesForWeapons);
