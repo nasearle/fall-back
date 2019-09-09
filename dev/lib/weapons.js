@@ -52,11 +52,36 @@ class Weapon {
             weapon.timeLastShot = new Date().getTime();
         }
     }
+    static burstShot(angle, weapon) {
+        if (weapon.ableToShoot()) {
+            const offsets = [-2, 0, 2];
+            offsets.forEach(offset => {
+                new Bullet({
+                    angle: angle + offset,
+                    parent: weapon.parent,
+                });
+            });
+            weapon.decrementAmmo();
+            weapon.timeLastShot = new Date().getTime();
+        }
+    }
+    static flameShot(angle, weapon) {
+        if (weapon.ableToShoot()) {
+            const offset = getRandomInt(-10, 10);
+            new Bullet({
+                angle: angle + offset,
+                parent: weapon.parent,
+            });
+            weapon.decrementAmmo();
+            weapon.timeLastShot = new Date().getTime();
+        }
+    }
 }
 Weapon.weapons = {
     /*
     - "coolDown" property is milliseconds, indepedent of FPS
     - Number.MAX_SAFE_INTEGER is effectively infinite ammo
+    - Note thats speeds above enemy hitbox (32), risk "skipping" enemy collision
     */
 
     // default player gun, has inf ammo
@@ -74,21 +99,51 @@ Weapon.weapons = {
         speed: 30,
         timeLastShot: 0,
         coolDown: 40,
-        ammo: 100,
+        ammo: getRandomInt(75, 125),
         shootFunction: Weapon.basicShoot,
         dropable: true,
-        color: '#BF4882',
+        color: 'whitesmoke',
     },
     'shotgun': {
         damage: 20,
         speed: 30,
         timeLastShot: 0,
         coolDown: 800,
-        ammo: 20,
+        ammo: getRandomInt(15, 25),
         shootFunction: Weapon.spreadShot,
         dropable: true,
-        color: '#7900ED',
-    }
+        color: 'whitesmoke',
+    },
+    'rifle': {
+        damage: 30,
+        speed: 40, // some risk of missing enemy, see notes above
+        timeLastShot: 0,
+        coolDown: 200,
+        ammo: getRandomInt(30, 50),
+        shootFunction: Weapon.basicShoot,
+        dropable: true,
+        color: 'whitesmoke',
+    },
+    'burstshot': {
+        damage: 15,
+        speed: 30,
+        timeLastShot: 0,
+        coolDown: 500,
+        ammo: getRandomInt(10, 20),
+        shootFunction: Weapon.burstShot,
+        dropable: true,
+        color: 'whitesmoke',
+    },
+    'flamethrower': {
+        damage: 10,
+        speed: 30,
+        timeLastShot: 0,
+        coolDown: 20,
+        ammo: getRandomInt(150, 300),
+        shootFunction: Weapon.flameShot,
+        dropable: true,
+        color: 'whitesmoke',
+    },
 };
 
 /* Not using module.exports because require() is unavailable in the sandbox environment */

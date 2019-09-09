@@ -2,11 +2,17 @@ html, body {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  color: whitesmoke;
+  font-family: 'Courier New', Courier, monospace;
 }
 
 main {
   box-sizing: border-box;
   height: 100vh;
+}
+
+canvas {
+    display:block;
 }
 
 .overlay {
@@ -23,13 +29,14 @@ main {
 
 .hud {
   display: flex;
+  font-family: 'Courier New', Courier, monospace;
   justify-content: space-between;
   padding: 10px 25px;
   width: 100%;
 }
 
 .boxed {
-  border: 1px solid black;
+  border: 1px solid whitesmoke;
   padding: 0 10px;
 }
 
