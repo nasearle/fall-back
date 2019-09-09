@@ -22,8 +22,7 @@
       function setCanvasSize() {
         // Different on different browsers?
         CANVAS.width = Math.min(window.innerWidth, document.body.clientWidth);
-        // Why -5? Because as we know too well, CSS is Satan
-        CANVAS.height = Math.min(window.innerHeight, document.body.clientHeight) - 5;
+        CANVAS.height = Math.min(window.innerHeight, document.body.clientHeight);
       }
       window.onresize = setCanvasSize;
       setCanvasSize();

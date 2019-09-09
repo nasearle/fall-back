@@ -9,6 +9,10 @@ main {
     box-sizing: border-box;
 }
 
+canvas {
+    display:block;
+}
+
 .overlay {
     align-items: flex-start;
     display: flex;
