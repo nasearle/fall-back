@@ -60,8 +60,10 @@ module.exports = {
     SOCKETS[socket.id] = socket;
     console.log(`A user connected (${socket.id})`);
 
-    // Call the player's onConnect method to init a new player
-    Player.onConnect(socket);
+    socket.on('startGame', () => {
+      // Call the player's onConnect method to init a new player
+      Player.onConnect(socket);
+    })
 
     socket.on('disconnect', () => {
       // Note: disconnect event doesn't accept "socket" argument
