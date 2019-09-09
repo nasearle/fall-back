@@ -9,6 +9,7 @@ const FPS = 25
    be replaced with file contents on build */
 /* ORDER MATTERS HERE */
 //=require lib/util.js
+//=require lib/constants.js
 //=require lib/entity.js
 //=require lib/entities/*.js
 //=require lib/weapons.js

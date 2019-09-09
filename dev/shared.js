@@ -1,4 +1,1 @@
-const MAP_WIDTH = 1800;
-const MAP_HEIGHT = 1000;
-// TODO: fix:
-const INITIAL_OBSTACLES = 15;
+
