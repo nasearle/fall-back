@@ -15,6 +15,13 @@
     function init() {
       socket = io({ upgrade: false, transports: ["websocket"] });
 
+      const startScreen = document.querySelector('#startScreen');
+      const gameUi = document.querySelector('#gameUi');
+      const btnStartGame = document.querySelector('#btnStartGame');
+      btnStartGame.onclick = () => {
+        socket.emit('startGame');
+      }
+
       const CANVAS = document.querySelector('canvas#ctx');
       const CTX = CANVAS.getContext('2d');
       function setCanvasDetails() {
@@ -62,6 +69,8 @@
       // will use selfId to access props of this player in the future
       let selfId = null;
       socket.on('init', data => {
+        startScreen.style.display = 'none';
+        gameUi.style.display = 'block';
         if (data.selfId) {
           selfId = data.selfId;
         }

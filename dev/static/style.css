@@ -1,14 +1,14 @@
 html, body {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    color: whitesmoke;
-    font-family: 'Courier New', Courier, monospace;
+  box-sizing: border-box;
+  color: whitesmoke;
+  font-family: 'Courier New', Courier, monospace;
+  margin: 0;
+  padding: 0;
 }
 
 main {
-    height: 100vh;
-    box-sizing: border-box;
+  box-sizing: border-box;
+  height: 100vh;
 }
 
 canvas {
@@ -16,23 +16,23 @@ canvas {
 }
 
 .overlay {
-    align-items: flex-start;
-    display: flex;
-    height: 100%;
-    justify-content: center;
-    left: 0;
-    margin: 0;
-    position: absolute;
-    top: 0;
-    width: 100%;
+  align-items: flex-start;
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  left: 0;
+  margin: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
 }
 
 .hud {
-    display: flex;
-    font-family: 'Courier New', Courier, monospace;
-    width: 100%;
-    justify-content: space-between;
-    padding: 10px 25px;
+  display: flex;
+  font-family: 'Courier New', Courier, monospace;
+  justify-content: space-between;
+  padding: 10px 25px;
+  width: 100%;
 }
 
 .boxed {
@@ -42,8 +42,35 @@ canvas {
 
 /* Prevent clicking from highlighting text */
 span, p {
-    -webkit-user-select: none; /* webkit (safari, chrome) browsers */
-    -moz-user-select: none; /* mozilla browsers */
-    -khtml-user-select: none; /* webkit (konqueror) browsers */
-    -ms-user-select: none; /* IE10+ */
+  -khtml-user-select: none; /* webkit (konqueror) browsers */
+  -moz-user-select: none; /* mozilla browsers */
+  -ms-user-select: none; /* IE10+ */
+  -webkit-user-select: none; /* webkit (safari, chrome) browsers */
+}
+
+#startScreen {
+  align-items: center;
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  width: 100%;
+}
+
+#startScreenMenu {
+  align-items: center;
+  background-color: #d2d2d2;
+  border-style: solid;
+  border-width: thin;
+  display: flex;
+  flex-flow: column;
+  font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+  height: 50%;
+  justify-content: center;
+  width: 50%;
+}
+
+#btnStartGame {
+  font-size: 15px;
+  height: 40px;
+  width: 100px;
 }

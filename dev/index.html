@@ -8,45 +8,54 @@
 <body>
 
 <main>
-  <canvas id="ctx" width="500" height="500"></canvas>
+  <div id="startScreen">
+    <div id="startScreenMenu">
+      <h1>FALL BACK!</h1>
+      <button id="btnStartGame">Start Game</button>
+    </div>
+  </div>
 
-  <!-- Everything that isn't canvas should overlay on top of it -->
-  <div class="overlay">
+  <div id="gameUi" hidden>
+    <canvas id="ctx" width="500" height="500"></canvas>
 
-      <section class="hud">
-          <div class="boxed">
-              <p>Number of enemies:
-                  <strong>
-                      <span id="num-enemies"><!-- dynamic --></span>
-                  </strong>
-              </p>
-              <p>Player score:
-                <strong>
-                    <span id="player-score"><!-- dynamic --></span>
-                </strong>
-              </p>
-              <p>Team score:
-                  <strong>
-                      <span id="team-score"><!-- dynamic --></span>
-                  </strong>
-              </p>
-            </div>
+    <!-- Everything that isn't canvas should overlay on top of it -->
+    <div class="overlay">
 
+        <section class="hud">
             <div class="boxed">
-              <p>Lives:
-                <strong>
-                    <span id="player-lives"><!-- dynamic --></span>
-                </strong>
-              </p>
-              <p>Ammo:
+                <p>Number of enemies:
+                    <strong>
+                        <span id="num-enemies"><!-- dynamic --></span>
+                    </strong>
+                </p>
+                <p>Player score:
                   <strong>
-                      <span id="player-ammo"><!-- dynamic --></span>
+                      <span id="player-score"><!-- dynamic --></span>
                   </strong>
-                  (<span id="player-weapon"><!-- dynamic --></span>)
-              </p>
-            </div>
-      </section>
+                </p>
+                <p>Team score:
+                    <strong>
+                        <span id="team-score"><!-- dynamic --></span>
+                    </strong>
+                </p>
+              </div>
 
+              <div class="boxed">
+                <p>Lives:
+                  <strong>
+                      <span id="player-lives"><!-- dynamic --></span>
+                  </strong>
+                </p>
+                <p>Ammo:
+                    <strong>
+                        <span id="player-ammo"><!-- dynamic --></span>
+                    </strong>
+                    (<span id="player-weapon"><!-- dynamic --></span>)
+                </p>
+              </div>
+        </section>
+
+    </div>
   </div>
 
 </main>
