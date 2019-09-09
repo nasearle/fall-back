@@ -165,8 +165,8 @@
         teamScoreElem.textContent = teamScore;
 
         // ctx.clearRect(0, 0, CANVAS.width, CANVAS.height);
-        ctx.fillStyle = 'black';
-        ctx.fillRect(0, 0, CANVAS.width, CANVAS.height);
+        CTX.fillStyle = 'black';
+        CTX.fillRect(0, 0, CANVAS.width, CANVAS.height);
 
         for (let i in PlayerSprite.sprites) {
           const player = PlayerSprite.sprites[i];
