@@ -3,6 +3,7 @@ html, body {
     padding: 0;
     box-sizing: border-box;
     color: whitesmoke;
+    font-family: 'Courier New', Courier, monospace;
 }
 
 main {
@@ -28,6 +29,7 @@ canvas {
 
 .hud {
     display: flex;
+    font-family: 'Courier New', Courier, monospace;
     width: 100%;
     justify-content: space-between;
     padding: 10px 25px;

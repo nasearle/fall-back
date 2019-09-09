@@ -23,7 +23,7 @@
         CANVAS.height = Math.min(window.innerHeight, document.body.clientHeight);
 
         // Canvas settings get reset on resize
-        CTX.font = '12px Roboto';
+        CTX.font = '12px Courier New';
         CTX.textAlign = 'center';
       }
       window.onresize = setCanvasDetails;
