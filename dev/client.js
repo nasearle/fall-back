@@ -15,26 +15,39 @@
     function init() {
       socket = io({ upgrade: false, transports: ["websocket"] });
 
+      function getViewportDimensions() {
+        // Different on different browsers?
+        return {
+          width: Math.min(window.innerWidth, document.body.clientWidth),
+          height: Math.min(window.innerHeight, document.body.clientHeight)
+        };
+      }
+
       const startScreen = document.querySelector('#startScreen');
       const gameUi = document.querySelector('#gameUi');
       const btnStartGame = document.querySelector('#btnStartGame');
       btnStartGame.onclick = () => {
-        socket.emit('startGame');
+        const viewportDimensions = getViewportDimensions();
+        socket.emit('startGame', viewportDimensions);
       }
 
       const CANVAS = document.querySelector('canvas#ctx');
       const CTX = CANVAS.getContext('2d');
-      function setCanvasDetails() {
-        // Different on different browsers?
-        CANVAS.width = Math.min(window.innerWidth, document.body.clientWidth);
-        CANVAS.height = Math.min(window.innerHeight, document.body.clientHeight);
+      function setCanvasDetails(viewportDimensions) {
+        CANVAS.width = viewportDimensions.width;
+        CANVAS.height = viewportDimensions.height;
 
         // Canvas settings get reset on resize
         CTX.font = '12px Courier New';
         CTX.textAlign = 'center';
       }
-      window.onresize = setCanvasDetails;
-      setCanvasDetails();
+      window.onresize = () => {
+        const viewportDimensions = getViewportDimensions();
+        setCanvasDetails(viewportDimensions);
+        socket.emit('viewportResize', viewportDimensions);
+      }
+      const viewportDimensions = getViewportDimensions();
+      setCanvasDetails(viewportDimensions);
 
       /* Full screen capability */
       document.fullscreenElement = document.fullscreenElement    ||
