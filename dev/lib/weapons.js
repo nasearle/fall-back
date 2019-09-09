@@ -102,7 +102,7 @@ Weapon.weapons = {
         ammo: getRandomInt(75, 125),
         shootFunction: Weapon.basicShoot,
         dropable: true,
-        color: 'black',
+        color: 'whitesmoke',
     },
     'shotgun': {
         damage: 20,
@@ -112,7 +112,7 @@ Weapon.weapons = {
         ammo: getRandomInt(15, 25),
         shootFunction: Weapon.spreadShot,
         dropable: true,
-        color: 'black',
+        color: 'whitesmoke',
     },
     'rifle': {
         damage: 30,
@@ -122,7 +122,7 @@ Weapon.weapons = {
         ammo: getRandomInt(30, 50),
         shootFunction: Weapon.basicShoot,
         dropable: true,
-        color: 'black',
+        color: 'whitesmoke',
     },
     'burstshot': {
         damage: 15,
@@ -132,7 +132,7 @@ Weapon.weapons = {
         ammo: getRandomInt(10, 20),
         shootFunction: Weapon.burstShot,
         dropable: true,
-        color: 'black',
+        color: 'whitesmoke',
     },
     'flamethrower': {
         damage: 10,
@@ -142,7 +142,7 @@ Weapon.weapons = {
         ammo: getRandomInt(150, 300),
         shootFunction: Weapon.flameShot,
         dropable: true,
-        color: 'black',
+        color: 'whitesmoke',
     },
 };
 
