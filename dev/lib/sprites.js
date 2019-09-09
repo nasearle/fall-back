@@ -1,7 +1,7 @@
 class PlayerSprite extends kontra.Sprite {
   constructor(config) {
     super(config);
-    this.type = "player";
+    this.type = 'player';
     this.render = function() {
       this.context.fillStyle = this.color;
       this.context.fillRect(this.x, this.y, this.width, this.height);
@@ -25,19 +25,19 @@ PlayerSprite.sprites = {};
 class EnemySprite extends kontra.Sprite {
   constructor(config) {
     super(config);
-    this.type = "enemy";
+    this.type = 'enemy';
     this.image = EnemySprite.image;
     EnemySprite.sprites[this.id] = this;
   }
 }
 EnemySprite.sprites = {};
 EnemySprite.image = new Image();
-EnemySprite.image.src = "assets/alien-32.png";
+EnemySprite.image.src = 'assets/alien-32.png';
 
 class BulletSprite extends kontra.Sprite {
   constructor(config) {
     super(config);
-    this.type = "bullet";
+    this.type = 'bullet';
     this.render = function() {
       this.context.fillStyle = this.color;
       this.context.fillRect(this.x, this.y, 10, 10);
@@ -50,7 +50,7 @@ BulletSprite.sprites = {};
 class ObstacleSprite extends kontra.Sprite {
   constructor(config) {
     super(config);
-    this.type = "obstacle";
+    this.type = 'obstacle';
     this.render = function() {
       this.context.fillStyle = this.color;
       this.context.fillRect(this.x, this.y, this.width, this.height);
@@ -63,12 +63,13 @@ ObstacleSprite.sprites = {};
 class ItemSprite extends kontra.Sprite {
   constructor(config) {
     super(config);
-    this.type = "item";
+    this.type = 'item';
     this.render = function() {
       this.context.fillStyle = this.color;
       this.context.fillRect(this.x, this.y, this.width, this.height);
 
       // Label
+      this.context.fillStyle = 'white';
       const offsetX = this.width / 2; // Text is center aligned @ item center
       const offsetY = -5;
       const labelX = this.x + offsetX;
