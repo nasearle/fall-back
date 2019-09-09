@@ -27,6 +27,32 @@
       window.onresize = setCanvasSize;
       setCanvasSize();
 
+      /* Full screen capability */
+      document.fullscreenElement = document.fullscreenElement    ||
+                                   document.mozFullscreenElement ||
+                                   document.msFullscreenElement  ||
+                                   document.webkitFullscreenDocument;
+      document.exitFullscreen    = document.exitFullscreen       ||
+                                   document.mozExitFullscreen    ||
+                                   document.msExitFullscreen     ||
+                                   document.webkitExitFullscreen;
+      function toggleFullscreen() {
+        const elem = document.querySelector('body');
+        elem.requestFullscreen = elem.requestFullscreen    ||
+                                 elem.mozRequestFullscreen ||
+                                 elem.msRequestFullscreen  ||
+                                 elem.webkitRequestFullscreen;
+        if (!document.fullscreenElement) {
+          elem.requestFullscreen().then({}).catch(err => {
+            alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+          });
+        } else {
+          if (document.exitFullscreen) {
+            document.exitFullscreen();
+          }
+        }
+      }
+
       socket.on('newPlayer', playerInfo => {
         new PlayerSprite(playerInfo);
       });
@@ -136,7 +162,10 @@
         }
         teamScoreElem.textContent = teamScore;
 
-        ctx.clearRect(0, 0, CANVAS.width, CANVAS.height);
+        // ctx.clearRect(0, 0, CANVAS.width, CANVAS.height);
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, CANVAS.width, CANVAS.height);
+
         for (let i in PlayerSprite.sprites) {
           const player = PlayerSprite.sprites[i];
           player.render();
@@ -166,9 +195,14 @@
         65: 'left', // a
         87: 'up', // w
         83: 'down', // s
+        70: 'fullscreen', // f
       };
 
       document.onkeydown = event => {
+        if (keyMap[event.keyCode] === 'fullscreen') {
+          toggleFullscreen();
+          return;
+        }
         socket.emit('keyPress', {
           inputId: keyMap[event.keyCode],
           state: true,
