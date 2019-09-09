@@ -1,11 +1,13 @@
 class Player extends Entity {
-    constructor(id, gameId) {
+    constructor(config) {
       super();
       this.type = 'player';
-      this.id = id;
-      this.gameId = gameId;
-      this.width = 32;
-      this.height = 32;
+      this.id = config.id;
+      this.gameId = config.gameId;
+      this.x = config.x;
+      this.y = config.y;
+      this.width = config.width;
+      this.height = config.height;
       this.pressingRight = false;
       this.pressingLeft = false;
       this.pressingUp = false;
@@ -21,14 +23,17 @@ class Player extends Entity {
       this.toRemove = false;
       this.weapon = new Weapon('pistol', this);
       this.bulletSpeedModifier = 1;
+      this.viewportDimensions = config.viewportDimensions;
 
       // Mostly works, but sometimes there is a desync (esp. on refresh) and
       // people can end up with the same color. TODO: make more reliable
-      const numExistingPlayers = numIds(GAMES[gameId].players);
+      const numExistingPlayers = numIds(GAMES[config.gameId].players);
       this.color = Player.colors[numExistingPlayers];
 
-      console.log(`[Player constructor] New player created: ${id}, adding to game: ${gameId}`);
-      GAMES[gameId].players[id] = this;
+      console.log(
+        `[Player constructor] New player created: ${config.id}, adding to game: ${config.gameId}`
+      );
+      GAMES[config.gameId].players[config.id] = this;
     }
     update() {
       if (this.hp <= 0) {
@@ -41,10 +46,10 @@ class Player extends Entity {
           this.toRemove = true;
         } else {
           this.hp = this.hpMax;
-          //TODO: don't spawn on obstacle
+          const playerSpawnPoint = Entity.getEntitySpawnPoint(this);
           // Also see issue #34 - different client sizes complicate spawning ranges
-          this.x = Math.random() * 700;
-          this.y = Math.random() * 150 + 350;
+          this.x = playerSpawnPoint.x;
+          this.y = playerSpawnPoint.y;
         }
       }
       if (this.weapon.ammo <= 0) {
@@ -197,15 +202,37 @@ class Player extends Entity {
         Object.keys(game.players)[Math.floor(Math.random() * countPlayers)]
       ];
     }
-    static onConnect(socket) {
+    static onConnect(socket, viewportDimensions) {
       console.log(`[onConnect] Searching for available games...`);
       const game = Game.findOrCreateGame();
+      // need playerSpawnInfo for collision detections on spawn
+      const playerSpawnInfo = {
+        type: 'player',
+        height: 32,
+        width: 32,
+        gameId: game.id,
+        viewportDimensions: viewportDimensions,
+      };
+      const playerSpawnPoint = Entity.getEntitySpawnPoint(playerSpawnInfo);
+      const playerConfig = {
+        id: socket.id,
+        gameId: game.id,
+        x: playerSpawnPoint.x,
+        y: playerSpawnPoint.y,
+        height: playerSpawnInfo.height,
+        width: playerSpawnInfo.width,
+        viewportDimensions: viewportDimensions,
+      };
 
       console.log(`[onConnect] Adding player to game ${game.id}`);
-      const player = new Player(socket.id, game.id);
+      const player = new Player(playerConfig);
 
       socket.on('keyPress', data => {
         player.setPressingKey(data.inputId, data.state); // e.g. 'right', true
+      });
+
+      socket.on('viewportResize', viewportDimensions => {
+        player.viewportDimensions = viewportDimensions;
       });
 
       // Update new client with existing players, enemies, and bullets data

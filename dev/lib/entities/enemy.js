@@ -1,18 +1,18 @@
 class Enemy extends Entity {
-  constructor(gameId, x) {
+  constructor(config) {
     super();
     this.type = 'enemy';
     this.id = generateId();
-    this.gameId = gameId;
+    this.gameId = config.gameId;
     // TODO: this line can cause a a crash if enemy spawns when players are dead
     // since it doesn't check if(player). We could just remove it, and let the
     // target player get assigned in the first update frame
     this.targetId = Player.getRandomPlayer(this.gameId).id;
-    this.width = 32;
-    this.height = 32;
+    this.width = config.width;
+    this.height = config.height;
     // TODO: x depends on viewport which varies between clients, see issue #34
-    this.x = getRandomInt(0, MAP_WIDTH); //TODO: don't spawn on obstacle
-    this.y = -this.height -5; // Just beyond top of screen
+    this.x = config.x
+    this.y = config.y
 
     // Keep speed low and march chance high for smoother movement?
     this.maxSpeed = 2;
@@ -24,10 +24,10 @@ class Enemy extends Entity {
 
     // TODO: Could have enemy subclasses in the future
     const weaponType = getWeightedRandomItem(Enemy.chancesForWeapons);
-    this.weapon = this.weapon = new Weapon(weaponType, this);
+    this.weapon = new Weapon(weaponType, this);
 
-    GAMES[gameId].enemies[this.id] = this;
-    GAMES[gameId].initPack.enemies.push(this.getInitPack());
+    GAMES[config.gameId].enemies[this.id] = this;
+    GAMES[config.gameId].initPack.enemies.push(this.getInitPack());
   }
   update() {
     if (this.hp <= 0) {
@@ -159,7 +159,21 @@ class Enemy extends Entity {
       Math.random() <= game.chanceForEnemiesToGenerate &&
       numEnemies < Enemy.numCap
     ) {
-      new Enemy(gameId);
+      const enemySpawnInfo = {
+        type: 'enemy',
+        height: 32,
+        width: 32,
+        gameId: gameId,
+      };
+      const enemySpawnPoint = Entity.getEntitySpawnPoint(enemySpawnInfo);
+      const enemyConfig = {
+        gameId: gameId,
+        x: enemySpawnPoint.x,
+        y: enemySpawnPoint.y,
+        height: enemySpawnInfo.height,
+        width: enemySpawnInfo.width,
+      };
+      new Enemy(enemyConfig);
     }
 
     // Increase enemy generation rate.

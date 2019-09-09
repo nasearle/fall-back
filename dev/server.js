@@ -60,9 +60,9 @@ module.exports = {
     SOCKETS[socket.id] = socket;
     console.log(`A user connected (${socket.id})`);
 
-    socket.on('startGame', () => {
+    socket.on('startGame', viewportDimensions => {
       // Call the player's onConnect method to init a new player
-      Player.onConnect(socket);
+      Player.onConnect(socket, viewportDimensions);
     })
 
     socket.on('disconnect', () => {
