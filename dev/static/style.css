@@ -1,4 +1,5 @@
 html, body {
+  background-color: black;
   box-sizing: border-box;
   color: whitesmoke;
   font-family: 'Courier New', Courier, monospace;
@@ -58,7 +59,8 @@ span, p {
 
 #startScreenMenu {
   align-items: center;
-  background-color: #d2d2d2;
+  background-color: #585757;
+  border-color: gray;
   border-style: solid;
   border-width: thin;
   display: flex;
