@@ -28,6 +28,10 @@ class Player extends Entity {
       const numExistingPlayers = numIds(GAMES[config.gameId].players);
       this.color = Player.colors[numExistingPlayers];
 
+      const playerSpawnPoint = Entity.getEntitySpawnPoint(this);
+      this.x = playerSpawnPoint.x;
+      this.y = playerSpawnPoint.y;
+
       console.log(
         `[Player constructor] New player created: ${config.id}, adding to game: ${config.gameId}`
       );
@@ -210,9 +214,6 @@ class Player extends Entity {
       };
       console.log(`[onConnect] Adding player to game ${game.id}`);
       const player = new Player(playerConfig);
-      const playerSpawnPoint = Entity.getEntitySpawnPoint(player);
-      player.x = playerSpawnPoint.x;
-      player.y = playerSpawnPoint.y;
 
       socket.on('keyPress', data => {
         player.setPressingKey(data.inputId, data.state); // e.g. 'right', true

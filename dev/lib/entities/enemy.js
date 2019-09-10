@@ -23,6 +23,11 @@ class Enemy extends Entity {
     const weaponType = getWeightedRandomItem(Enemy.chancesForWeapons);
     this.weapon = new Weapon(weaponType, this);
 
+    const enemySpawnPoint = Entity.getEntitySpawnPoint(this);
+    // TODO: x depends on viewport which varies between clients, see issue #34
+    this.x = enemySpawnPoint.x;
+    this.y = enemySpawnPoint.y;
+
     GAMES[gameId].enemies[this.id] = this;
     GAMES[gameId].initPack.enemies.push(this.getInitPack());
   }
@@ -156,11 +161,7 @@ class Enemy extends Entity {
       Math.random() <= game.chanceForEnemiesToGenerate &&
       numEnemies < Enemy.numCap
     ) {
-      const enemy = new Enemy(gameId);
-      const enemySpawnPoint = Entity.getEntitySpawnPoint(enemy);
-      // TODO: x depends on viewport which varies between clients, see issue #34
-      enemy.x = enemySpawnPoint.x;
-      enemy.y = enemySpawnPoint.y;
+      new Enemy(gameId);
     }
 
     // Increase enemy generation rate.
