@@ -26,10 +26,34 @@ class EnemySprite extends kontra.Sprite {
   constructor(config) {
     super(config);
     this.type = 'enemy';
+    this.dead = false;
+    this.deathAnimationFrame = 0;
+    this.deathAnimationTotalFrames = 30;
+    this.rgbColorsArr = hexToRGB(this.color);
     this.render = function() {
       this.context.beginPath();
-      this.context.arc(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, 0, 2 * Math.PI);
-      this.context.strokeStyle = this.color;
+        if (!this.dead) {
+          this.context.arc(
+            this.x + this.width / 2,
+            this.y + this.height / 2,
+            this.width / 2,
+            0,
+            2 * Math.PI
+          );
+          this.context.strokeStyle = this.color;
+        } else {
+          this.context.arc(
+            this.x + this.width / 2,
+            this.y + this.height / 2,
+            this.width / 2 + this.deathAnimationFrame,
+            0,
+            2 * Math.PI
+          );
+          this.context.strokeStyle = `rgba(${this.rgbColorsArr[0]}, ${
+            this.rgbColorsArr[1]
+          }, ${this.rgbColorsArr[2]}, ${1 -
+            (1 / this.deathAnimationTotalFrames) * this.deathAnimationFrame})`;
+        }
       this.context.stroke();
     };
     EnemySprite.sprites[this.id] = this;
