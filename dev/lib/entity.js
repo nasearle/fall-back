@@ -2,8 +2,8 @@ class Entity {
   constructor() {
     this.id = '';
     this.gameId = '';
-    this.x = 250; //TODO: don't spawn player on obstacle
-    this.y = 250; //TODO: don't spawn player on obstacle
+    this.x = -40; // default spawn enemies off-screen before location is set
+    this.y = -40; // default spawn enemies off-screen before location is set
     this.speedX = 0;
     this.speedY = 0;
     // this.lastUpdateTime = new Date().getTime();

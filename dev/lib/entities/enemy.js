@@ -1,18 +1,15 @@
 class Enemy extends Entity {
-  constructor(config) {
+  constructor(gameId) {
     super();
     this.type = 'enemy';
     this.id = generateId();
-    this.gameId = config.gameId;
+    this.gameId = gameId;
     // TODO: this line can cause a a crash if enemy spawns when players are dead
     // since it doesn't check if(player). We could just remove it, and let the
     // target player get assigned in the first update frame
     this.targetId = Player.getRandomPlayer(this.gameId).id;
-    this.width = config.width;
-    this.height = config.height;
-    // TODO: x depends on viewport which varies between clients, see issue #34
-    this.x = config.x
-    this.y = config.y
+    this.width = 32;
+    this.height = 32;
 
     // Keep speed low and march chance high for smoother movement?
     this.maxSpeed = 2;
@@ -26,8 +23,8 @@ class Enemy extends Entity {
     const weaponType = getWeightedRandomItem(Enemy.chancesForWeapons);
     this.weapon = new Weapon(weaponType, this);
 
-    GAMES[config.gameId].enemies[this.id] = this;
-    GAMES[config.gameId].initPack.enemies.push(this.getInitPack());
+    GAMES[gameId].enemies[this.id] = this;
+    GAMES[gameId].initPack.enemies.push(this.getInitPack());
   }
   update() {
     if (this.hp <= 0) {
@@ -159,25 +156,15 @@ class Enemy extends Entity {
       Math.random() <= game.chanceForEnemiesToGenerate &&
       numEnemies < Enemy.numCap
     ) {
-      const enemySpawnInfo = {
-        type: 'enemy',
-        height: 32,
-        width: 32,
-        gameId: gameId,
-      };
-      const enemySpawnPoint = Entity.getEntitySpawnPoint(enemySpawnInfo);
-      const enemyConfig = {
-        gameId: gameId,
-        x: enemySpawnPoint.x,
-        y: enemySpawnPoint.y,
-        height: enemySpawnInfo.height,
-        width: enemySpawnInfo.width,
-      };
-      new Enemy(enemyConfig);
+      const enemy = new Enemy(gameId);
+      const enemySpawnPoint = Entity.getEntitySpawnPoint(enemy);
+      // TODO: x depends on viewport which varies between clients, see issue #34
+      enemy.x = enemySpawnPoint.x;
+      enemy.y = enemySpawnPoint.y;
     }
 
     // Increase enemy generation rate.
-    game.chanceForEnemiesToGenerate *= (1 + Enemy.generationGradient);
+    game.chanceForEnemiesToGenerate *= 1 + Enemy.generationGradient;
 
     /* TODO: remove enemies so they dont accumulate?
     will they *always* be defeated by player?

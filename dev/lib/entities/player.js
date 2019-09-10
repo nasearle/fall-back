@@ -4,10 +4,8 @@ class Player extends Entity {
       this.type = 'player';
       this.id = config.id;
       this.gameId = config.gameId;
-      this.x = config.x;
-      this.y = config.y;
-      this.width = config.width;
-      this.height = config.height;
+      this.width = 32;
+      this.height = 32;
       this.pressingRight = false;
       this.pressingLeft = false;
       this.pressingUp = false;
@@ -205,27 +203,16 @@ class Player extends Entity {
     static onConnect(socket, viewportDimensions) {
       console.log(`[onConnect] Searching for available games...`);
       const game = Game.findOrCreateGame();
-      // need playerSpawnInfo for collision detections on spawn
-      const playerSpawnInfo = {
-        type: 'player',
-        height: 32,
-        width: 32,
-        gameId: game.id,
-        viewportDimensions: viewportDimensions,
-      };
-      const playerSpawnPoint = Entity.getEntitySpawnPoint(playerSpawnInfo);
       const playerConfig = {
         id: socket.id,
         gameId: game.id,
-        x: playerSpawnPoint.x,
-        y: playerSpawnPoint.y,
-        height: playerSpawnInfo.height,
-        width: playerSpawnInfo.width,
         viewportDimensions: viewportDimensions,
       };
-
       console.log(`[onConnect] Adding player to game ${game.id}`);
       const player = new Player(playerConfig);
+      const playerSpawnPoint = Entity.getEntitySpawnPoint(player);
+      player.x = playerSpawnPoint.x;
+      player.y = playerSpawnPoint.y;
 
       socket.on('keyPress', data => {
         player.setPressingKey(data.inputId, data.state); // e.g. 'right', true
