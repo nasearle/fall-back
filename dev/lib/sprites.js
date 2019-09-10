@@ -2,20 +2,36 @@ class PlayerSprite extends kontra.Sprite {
   constructor(config) {
     super(config);
     this.type = 'player';
+    this.deathAnimationFrame = 0;
+    this.deathAnimationTotalFrames = 30;
+    this.rgbColorsArr = hexToRGB(this.color);
     this.render = function() {
-      this.context.fillStyle = this.color;
-      this.context.fillRect(this.x, this.y, this.width, this.height);
+      if (!this.diedAt) {
+        this.context.fillStyle = this.color;
+        this.context.fillRect(this.x, this.y, this.width, this.height);
 
-      // Health bar
-      const fullHealthBarWidth = this.width * 1.1; // 10% wider than sprite
-      const offsetX = (this.width - fullHealthBarWidth) / 2;
-      const offsetY = -10;
-      const healthBarX = this.x + offsetX;
-      const healthBarY = this.y + offsetY;
-      const healthBarHeight = 5;
-      const healthPercentage = this.hp / this.hpMax;
-      const partialHealthBar = fullHealthBarWidth * healthPercentage;
-      this.context.fillRect(healthBarX, healthBarY, partialHealthBar, healthBarHeight);
+        // Health bar
+        const fullHealthBarWidth = this.width * 1.1; // 10% wider than sprite
+        const offsetX = (this.width - fullHealthBarWidth) / 2;
+        const offsetY = -10;
+        const healthBarX = this.x + offsetX;
+        const healthBarY = this.y + offsetY;
+        const healthBarHeight = 5;
+        const healthPercentage = this.hp / this.hpMax;
+        const partialHealthBar = fullHealthBarWidth * healthPercentage;
+        this.context.fillRect(healthBarX, healthBarY, partialHealthBar, healthBarHeight);
+      } else {
+        this.context.fillStyle = `rgba(${this.rgbColorsArr[0]}, ${
+          this.rgbColorsArr[1]
+        }, ${this.rgbColorsArr[2]}, ${1 -
+          (1 / this.deathAnimationTotalFrames) * this.deathAnimationFrame})`;
+        this.context.fillRect(
+          this.x,
+          this.y,
+          this.width + this.deathAnimationFrame,
+          this.height + this.deathAnimationFrame
+        );
+      }
     };
     PlayerSprite.sprites[this.id] = this;
   }
