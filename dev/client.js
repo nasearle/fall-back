@@ -6,6 +6,17 @@
 
     kontra.init();
 
+    function hexToRGB(hex) {
+      let hexString = hex.charAt(0) == '#' ? hex.substring(1) : hex;
+      if (hexString.length == 3) {
+        hexString += hexString;
+      }
+      const r = parseInt(hexString.substring(0, 2), 16);
+      const g = parseInt(hexString.substring(2, 4), 16);
+      const b = parseInt(hexString.substring(4, 6), 16);
+      return [r, g, b];
+    }
+
     /* The comment below will be replaced with file contents on build */
     //=require lib/sprites.js
 
@@ -148,7 +159,8 @@
           delete PlayerSprite.sprites[data.players[i]];
         }
         for (let i = 0; i < data.enemies.length; i++) {
-          delete EnemySprite.sprites[data.enemies[i]];
+          const enemyToRemove = EnemySprite.sprites[data.enemies[i]];
+          enemyToRemove.dead = true;
         }
         for (let i = 0; i < data.bullets.length; i++) {
           delete BulletSprite.sprites[data.bullets[i]];
@@ -186,7 +198,6 @@
         }
         teamScoreElem.textContent = teamScore;
 
-        // ctx.clearRect(0, 0, CANVAS.width, CANVAS.height);
         CTX.fillStyle = 'black';
         CTX.fillRect(0, 0, CANVAS.width, CANVAS.height);
 
@@ -196,7 +207,13 @@
         }
         for (let i in EnemySprite.sprites) {
           const enemy = EnemySprite.sprites[i];
+          if (enemy.dead) {
+            enemy.deathAnimationFrame += 1;
+          }
           enemy.render();
+          if (enemy.deathAnimationFrame >= enemy.deathAnimationTotalFrames) {
+            delete EnemySprite.sprites[enemy.id];
+          }
         }
         for (let i in BulletSprite.sprites) {
           const bullet = BulletSprite.sprites[i];
