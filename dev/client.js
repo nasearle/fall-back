@@ -126,6 +126,7 @@
           PlayerSprite.sprites[player.id].lives = player.lives;
           PlayerSprite.sprites[player.id].weaponName = player.weaponName;
           PlayerSprite.sprites[player.id].weaponAmmo = player.weaponAmmo;
+          PlayerSprite.sprites[player.id].diedAt = player.diedAt;
         }
         const enemiesData = data.enemies;
         for (let i = 0; i < enemiesData.length; i++) {
@@ -203,6 +204,11 @@
 
         for (let i in PlayerSprite.sprites) {
           const player = PlayerSprite.sprites[i];
+          if (player.diedAt) {
+            player.deathAnimationFrame += 1;
+          } else {
+            player.deathAnimationFrame = 0;
+          }
           player.render();
         }
         for (let i in EnemySprite.sprites) {
