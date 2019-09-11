@@ -43,6 +43,10 @@
       btnStartGame.onclick = () => {
         const viewportDimensions = getViewportDimensions();
         socket.emit('startGame', viewportDimensions);
+        // Show initial first wave toast after some delay
+        setTimeout(() => {
+          showToast();
+        }, 2000);
       }
 
       const CANVAS = document.querySelector('canvas#ctx');
@@ -186,10 +190,6 @@
           waveToast.classList.remove('show');
         }, 4000); // must be animation length (fade in + duration)
       };
-      // Show initial first wave toast after some delay
-      setTimeout(() => {
-        showToast();
-      }, 2000);
 
       socket.on('state', data => {
         STATE.totalEnemies = data.totalEnemies;
