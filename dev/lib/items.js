@@ -10,7 +10,6 @@ class Item extends Entity {
         this.width = 15;
         this.height = 15;
         this.toRemove = false;
-        this.speedY = -1; // TODO: camera speed should be global for all entities
 
         GAMES[this.gameId].items[this.id] = this;
         GAMES[this.gameId].initPack.items.push(this.getInitPack());

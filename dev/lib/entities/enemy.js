@@ -131,7 +131,7 @@ class Enemy extends Entity {
           this.speedY = collisionObject.speedY;
         }
       } else {
-        this.speedY = -1;
+        this.speedY = CAMERA_SPEED;
       }
     }
   }
