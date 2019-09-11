@@ -9,7 +9,6 @@ class Obstacle extends Entity {
     this.width = config.width || getRandomInt(25, 150);
     this.height = config.height || getRandomInt(25, 150);
     this.toRemove = false;
-    this.speedY = -1;
     this.color = '#8F9EB2';
 
     GAMES[this.gameId].obstacles[this.id] = this;

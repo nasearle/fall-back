@@ -153,7 +153,7 @@ class Player extends Entity {
       }
 
     } else {
-      this.speedY = -1;
+      this.speedY = CAMERA_SPEED;
     }
   }
   setPressingKey(inputId, state) {

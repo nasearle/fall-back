@@ -3,7 +3,7 @@ class Entity {
     this.id = '';
     this.gameId = '';
     this.speedX = 0;
-    this.speedY = 0;
+    this.speedY = CAMERA_SPEED;
     // this.lastUpdateTime = new Date().getTime();
   }
   update() {
