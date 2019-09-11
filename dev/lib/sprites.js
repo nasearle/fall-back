@@ -82,8 +82,26 @@ class BulletSprite extends kontra.Sprite {
     super(config);
     this.type = 'bullet';
     this.render = function() {
-      this.context.fillStyle = this.color;
-      this.context.fillRect(this.x, this.y, 10, 10);
+      if (this.parentType === 'enemy') {
+        this.context.beginPath();
+        this.context.arc(
+          this.x + this.width / 2,
+          this.y + this.height / 2,
+          this.width / 2,
+          0,
+          2 * Math.PI
+        );
+
+        // solid cirlces
+        // this.context.fillStyle = this.color;
+        // this.context.fill();
+
+        // hollow circles
+        this.context.stroke();
+      } else {
+        this.context.fillStyle = this.color;
+        this.context.fillRect(this.x, this.y, this.width, this.height);
+      }
     };
     BulletSprite.sprites[this.id] = this;
   }
