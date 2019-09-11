@@ -14,9 +14,8 @@ class Game {
       this.enemies = {};
       this.items = {};
 
-      // Moved from Enemy class, since this will vary by game
-      // Chance starts at once per 5 seconds
-      this.chanceForEnemiesToGenerate = 1 / (5 * FPS);
+      this.waveNum = 0;
+      this.nextWave();
 
       console.log(`[Game constructor] New game created: ${this.id}`);
       GAMES[this.id] = this;
@@ -51,6 +50,22 @@ class Game {
           y: getRandomInt(0, MAP_HEIGHT),// overwrite default y, which is below viewport
         });
       }
+    }
+    decrementEnemies() {
+      this.remainingEnemies--;
+      console.log('remainging enemies to spawn:', this.remainingEnemies);
+      if (this.remainingEnemies <= 0) {
+        this.nextWave();
+      }
+    }
+    nextWave() {
+      this.waveNum++;
+      console.log('creating wave', this.waveNum);
+      const wave = Game.waves[this.waveNum];
+      this.remainingEnemies = wave.numEnemies;
+      this.chanceForEnemiesToGenerate = wave.chanceForEnemiesToGenerate;
+      this.chancesForWeapons = wave.chancesForWeapons;
+      // when update, check len(waves) > 10, then just bump
     }
     static findOrCreateGame() {
         console.log('[findOrCreateGame] Current games:', numIds(GAMES));
@@ -87,5 +102,34 @@ class Game {
     'obstacles': Obstacle,
     'items': Item,
   };
+  Game.waves = {
+    1: {
+      numEnemies: 10,
+      chancesForWeapons: [
+        // chances should sum to 1
+        { name: 'shotgun',  chance: 0.05 },
+        { name: 'chaingun', chance: 0.05 },
+        { name: 'rifle', chance: 0.05 },
+        { name: 'burstshot', chance: 0.05 },
+        { name: 'flamethrower', chance: 0.05 },
+        { name: 'pistol', chance: 0.75 },
+      ],
+      // Chance starts at once per 3 seconds
+      chanceForEnemiesToGenerate: 1 / (3 * FPS),
+    },
+    2: {
+      numEnemies: 20,
+      chancesForWeapons: [
+        // chances should sum to 1
+        { name: 'shotgun',  chance: 0.05 },
+        { name: 'chaingun', chance: 0.05 },
+        { name: 'rifle', chance: 0.05 },
+        { name: 'burstshot', chance: 0.05 },
+        { name: 'flamethrower', chance: 0.05 },
+        { name: 'pistol', chance: 0.75 },
+      ],
+      chanceForEnemiesToGenerate: 1 / (3 * FPS) * 0.25,
+    }
+  }
 
   /* Not using module.exports because require() is unavailable in the sandbox environment */
