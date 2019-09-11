@@ -25,6 +25,9 @@ setInterval(() => {
     io.to(game.room).emit('update', packs.updatePack);
     io.to(game.room).emit('remove', packs.removePack);
 
+    const gameState = game.getState();
+    io.to(game.room).emit('state', gameState);
+
     // Delete empty games (otherwise they will remain with logic continuing
     // for all non-player entities). TODO: this should only be checked in
     // onDisconnect events, and not every frame. However, currently player

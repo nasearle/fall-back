@@ -28,6 +28,47 @@ canvas {
   width: 100%;
 }
 
+.centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+h1.announce {
+  font-size: 3em;
+}
+
+.toast {
+  visibility: hidden;
+}
+
+.toast.show {
+  visibility: visible;
+  -webkit-animation: fadein 1.5s, fadeout 1.5s 2.5s;
+  animation: fadein 1.5s, fadeout 1.5s 2.5s;
+}
+
+@-webkit-keyframes fadein {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadein {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@-webkit-keyframes fadeout {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes fadeout {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
 .hud {
   display: flex;
   font-family: 'Courier New', Courier, monospace;
