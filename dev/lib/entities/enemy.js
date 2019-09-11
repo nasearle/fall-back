@@ -19,21 +19,25 @@ class Enemy extends Entity {
     this.bulletSpeedModifier = 0.4; // Want enemy bullets to be much slower
     this.color = '#FFF';
 
-    // TODO: Could have enemy subclasses in the future
-    const weaponType = getWeightedRandomItem(Enemy.chancesForWeapons);
-    this.weapon = new Weapon(weaponType, this);
-
     const enemySpawnPoint = Entity.getEntitySpawnPoint(this);
     // TODO: x depends on viewport which varies between clients, see issue #34
     this.x = enemySpawnPoint.x;
     this.y = enemySpawnPoint.y;
 
-    GAMES[gameId].enemies[this.id] = this;
-    GAMES[gameId].initPack.enemies.push(this.getInitPack());
+    const game = GAMES[this.gameId];
+    const weaponType = getWeightedRandomItem(game.chancesForWeapons);
+    this.weapon = this.weapon = new Weapon(weaponType, this);
+
+    game.decrementRemainingEnemies();
+
+    game.enemies[this.id] = this;
+    game.initPack.enemies.push(this.getInitPack());
   }
   update() {
     if (this.hp <= 0) {
       this.toRemove = true;
+      const game = GAMES[this.gameId];
+      game.incrementWaveKills();
       if (this.weapon.dropable) {
         new Item({
           gameId: this.gameId,
@@ -43,10 +47,7 @@ class Enemy extends Entity {
         });
       }
     }
-    // Remove enemies that get stuck in obstacles and drift offscreen
-    else if (this.y < -this.height - 20) {
-      this.toRemove = true;
-    }
+
     const game = GAMES[this.gameId];
     let targetPlayer = game.players[this.targetId];
     // if the target player died or left the game, get a new target
@@ -156,16 +157,12 @@ class Enemy extends Entity {
   static updateAll(gameId) {
     // Periodically generate new enemies
     const game = GAMES[gameId];
-    const numEnemies = numIds(game.enemies);
-    if (
-      Math.random() <= game.chanceForEnemiesToGenerate &&
-      numEnemies < Enemy.numCap
-    ) {
-      new Enemy(gameId);
-    }
 
-    // Increase enemy generation rate.
-    game.chanceForEnemiesToGenerate *= 1 + Enemy.generationGradient;
+    if (game.remainingEnemies > 0) {
+      if (Math.random() <= game.chanceForEnemiesToGenerate) {
+        new Enemy(gameId);
+      }
+    }
 
     /* TODO: remove enemies so they dont accumulate?
     will they *always* be defeated by player?
@@ -191,17 +188,3 @@ class Enemy extends Entity {
 Enemy.chanceToMarch = 2 / FPS;
 // Chance is once per second
 Enemy.chanceToShoot = 1 / FPS;
-// How fast the *rate* of enemy generation increase: 5% increase every 15 seconds.
-Enemy.generationGradient = 0.05 * (1 / (15 * FPS));
-// Don't want too many enemies on screen or in memory
-Enemy.numCap = 50;
-// TODO: Could use enemy subclasses in the future
-Enemy.chancesForWeapons = [
-  // chances should sum to 1
-  { name: 'shotgun',  chance: 0.05 },
-  { name: 'chaingun', chance: 0.05 },
-  { name: 'rifle', chance: 0.05 },
-  { name: 'burstshot', chance: 0.05 },
-  { name: 'flamethrower', chance: 0.05 },
-  { name: 'pistol', chance: 0.75 },
-];

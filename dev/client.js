@@ -3,6 +3,9 @@
 (function () {
 
     let socket;
+    const STATE = {
+      waveNum: 1, // prevent wave 1 toast from showing immediately
+    };
 
     kontra.init();
 
@@ -174,11 +177,38 @@
         }
       });
 
+      const waveToast = document.querySelector('.toast#wave-toast');
+      const waveNumToast = document.querySelector('span#wave-num-toast');
+      function showToast() {
+        waveNumToast.textContent = STATE.waveNum;
+        waveToast.classList.add('show');
+        setTimeout(() => {
+          waveToast.classList.remove('show');
+        }, 4000); // must be animation length (fade in + duration)
+      };
+      // Show initial first wave toast after some delay
+      setTimeout(() => {
+        showToast();
+      }, 2000);
+
+      socket.on('state', data => {
+        STATE.totalEnemies = data.totalEnemies;
+        STATE.waveKills = data.waveKills;
+        if (data.waveNum !== STATE.waveNum) {
+          STATE.waveNum = data.waveNum;
+          showToast();
+        }
+      });
+
       // Use requestAnimationFrame to ensure paints happen performantly
       const renderLoop = () => {
 
-        const numEnemies = Object.keys(EnemySprite.sprites).length;
-        document.querySelector('span#num-enemies').textContent = numEnemies;
+        const enemiesRemainingInWave = STATE.totalEnemies - STATE.waveKills;
+        const enemiesRemainingElem = document.querySelector('span#enemies-remaining');
+        enemiesRemainingElem.textContent = enemiesRemainingInWave;
+
+        const waveNumElem = document.querySelector('span#wave-num');
+        waveNumElem.textContent = STATE.waveNum;
 
         let teamScore = 0;
         const teamScoreElem = document.querySelector('span#team-score'   );
@@ -189,7 +219,7 @@
         for (let playerId in PlayerSprite.sprites) {
           const player = PlayerSprite.sprites[playerId]
           if (player.id === selfId) {
-            if (player.weaponAmmo > 1000) { player.weaponAmmo = '∞' }
+            if (player.weaponAmmo > 9999) { player.weaponAmmo = '∞' }
             playerScore.textContent  = player.score;
             playerLives.textContent  = player.lives;
             playerAmmo.textContent   = player.weaponAmmo;

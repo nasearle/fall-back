@@ -23,38 +23,54 @@
 
         <section class="hud">
             <div class="boxed">
-                <p>Number of enemies:
-                    <strong>
-                        <span id="num-enemies"><!-- dynamic --></span>
-                    </strong>
-                </p>
-                <p>Player score:
+              <p>Number of enemies:
                   <strong>
-                      <span id="player-score"><!-- dynamic --></span>
+                      <span id="enemies-remaining"><!-- dynamic --></span>
                   </strong>
-                </p>
-                <p>Team score:
-                    <strong>
-                        <span id="team-score"><!-- dynamic --></span>
-                    </strong>
-                </p>
-              </div>
+              </p>
+              <p>Player score:
+                <strong>
+                    <span id="player-score"><!-- dynamic --></span>
+                </strong>
+              </p>
+              <p>Team score:
+                  <strong>
+                      <span id="team-score"><!-- dynamic --></span>
+                  </strong>
+              </p>
+            </div>
 
-              <div class="boxed">
-                <p>Lives:
+            <div class="boxed">
+              <p>Wave:
+                <strong>
+                    <span id="wave-num"><!-- dynamic --></span>
+                </strong>
+              </p>
+            </div>
+
+            <div class="boxed">
+              <p>Lives:
+                <strong>
+                    <span id="player-lives"><!-- dynamic --></span>
+                </strong>
+              </p>
+              <p>Ammo:
                   <strong>
-                      <span id="player-lives"><!-- dynamic --></span>
+                      <span id="player-ammo"><!-- dynamic --></span>
                   </strong>
-                </p>
-                <p>Ammo:
-                    <strong>
-                        <span id="player-ammo"><!-- dynamic --></span>
-                    </strong>
-                    (<span id="player-weapon"><!-- dynamic --></span>)
-                </p>
-              </div>
+                  (<span id="player-weapon"><!-- dynamic --></span>)
+              </p>
+            </div>
         </section>
 
+    </div>
+
+    <div class="overlay toast" id="wave-toast">
+      <div class="centered">
+          <h1 class="announce">WAVE
+            <span id="wave-num-toast"><!-- dynamic --></span>
+          </h1>
+      </div>
     </div>
   </div>
 
