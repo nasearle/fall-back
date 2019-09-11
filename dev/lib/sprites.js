@@ -91,12 +91,6 @@ class BulletSprite extends kontra.Sprite {
           0,
           2 * Math.PI
         );
-
-        // solid cirlces
-        // this.context.fillStyle = this.color;
-        // this.context.fill();
-
-        // hollow circles
         this.context.stroke();
       } else {
         this.context.fillStyle = this.color;
