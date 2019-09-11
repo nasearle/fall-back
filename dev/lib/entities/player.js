@@ -14,8 +14,8 @@ class Player extends Entity {
     this.mouseX = 0;
     this.mouseY = 0;
     this.maxSpeed = 10;
-    this.hp = 10;
-    this.hpMax = 10;
+    this.hp = 100;
+    this.hpMax = 100;
     this.lives = 3;
     this.score = 0;
     this.diedAt = null;
