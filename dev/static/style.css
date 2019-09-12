@@ -70,11 +70,19 @@ a:hover, a:focus {
 }
 
 .toast {
-  visibility: hidden;
+  display: none;
+  align-items: flex-start;
+  height: 100%;
+  justify-content: center;
+  left: 0;
+  margin: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
 }
 
 .toast.show {
-  visibility: visible;
+  display: flex;
   -webkit-animation: fadein 1.5s, fadeout 1.5s 2.5s;
   animation: fadein 1.5s, fadeout 1.5s 2.5s;
 }
