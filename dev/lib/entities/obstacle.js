@@ -59,7 +59,7 @@ class Obstacle extends Entity {
     return pack;
   }
 }
-// Chance is once per 2 seconds
-Obstacle.chanceToGenerate = 1 / (2 * FPS);
+// Chance is once per 3 seconds
+Obstacle.chanceToGenerate = 1 / (3 * FPS);
 
 /* Not using module.exports because require() is unavailable in the sandbox environment */
