@@ -91,6 +91,7 @@ class BulletSprite extends kontra.Sprite {
           0,
           2 * Math.PI
         );
+        this.context.strokeStyle = this.color;
         this.context.stroke();
       } else {
         this.context.fillStyle = this.color;
