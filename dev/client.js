@@ -3,8 +3,9 @@
 (function () {
 
     let socket;
-    const STATE = {
+    let STATE = {
       waveNum: 1, // prevent wave 1 toast from showing immediately
+      teamScore: 0,
     };
 
     kontra.init();
@@ -38,16 +39,26 @@
       }
 
       const startScreen = document.querySelector('#startScreen');
+      const gameOverScreen = document.querySelector('#gameOverScreen');
       const gameUi = document.querySelector('#gameUi');
       const btnStartGame = document.querySelector('#btnStartGame');
       btnStartGame.onclick = () => {
+        STATE = {
+          waveNum: 1,
+          teamScore: 0,
+        };
         const viewportDimensions = getViewportDimensions();
         socket.emit('startGame', viewportDimensions);
+        window.requestAnimationFrame(renderLoop);
         // Show initial first wave toast after some delay
         setTimeout(() => {
           showToast();
         }, 2000);
       }
+      btnPlayAgain.onclick = () => {
+        startScreen.classList.remove('hidden');
+        gameOverScreen.classList.add('hidden');
+      };
 
       const CANVAS = document.querySelector('canvas#ctx');
       const CTX = CANVAS.getContext('2d');
@@ -100,8 +111,8 @@
       // will use selfId to access props of this player in the future
       let selfId = null;
       socket.on('init', data => {
-        startScreen.style.display = 'none';
-        gameUi.style.display = 'block';
+        startScreen.classList.add('hidden');
+        gameUi.classList.remove('hidden');
         if (data.selfId) {
           selfId = data.selfId;
         }
@@ -200,9 +211,39 @@
         }
       });
 
+      socket.on('gameOver', () => {
+        STATE.gameOver = true;
+        const teamScoreElem = document.querySelector('#stats-team-score');
+        const playerScoreElem = document.querySelector('#stats-player-score');
+        const waveReachedElem = document.querySelector('#stats-wave-reached');
+
+        teamScoreElem.textContent = STATE.teamScore;
+        playerScoreElem.textContent = PlayerSprite.sprites[selfId].score;
+        waveReachedElem.textContent = STATE.waveNum;
+        gameOverScreen.classList.remove('hidden');
+        gameUi.classList.add('hidden');
+        for (let id in PlayerSprite.sprites) {
+          delete PlayerSprite.sprites[id];
+        }
+        for (let id in EnemySprite.sprites) {
+          delete EnemySprite.sprites[id];
+        }
+        for (let id in BulletSprite.sprites) {
+          delete BulletSprite.sprites[id];
+        }
+        for (let id in ObstacleSprite.sprites) {
+          delete ObstacleSprite.sprites[id];
+        }
+        for (let id in ItemSprite.sprites) {
+          delete ItemSprite.sprites[id];
+        }
+      });
+
       // Use requestAnimationFrame to ensure paints happen performantly
       const renderLoop = () => {
-
+        if (STATE.gameOver) {
+          return;
+        }
         const enemiesRemainingInWave = STATE.totalEnemies - STATE.waveKills;
         const enemiesRemainingElem = document.querySelector('span#enemies-remaining');
         enemiesRemainingElem.textContent = enemiesRemainingInWave;
@@ -210,6 +251,7 @@
         const waveNumElem = document.querySelector('span#wave-num');
         waveNumElem.textContent = STATE.waveNum;
 
+        // TODO: if player dies, team score decreases??
         let teamScore = 0;
         const teamScoreElem = document.querySelector('span#team-score'   );
         const playerScore   = document.querySelector('span#player-score' );
@@ -217,15 +259,16 @@
         const playerAmmo    = document.querySelector('span#player-ammo'  );
         const playerWeapon  = document.querySelector('span#player-weapon');
         for (let playerId in PlayerSprite.sprites) {
-          const player = PlayerSprite.sprites[playerId]
+          const player = PlayerSprite.sprites[playerId];
           if (player.id === selfId) {
             if (player.weaponAmmo > 9999) { player.weaponAmmo = '∞' }
             playerScore.textContent  = player.score;
-            playerLives.textContent  = player.lives;
+            playerLives.textContent  = (player.lives >= 0) ? player.lives : 0;
             playerAmmo.textContent   = player.weaponAmmo;
             playerWeapon.textContent = player.weaponName;
           }
           teamScore += player.score;
+          STATE.teamScore = teamScore;
         }
         teamScoreElem.textContent = teamScore;
 
@@ -265,7 +308,6 @@
         }
         window.requestAnimationFrame(renderLoop);
       };
-      window.requestAnimationFrame(renderLoop);
 
       const keyMap = {
         68: 'right', // d

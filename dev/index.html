@@ -8,8 +8,8 @@
 <body>
 
 <main>
-  <div id="startScreen" class="startScreen">
-    <div class="startScreenMenu">
+  <div id="startScreen" class="screen">
+    <div class="menu">
       <h1 class="title">FALL BACK</h1>
       <section class="menu-item boxed">
         <h4>Mission</h4>
@@ -30,12 +30,34 @@
             </div>
         </div>
       </section>
-      <button id="btnStartGame" class='btn'>Start</button>
+      <button id="btnStartGame" class="btn">Start</button>
     </div>
     <a href="https://github.com/nasearle/fall-back" class="footer-url" target="_blank">Repo</a>
   </div>
 
-  <div id="gameUi" class="gameUi" hidden>
+  <div id="gameOverScreen" class="screen hidden">
+    <div id="gameStats" class="menu">
+      <h1>GAME OVER</h1>
+      <p>Team score:
+        <strong>
+          <span id="stats-team-score"><!-- dynamic --></span>
+        </strong>
+      </p>
+      <p>Player score:
+        <strong>
+          <span id="stats-player-score"><!-- dynamic --></span>
+        </strong>
+      </p>
+      <p>Wave reached:
+        <strong>
+          <span id="stats-wave-reached"><!-- dynamic --></span>
+        </strong>
+      </p>
+      <button id="btnPlayAgain" class="btn">Play Again</button>
+    </div>
+  </div>
+
+  <div id="gameUi" class="gameUi hidden">
     <canvas id="ctx" width="500" height="500"></canvas>
 
     <!-- Everything that isn't canvas should overlay on top of it -->

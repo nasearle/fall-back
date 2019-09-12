@@ -4,10 +4,7 @@ class Enemy extends Entity {
     this.type = 'enemy';
     this.id = generateId();
     this.gameId = gameId;
-    // TODO: this line can cause a a crash if enemy spawns when players are dead
-    // since it doesn't check if(player). We could just remove it, and let the
-    // target player get assigned in the first update frame
-    this.targetId = Player.getRandomPlayer(this.gameId).id;
+    this.targetId = Player.getRandomLivingPlayerId(this.gameId);
     this.width = 32;
     this.height = 32;
 
@@ -51,10 +48,11 @@ class Enemy extends Entity {
     const game = GAMES[this.gameId];
     let targetPlayer = game.players[this.targetId];
     // if the target player died or left the game, get a new target
-    if (!targetPlayer) {
-      targetPlayer = Player.getRandomPlayer(this.gameId);
+    if (!targetPlayer || targetPlayer.dead) {
+      const newTargetId = Player.getRandomLivingPlayerId(this.gameId);
+      targetPlayer = game.players[newTargetId];
       if (targetPlayer) {
-        this.targetId = targetPlayer.id;
+        this.targetId = newTargetId;
       }
     }
     this.updateSpeed(targetPlayer);

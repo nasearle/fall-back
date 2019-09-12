@@ -19,6 +19,7 @@ class Player extends Entity {
     this.lives = 3;
     this.score = 0;
     this.diedAt = null;
+    this.dead = false;
     this.toRemove = false;
     this.weapon = new Weapon('pistol', this);
     this.bulletSpeedModifier = 1;
@@ -39,40 +40,39 @@ class Player extends Entity {
     GAMES[config.gameId].players[config.id] = this;
   }
   update() {
-    if (this.hp <= 0) {
-      if (!this.diedAt) {
-        this.diedAt = new Date().getTime();
-        this.lives--;
-        this.resetWeapon();
-      }
-      if (this.lives < 0) {
-        // TODO: should mark as "dead" instead. Deleting players
-        // * prevents access to their state that could still be rendered (score, etc.)
-        // * prevents access to their state in onDisconnect (saving to DB, deleting game, etc.)
-        this.toRemove = true;
-      } else {
-        const currentTime = new Date().getTime();
-        if (currentTime - this.diedAt > 1000) {
-          this.diedAt = null;
-          this.hp = this.hpMax;
-          const playerSpawnPoint = Entity.getEntitySpawnPoint(this);
-          // Also see issue #34 - different client sizes complicate spawning ranges
-          this.x = playerSpawnPoint.x;
-          this.y = playerSpawnPoint.y;
+    if (!this.dead) {
+      if (this.hp <= 0) {
+        if (!this.diedAt) {
+          this.diedAt = new Date().getTime();
+          this.lives--;
+          this.resetWeapon();
+        }
+        if (this.lives < 0) {
+          this.dead = true;
+        } else {
+          const currentTime = new Date().getTime();
+          if (currentTime - this.diedAt > 1000) {
+            this.diedAt = null;
+            this.hp = this.hpMax;
+            const playerSpawnPoint = Entity.getEntitySpawnPoint(this);
+            // Also see issue #34 - different client sizes complicate spawning ranges
+            this.x = playerSpawnPoint.x;
+            this.y = playerSpawnPoint.y;
+          }
         }
       }
-    }
-    if (this.weapon.ammo <= 0) {
-      // return to pistol when out of ammo
-      this.resetWeapon();
-    }
-    this.updateSpeed();
-    super.update();
+      if (this.weapon.ammo <= 0) {
+        // return to pistol when out of ammo
+        this.resetWeapon();
+      }
+      this.updateSpeed();
+      super.update();
 
-    // Note: this.pressingShoot only triggered if the click is down during an update loop
-    if (this.pressingShoot) {
-      const mouseAngle = this.getAngle({x: this.mouseX, y: this.mouseY});
-      this.weapon.attemptShoot(mouseAngle);
+      // Note: this.pressingShoot only triggered if the click is down during an update loop
+      if (this.pressingShoot) {
+        const mouseAngle = this.getAngle({x: this.mouseX, y: this.mouseY});
+        this.weapon.attemptShoot(mouseAngle);
+      }
     }
   }
   updateSpeed() {
@@ -203,15 +203,17 @@ class Player extends Entity {
   resetWeapon() {
     this.weapon = new Weapon('pistol', this);
   }
-  static countPlayers(gameId) {
-    return numIds(GAMES[gameId].players);
-  }
-  static getRandomPlayer(gameId) {
-    const countPlayers = Player.countPlayers(gameId);
+  static getRandomLivingPlayerId(gameId) {
     const game = GAMES[gameId];
-    return game.players[
-      Object.keys(game.players)[Math.floor(Math.random() * countPlayers)]
-    ];
+    const livingPlayerIds = [];
+    for (let id in game.players) {
+      const player = game.players[id];
+      if (!player.dead) {
+        livingPlayerIds.push(player.id);
+      }
+    }
+    // returns undefined if no living players
+    return livingPlayerIds[Math.floor(Math.random() * livingPlayerIds.length)];
   }
   static onConnect(socket, viewportDimensions) {
     console.log(`[onConnect] Searching for available games...`);
@@ -270,30 +272,28 @@ class Player extends Entity {
     }
   }
   static updateAll(gameId) {
-      const pack = [];
-      const game = GAMES[gameId];
-      for (let id in game.players) {
-        let player = game.players[id];
-        player.update();
-        if (player.toRemove) {
-          delete game.players[id];
-          game.removePack.players.push(player.id);
-        } else {
-          pack.push(player.getUpdatePack());
-        }
+    const pack = [];
+    const game = GAMES[gameId];
+    for (let id in game.players) {
+      let player = game.players[id];
+      player.update();
+      if (player.toRemove) {
+        delete game.players[id];
+        game.removePack.players.push(player.id);
+      } else {
+        pack.push(player.getUpdatePack());
       }
-      return pack;
+    }
+    return pack;
   }
   static onDisconnect(socket) {
     console.log(`[onDisconnect] Player ${socket.id} disconnected, marking for removal`);
     const playerToRemove = Player.findPlayerById(socket.id);
+    // TODO: can possibly remove if check because player no longer removed on death
     // 'if' to avoid the server crashing if the player died (already removed)
     if (playerToRemove) {
       playerToRemove.toRemove = true;
     }
-
-    // TODO: do i need to remove disconnected players from rooms?
-    // seems like it would happen automatically
   }
 }
 //                red,       blue,      green,     orange
