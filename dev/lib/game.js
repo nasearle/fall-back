@@ -70,6 +70,14 @@ class Game {
       }
     }
     nextWave() {
+      // revive dead players
+      for (const id in this.players) {
+        const player = this.players[id];
+        if (player.dead) {
+          player.lives = 0;
+          player.dead = false;
+        }
+      }
       this.waveKills = 0;
       this.waveNum++;
       const wave = Game.waves[this.waveNum];

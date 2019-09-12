@@ -162,12 +162,6 @@ class Enemy extends Entity {
       }
     }
 
-    /* TODO: remove enemies so they dont accumulate?
-    will they *always* be defeated by player?
-    What if they walk past the players on the sides?*/
-    /* Potential solution: make enemies move towards player. can have them not
-    come any closer than a certain radius or something */
-
     const pack = [];
     for (let id in game.enemies) {
       let enemy = game.enemies[id];

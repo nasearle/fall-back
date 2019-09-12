@@ -251,7 +251,6 @@
         const waveNumElem = document.querySelector('span#wave-num');
         waveNumElem.textContent = STATE.waveNum;
 
-        // TODO: if player dies, team score decreases??
         let teamScore = 0;
         const teamScoreElem = document.querySelector('span#team-score'   );
         const playerScore   = document.querySelector('span#player-score' );
