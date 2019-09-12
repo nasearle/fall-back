@@ -21,7 +21,15 @@ main {
 }
 
 canvas {
-    display:block;
+  display: block;
+}
+
+.title {
+  font-weight: 500;
+}
+
+h4 {
+  margin: 0;
 }
 
 .overlay {
@@ -43,7 +51,7 @@ canvas {
   height: 100%;
 }
 
-h1.announce {
+.announce {
   font-size: 3em;
 }
 
@@ -86,11 +94,33 @@ h1.announce {
 }
 
 .boxed {
-    border: 1px solid whitesmoke;
-    padding: 0 10px;
+  border: 1px solid whitesmoke;
 }
 
-#startScreen {
+.side-pad {
+  padding: 0 10px;
+}
+
+.menu-item {
+  display: flex;
+  width: 75%;
+  margin: 10px 0 20px 0;
+  padding: 10px 0;
+  flex-direction: column;
+  text-align: center;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-around;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+}
+
+.startScreen {
   align-items: center;
   display: flex;
   height: 100%;
@@ -98,21 +128,23 @@ h1.announce {
   width: 100%;
 }
 
-#startScreenMenu {
+.startScreenMenu {
   align-items: center;
-  background-color: #585757;
-  border-color: gray;
-  border-style: solid;
-  border-width: thin;
+  background-color: #000;
+  border: 1px solid #4a4a4a;
   display: flex;
   flex-flow: column;
-  font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+  font-family: 'Courier New', Courier, monospace;
   height: 50%;
   justify-content: center;
   width: 50%;
+  padding: 0 0 20px 0;
 }
 
-#btnStartGame {
+.btn {
+  font-family: 'Courier New', Courier, monospace;
+  color: whitesmoke;
+  background-color: #000;
   font-size: 15px;
   height: 40px;
   width: 100px;
