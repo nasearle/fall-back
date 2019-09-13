@@ -86,6 +86,10 @@ class Game {
         this.remainingEnemies = this.totalEnemies;
         this.chanceForEnemiesToGenerate = wave.chanceForEnemiesToGenerate;
         this.chancesForWeapons = wave.chancesForWeapons;
+        if (wave.boss) {
+          const boss = new Enemy(this.id, wave.boss.config);
+          console.log(boss);
+        }
       } else {
         this.totalEnemies = Math.max(
           Math.floor(this.totalEnemies * 1.25),
@@ -174,6 +178,7 @@ class Game {
         { name: 'pistol',    chance: 0.80 },
       ],
       chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate,
+      // CANNOT HAVE BOSS ON FIRST WAVE - crashes
     },
     2: {
       numEnemies: 15,
@@ -265,12 +270,24 @@ class Game {
 
     /* Wave 10 - Boss fight?! */
     10: {
-      numEnemies: 10,
+      numEnemies: 3,
       chancesForWeapons: [
         // chances should sum to 1
         { name: 'pistol', chance: 1.00 },
       ],
       chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.80,
+      boss: {
+        config: {
+          weaponType: 'flamethrower',
+          width: 50, // vs 32
+          height: 50, // vs 32
+          maxSpeed: 2, // vs 2
+          hp: 150, // vs 30
+          hpMax: 150, // vs 30
+          bulletSpeedModifier: 0.5, // vs 0.4
+          chanceToShoot: 10 / FPS, // vs 1 / FPS
+        },
+      },
     },
 
     // 'example': {
