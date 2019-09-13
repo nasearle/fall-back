@@ -27,3 +27,5 @@ Building minifies and zips all game assets and logs the remaining bytes availabl
 ## Authors
 
 Built by [nasearle](https://github.com/nasearle) and [DavidScales](https://github.com/DavidScales)
+
+Music: Synth 4k by m / Bits'n'Bites

@@ -1,9 +1,10 @@
 class Bullet extends Entity {
   constructor(config) {
     super();
-    const { parent, angle } = config;
+    const { parent, angle, weaponName } = config;
     this.parent = parent;
     this.angle = angle;
+    this.weaponName = weaponName;
     this.id = generateId();
     this.gameId = parent.gameId;
     this.width = 10;
@@ -81,6 +82,7 @@ class Bullet extends Entity {
       color: this.color,
       parentType: this.parent.type,
       parentId: this.parent.id,
+      weaponName: this.weaponName
     };
   }
   getUpdatePack() {

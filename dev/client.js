@@ -131,6 +131,8 @@
         }
         for (let i = 0; i < data.bullets.length; i++) {
           const bullet = data.bullets[i];
+          console.log(bullet);
+
           if (bullet.parentId == selfId) {
             audioPlay(audioSfxPistolShot);
           }
@@ -150,6 +152,12 @@
           let player = playersData[i];
           PlayerSprite.sprites[player.id].x = player.x;
           PlayerSprite.sprites[player.id].y = player.y;
+          if (
+            player.id == selfId &&
+            PlayerSprite.sprites[player.id].hp > player.hp
+          ) {
+            audioPlay(audioSfxPlayerDamaged);
+          }
           PlayerSprite.sprites[player.id].hp = player.hp;
           PlayerSprite.sprites[player.id].score = player.score;
           PlayerSprite.sprites[player.id].lives = player.lives;
