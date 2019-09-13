@@ -35,6 +35,13 @@ class PlayerSprite extends Sprite {
           partialHealthBar,
           healthBarHeight
         );
+        Sprite.context.fillStyle = 'grey';
+        Sprite.context.fillRect(
+          healthBarX + partialHealthBar,
+          healthBarY,
+          fullHealthBarWidth - partialHealthBar,
+          healthBarHeight
+        );
       } else {
         Sprite.context.fillStyle = `rgba(${this.rgbColorsArr[0]}, ${
           this.rgbColorsArr[1]
