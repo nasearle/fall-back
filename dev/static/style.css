@@ -105,6 +105,13 @@ a:hover, a:focus {
   justify-content: space-between;
   padding: 10px 25px;
   width: 100%;
+  /* provides an outline on text, so its still visible
+  when passing over lighter colors like obstacles */
+  text-shadow:
+    -1px -1px 0 #000,
+     1px -1px 0 #000,
+    -1px  1px 0 #000,
+     1px  1px 0 #000;
 }
 
 .boxed {

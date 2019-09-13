@@ -296,7 +296,6 @@ class Player extends Entity {
     }
   }
 }
-//                red,       blue,      green,     orange
-Player.colors = ['#FF5733', '#16489E', '#33FF57', '#FFBD33'];
+Player.colors = ['#FF5733', '#4086fd', '#56f572', '#FFBD33'];
 
 /* Not using module.exports because require() is unavailable in the sandbox environment */

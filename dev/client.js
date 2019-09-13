@@ -117,6 +117,10 @@
           selfId = data.selfId;
         }
         for (let i = 0; i < data.players.length; i++) {
+          const player = data.players[i];
+          if (player.id === selfId) {
+            document.querySelector('.hud').style.color = player.color;
+          }
           new PlayerSprite(data.players[i]);
         }
         for (let i = 0; i < data.enemies.length; i++) {
@@ -260,11 +264,11 @@
         for (let playerId in PlayerSprite.sprites) {
           const player = PlayerSprite.sprites[playerId];
           if (player.id === selfId) {
-            if (player.weaponAmmo > 9999) { player.weaponAmmo = '∞' }
             playerScore.textContent  = player.score;
             playerLives.textContent  = (player.lives >= 0) ? player.lives : 0;
             playerAmmo.textContent   = player.weaponAmmo;
             playerWeapon.textContent = player.weaponName;
+            playerAmmo.textContent   = Math.min(player.weaponAmmo, 99999);
           }
           teamScore += player.score;
           STATE.teamScore = teamScore;
