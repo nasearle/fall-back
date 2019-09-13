@@ -272,8 +272,9 @@ class Game {
       numEnemies: 20,
       chancesForWeapons: [
         // chances should sum to 1
-        { name: 'shotgun', chance: 0.5 },
-        { name: 'burstshot', chance: 0.5 },
+        { name: 'shotgun', chance: 0.4 },
+        { name: 'burstshot', chance: 0.4 },
+        { name: 'pistol', chance: 0.2 },
       ],
       chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.7,
     },
