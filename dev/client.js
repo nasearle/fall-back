@@ -24,8 +24,8 @@
     //=require lib/background-music.js
     //=require lib/sonantx-reduced.js
     //=require lib/audio.js
-    audioInit();
     //=require lib/sprites.js
+    audioInit();
 
     /**
      * Client module init
@@ -131,8 +131,6 @@
         }
         for (let i = 0; i < data.bullets.length; i++) {
           const bullet = data.bullets[i];
-          console.log(bullet);
-
           if (bullet.parentId == selfId) {
             audioPlay(audioSfxPistolShot);
           }
@@ -333,11 +331,16 @@
         87: 'up', // w
         83: 'down', // s
         70: 'fullscreen', // f
+        77: 'mute', // m
       };
 
       document.onkeydown = event => {
         if (keyMap[event.keyCode] === 'fullscreen') {
           toggleFullscreen();
+          return;
+        }
+        if (keyMap[event.keyCode] === 'mute') {
+          toggleSound();
           return;
         }
         socket.emit('keyPress', {
