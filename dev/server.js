@@ -79,7 +79,7 @@ module.exports = {
         socket,
         gameData.viewportDimensions,
         gameData.gameId,
-        gameData.private);
+        gameData.privateGame);
     })
 
     socket.on('disconnect', () => {
