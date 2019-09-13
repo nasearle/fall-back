@@ -149,6 +149,25 @@ a:hover, a:focus {
 .column {
   display: flex;
   flex-direction: column;
+  align-items: center;
+}
+
+.column input {
+  width: 200px;
+}
+
+.checkboxLabel {
+  display: flex;
+  width: 200px;
+  padding: 10px 0;
+}
+
+#privateGame {
+  width: 20px;
+}
+
+label {
+  width: 150px;
 }
 
 .screen {
@@ -171,7 +190,7 @@ a:hover, a:focus {
   width: 50%;
   padding: 0 0 20px 0;
   max-width: 600px;
-  min-height: 550px;
+  min-height: 650px;
 }
 
 .btn {
@@ -185,6 +204,11 @@ a:hover, a:focus {
   font-size: 15px;
   height: 40px;
   width: 100px;
+  margin-bottom: 5px;
+}
+
+#btnJoinGame {
+  width: 200px;
 }
 
 .btn:hover, .btn:focus {

@@ -45,6 +45,9 @@
       const gameOverScreen = document.querySelector('#gameOverScreen');
       const gameUi = document.querySelector('#gameUi');
       const btnStartGame = document.querySelector('#btnStartGame');
+      const inputGameCode = document.querySelector('#inputGameCode');
+      const checkboxPrivateGame = document.querySelector('#privateGame');
+      const btnJoinGame = document.querySelector('#btnJoinGame');
       btnStartGame.onclick = () => {
         STATE = {
           waveNum: 1,
@@ -60,6 +63,25 @@
           showToast();
         }, 2000);
       }
+      btnJoinGame.onclick = () => {
+        STATE = {
+          waveNum: 1,
+          teamScore: 0,
+        };
+        const viewportDimensions = getViewportDimensions();
+        const gameId = inputGameCode.value;
+        const privateGame = checkboxPrivateGame.checked;
+        socket.emit('startGame', {
+          viewportDimensions: viewportDimensions,
+          gameId: gameId,
+          privateGame: privateGame,
+        });
+        window.requestAnimationFrame(renderLoop);
+        // Show initial first wave toast after some delay
+        setTimeout(() => {
+          showToast();
+        }, 2000);
+      };
       btnPlayAgain.onclick = () => {
         startScreen.classList.remove('hidden');
         gameOverScreen.classList.add('hidden');

@@ -219,7 +219,7 @@ class Player extends Entity {
     console.log(`[onConnect] Searching for available games...`);
     let game;
     if (gameId) {
-      game = joinOrCreateGame(gameId, privateGame);
+      game = Game.joinOrCreateGame(gameId, privateGame);
     } else {
       game = Game.findOrCreateGame();
     }
