@@ -14,10 +14,24 @@ function audioInit() {
   });
 }
 
+let audioMuted = false;
+
 function audioPlay(buffer, loop) {
-  var source = audioCtx.createBufferSource();
-  source.buffer = buffer;
-  source.loop = loop;
-  source.connect(audioCtx.destination);
-  source.start();
+  if (!audioMuted) {
+    var source = audioCtx.createBufferSource();
+    source.buffer = buffer;
+    source.loop = loop;
+    source.connect(audioCtx.destination);
+    source.start();
+  }
+}
+
+function toggleSound() {
+  if (audioCtx.state === 'running') {
+    audioMuted = true;
+    audioCtx.suspend();
+  } else if (audioCtx.state === 'suspended') {
+    audioMuted = false;
+    audioCtx.resume();
+  }
 }
