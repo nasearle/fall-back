@@ -165,7 +165,7 @@ class Game {
     'obstacles': Obstacle,
     'items': Item,
   };
-  // Chance starts at once per 3 seconds
+  // Chance starts at once per 2.6 seconds
   Game.defaultChanceForEnemiesToGenerate = 1 / (2.6 * FPS);
   Game.waves = {
     /* First 3 waves -> introduce a new gun with 2 enemies */
