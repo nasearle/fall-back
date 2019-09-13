@@ -291,6 +291,10 @@
         CTX.fillStyle = 'black';
         CTX.fillRect(0, 0, CANVAS.width, CANVAS.height);
 
+        for (let i in ObstacleSprite.sprites) {
+          const obstacle = ObstacleSprite.sprites[i];
+          obstacle.render();
+        }
         for (let i in PlayerSprite.sprites) {
           const player = PlayerSprite.sprites[i];
           if (player.diedAt) {
@@ -310,17 +314,13 @@
             delete EnemySprite.sprites[enemy.id];
           }
         }
-        for (let i in BulletSprite.sprites) {
-          const bullet = BulletSprite.sprites[i];
-          bullet.render();
-        }
-        for (let i in ObstacleSprite.sprites) {
-          const obstacle = ObstacleSprite.sprites[i];
-          obstacle.render();
-        }
         for (let i in ItemSprite.sprites) {
           const item = ItemSprite.sprites[i];
           item.render();
+        }
+        for (let i in BulletSprite.sprites) {
+          const bullet = BulletSprite.sprites[i];
+          bullet.render();
         }
         window.requestAnimationFrame(renderLoop);
       };
