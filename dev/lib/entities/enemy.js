@@ -185,5 +185,3 @@ class Enemy extends Entity {
     return pack;
   }
 }
-// Chance is twice per second
-Enemy.chanceToMarch = 2 / FPS;
