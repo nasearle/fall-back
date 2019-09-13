@@ -1,6 +1,5 @@
 "use strict";
 
-const SOCKETS = {};
 const GAMES = {};
 const FPS = 25
 
@@ -72,8 +71,6 @@ module.exports = {
   user's socket) */
 	io: (socket) => {
 
-    // Add client/player to a global "list" of sockets
-    SOCKETS[socket.id] = socket;
     console.log(`A user connected (${socket.id})`);
 
     socket.on('startGame', viewportDimensions => {
@@ -84,7 +81,6 @@ module.exports = {
     socket.on('disconnect', () => {
       // Note: disconnect event doesn't accept "socket" argument
       console.log(`User disconnected (${socket.id})`);
-      delete SOCKETS[socket.id];
       Player.onDisconnect(socket);
     });
 	}
