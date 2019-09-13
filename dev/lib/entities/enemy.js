@@ -1,19 +1,20 @@
 class Enemy extends Entity {
-  constructor(gameId) {
+  constructor(gameId, config) {
     super();
     this.type = 'enemy';
+    this.toRemove = false;
     this.id = generateId();
     this.gameId = gameId;
     this.targetId = Player.getRandomLivingPlayerId(this.gameId);
     this.width = 32;
     this.height = 32;
+    this.chanceToShoot = 1 / FPS;
 
     // Keep speed low and march chance high for smoother movement?
     this.maxSpeed = 2;
     this.hp = 30;
     this.hpMax = 30;
-    this.toRemove = false;
-    this.bulletSpeedModifier = 0.4; // Want enemy bullets to be much slower
+    this.bulletSpeedModifier = 0.4;
     this.color = '#FFF';
 
     const enemySpawnPoint = Entity.getEntitySpawnPoint(this);
@@ -22,8 +23,16 @@ class Enemy extends Entity {
     this.y = enemySpawnPoint.y;
 
     const game = GAMES[this.gameId];
-    const weaponType = getWeightedRandomItem(game.chancesForWeapons);
-    this.weapon = this.weapon = new Weapon(weaponType, this);
+    this.weaponType = getWeightedRandomItem(game.chancesForWeapons);
+
+    // Overwrite values if config
+    if (config) {
+      for (let key in config) {
+        this[key] = config[key];
+      }
+    }
+
+    this.weapon = new Weapon(this.weaponType, this);
 
     game.decrementRemainingEnemies();
 
@@ -58,7 +67,7 @@ class Enemy extends Entity {
     this.updateSpeed(targetPlayer);
     super.update();
     // For now, enemies simply shoot at their target player randomly
-    if (Math.random() <= Enemy.chanceToShoot) {
+    if (Math.random() <= this.chanceToShoot) {
       if (targetPlayer) {
         const angle = this.getAngle(targetPlayer);
         this.weapon.attemptShoot(angle);
@@ -178,5 +187,3 @@ class Enemy extends Entity {
 }
 // Chance is twice per second
 Enemy.chanceToMarch = 2 / FPS;
-// Chance is once per second
-Enemy.chanceToShoot = 1 / FPS;
