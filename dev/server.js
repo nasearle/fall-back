@@ -69,11 +69,20 @@ module.exports = {
   the first time a client connects via socket. We will define all other socket
   event listeners here (since it's the first time we will have access to the
   user's socket) */
-	io: (socket) => {
+	io: async (socket) => {
 
     console.log(`A user connected (${socket.id})`);
 
-    socket.on('startGame', viewportDimensions => {
+    let userConnections = await storage.get('userConnections', 0);
+    console.log('userConnections', userConnections);
+    await storage.set('userConnections', ++userConnections);
+
+    socket.on('startGame', async viewportDimensions => {
+
+      let playersStarted = await storage.get('playersStarted', 0);
+      console.log('playersStarted', playersStarted);
+      await storage.set('playersStarted', ++playersStarted);
+
       // Call the player's onConnect method to init a new player
       Player.onConnect(socket, viewportDimensions);
     })

@@ -22,6 +22,12 @@ class Game {
       console.log(`[Game constructor] New game created: ${this.id}`);
       GAMES[this.id] = this;
 
+      storage.get('gamesCreated', 0)
+        .then(gamesCreated => {
+          console.log('gamesCreated', gamesCreated);
+          storage.set('gamesCreated', ++gamesCreated);
+        });
+
       // Must be called after game is added to GAMES
       this.createInitialObstacles();
     }
