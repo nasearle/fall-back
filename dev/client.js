@@ -51,7 +51,9 @@
           teamScore: 0,
         };
         const viewportDimensions = getViewportDimensions();
-        socket.emit('startGame', viewportDimensions);
+        socket.emit('startGame', {
+          viewportDimensions: viewportDimensions,
+        });
         window.requestAnimationFrame(renderLoop);
         // Show initial first wave toast after some delay
         setTimeout(() => {

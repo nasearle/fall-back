@@ -215,9 +215,14 @@ class Player extends Entity {
     // returns undefined if no living players
     return livingPlayerIds[Math.floor(Math.random() * livingPlayerIds.length)];
   }
-  static onConnect(socket, viewportDimensions) {
+  static onConnect(socket, viewportDimensions, gameId, privateGame) {
     console.log(`[onConnect] Searching for available games...`);
-    const game = Game.findOrCreateGame();
+    let game;
+    if (gameId) {
+      game = joinOrCreateGame(gameId, privateGame);
+    } else {
+      game = Game.findOrCreateGame();
+    }
     const playerConfig = {
       id: socket.id,
       gameId: game.id,
