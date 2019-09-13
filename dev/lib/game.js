@@ -166,126 +166,219 @@ class Game {
     'items': Item,
   };
   // Chance starts at once per 3 seconds
-  Game.defaultChanceForEnemiesToGenerate = 1 / (3 * FPS);
+  Game.defaultChanceForEnemiesToGenerate = 1 / (2.6 * FPS);
   Game.waves = {
-
     /* First 3 waves -> introduce a new gun with 2 enemies */
     1: {
-      numEnemies: 10,
+      numEnemies: 5,
       chancesForWeapons: [
         // chances should sum to 1
-        { name: 'burstshot', chance: 0.20 },
-        { name: 'pistol',    chance: 0.80 },
+        { name: 'pistol', chance: 1.0 },
       ],
       chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate,
       // CANNOT HAVE BOSS ON FIRST WAVE - crashes
     },
     2: {
-      numEnemies: 15,
+      numEnemies: 10,
       chancesForWeapons: [
         // chances should sum to 1
-        { name: 'chaingun', chance: 0.14 },
-        { name: 'pistol',   chance: 0.86 },
+        { name: 'pistol', chance: 1.0 },
       ],
       chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.05,
     },
+    /* Wave 3 - introduce rifle */
     3: {
+      numEnemies: 15,
+      chancesForWeapons: [
+        // chances should sum to 1
+        { name: 'rifle', chance: 0.1 },
+        { name: 'pistol', chance: 0.9 },
+      ],
+      chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.1,
+    },
+    4: {
       numEnemies: 20,
       chancesForWeapons: [
         // chances should sum to 1
-        { name: 'shotgun',  chance: 0.10 },
-        { name: 'pistol',   chance: 0.90 },
+        { name: 'rifle', chance: 0.1 },
+        { name: 'pistol', chance: 0.9 },
       ],
-      chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.10,
+      chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.2,
     },
-
-    /* Waves 4 & 5 -> introduce a new gun with 5 enemies */
-    4: {
+    /* Wave 5 - Mini-Boss fight, introduce burstshot */
+    5: {
+      numEnemies: 15,
+      chancesForWeapons: [
+        // chances should sum to 1
+        { name: 'rifle', chance: 0.1 },
+        { name: 'pistol', chance: 0.9 },
+      ],
+      chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.3,
+      boss: {
+        config: {
+          weaponType: 'burstshot',
+          width: 75, // vs 32
+          height: 75, // vs 32
+          maxSpeed: 2, // vs 2
+          hp: 350, // vs 30
+          hpMax: 350, // vs 30
+          bulletSpeedModifier: 0.5, // vs 0.4
+          chanceToShoot: 10 / FPS, // vs 1 / FPS
+        },
+      },
+    },
+    6: {
       numEnemies: 25,
       chancesForWeapons: [
         // chances should sum to 1
-        { name: 'rifle',  chance: 0.20 },
-        { name: 'pistol', chance: 0.80 },
+        { name: 'burstshot', chance: 0.1 },
+        { name: 'rifle', chance: 0.05 },
+        { name: 'pistol', chance: 0.85 },
       ],
-      chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.20,
+      chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.4,
     },
-    5: {
-      numEnemies: 35,
+    7: {
+      numEnemies: 30,
       chancesForWeapons: [
         // chances should sum to 1
-        { name: 'flamethrower', chance: 0.14 },
-        { name: 'pistol',       chance: 0.86 },
+        { name: 'rifle', chance: 0.1 },
+        { name: 'burstshot', chance: 0.15 },
+        { name: 'pistol', chance: 0.75 },
       ],
-      chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.30,
+      chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.5,
+    },
+    /* Wave 8 - introduce shotgun */
+    8: {
+      numEnemies: 30,
+      chancesForWeapons: [
+        // chances should sum to 1
+        { name: 'shotgun', chance: 0.1 },
+        { name: 'rifle', chance: 0.05 },
+        { name: 'burstshot', chance: 0.05 },
+        { name: 'pistol', chance: 0.8 },
+      ],
+      chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.6,
     },
 
-    /* Wave 6 - lightning round! bullet hell! */
-    6: {
+    /* Wave 9 - lightning round! bullet hell! */
+    9: {
       numEnemies: 20,
       chancesForWeapons: [
         // chances should sum to 1
-        { name: 'shotgun',    chance: 0.50 },
-        { name: 'burstshot',  chance: 0.50 },
+        { name: 'shotgun', chance: 0.5 },
+        { name: 'burstshot', chance: 0.5 },
       ],
-      chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.40,
+      chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.7,
     },
 
-    /* Wave 7 & 8 - mixed guns */
-    7: {
-      numEnemies: 40,
-      chancesForWeapons: [
-        // chances should sum to 1
-        { name: 'shotgun',      chance: 0.05 },
-        { name: 'chaingun',     chance: 0.05 },
-        { name: 'rifle',        chance: 0.05 },
-        { name: 'burstshot',    chance: 0.05 },
-        { name: 'flamethrower', chance: 0.05 },
-        { name: 'pistol',       chance: 0.75 },
-      ],
-      chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.50,
-    },
-    8: {
-      numEnemies: 40,
-      chancesForWeapons: [
-        // chances should sum to 1
-        { name: 'shotgun',      chance: 0.10 },
-        { name: 'chaingun',     chance: 0.10 },
-        { name: 'rifle',        chance: 0.10 },
-        { name: 'burstshot',    chance: 0.10 },
-        { name: 'flamethrower', chance: 0.10 },
-        { name: 'pistol',       chance: 0.50 },
-      ],
-      chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.60,
-    },
-
-    /* Wave 9 - deception... */
-    9: {
-      numEnemies: 5,
-      chancesForWeapons: [
-        // chances should sum to 1
-        { name: 'pistol', chance: 1.00 },
-      ],
-      chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.70,
-    },
-
-    /* Wave 10 - Boss fight?! */
+    /* Wave 10 - Boss fight?! introduce chaingun */
     10: {
-      numEnemies: 3,
+      numEnemies: 10,
       chancesForWeapons: [
         // chances should sum to 1
-        { name: 'pistol', chance: 1.00 },
+        { name: 'shotgun', chance: 1.0 },
       ],
-      chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.80,
+      chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.8,
+      boss: {
+        config: {
+          weaponType: 'chaingun',
+          width: 100, // vs 32
+          height: 100, // vs 32
+          maxSpeed: 2, // vs 2
+          hp: 500, // vs 30
+          hpMax: 500, // vs 30
+          bulletSpeedModifier: 0.5, // vs 0.4
+          chanceToShoot: 10 / FPS, // vs 1 / FPS
+        },
+      },
+    },
+    11: {
+      numEnemies: 35,
+      chancesForWeapons: [
+        // chances should sum to 1
+        { name: 'chaingun', chance: 0.1 },
+        { name: 'shotgun', chance: 0.05 },
+        { name: 'burstshot', chance: 0.05 },
+        { name: 'rifle', chance: 0.05 },
+        { name: 'pistol', chance: 0.75 },
+      ],
+      chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.4,
+    },
+    12: {
+      numEnemies: 40,
+      chancesForWeapons: [
+        // chances should sum to 1
+        { name: 'chaingun', chance: 0.08 },
+        { name: 'shotgun', chance: 0.08 },
+        { name: 'burstshot', chance: 0.08 },
+        { name: 'rifle', chance: 0.08 },
+        { name: 'pistol', chance: 0.68 },
+      ],
+      chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.4,
+    },
+    13: {
+      numEnemies: 45,
+      chancesForWeapons: [
+        // chances should sum to 1
+        { name: 'chaingun', chance: 0.1 },
+        { name: 'shotgun', chance: 0.1 },
+        { name: 'burstshot', chance: 0.1 },
+        { name: 'rifle', chance: 0.1 },
+        { name: 'pistol', chance: 0.6 },
+      ],
+      chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.4,
+    },
+    14: {
+      numEnemies: 50,
+      chancesForWeapons: [
+        // chances should sum to 1
+        { name: 'chaingun', chance: 0.12 },
+        { name: 'shotgun', chance: 0.12 },
+        { name: 'burstshot', chance: 0.12 },
+        { name: 'rifle', chance: 0.12 },
+        { name: 'pistol', chance: 0.52 },
+      ],
+      chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.4,
+    },
+    /* Wave 15 - Boss fight, introduce flamethrower */
+    15: {
+      numEnemies: 20,
+      chancesForWeapons: [
+        // chances should sum to 1
+        { name: 'shotgun', chance: 1.0 },
+      ],
+      chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.8,
       boss: {
         config: {
           weaponType: 'flamethrower',
-          width: 50, // vs 32
-          height: 50, // vs 32
+          width: 150, // vs 32
+          height: 150, // vs 32
           maxSpeed: 2, // vs 2
-          hp: 150, // vs 30
-          hpMax: 150, // vs 30
+          hp: 700, // vs 30
+          hpMax: 700, // vs 30
           bulletSpeedModifier: 0.5, // vs 0.4
           chanceToShoot: 10 / FPS, // vs 1 / FPS
+        },
+      },
+    },
+    /* Wave 15 - Boss fight, introduce flamethrower */
+    20: {
+      numEnemies: 50,
+      chancesForWeapons: [
+        // chances should sum to 1
+        { name: 'shotgun', chance: 1.0 },
+      ],
+      chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.8,
+      boss: {
+        config: {
+          weaponType: 'flamethrower',
+          width: 200, // vs 32
+          height: 200, // vs 32
+          maxSpeed: 2, // vs 2
+          hp: 1000, // vs 30
+          hpMax: 1000, // vs 30
+          bulletSpeedModifier: 0.5, // vs 0.4
+          chanceToShoot: 15 / FPS, // vs 1 / FPS
         },
       },
     },
@@ -303,7 +396,7 @@ class Game {
     //   ],
     //   chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.50,
     // },
-  }
+  };
   Game.allWeapons = [ 'shotgun', 'chaingun', 'rifle',
                       'burstshot',  'flamethrower', 'pistol'];
 
