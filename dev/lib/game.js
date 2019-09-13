@@ -80,6 +80,13 @@ class Game {
       }
       this.waveKills = 0;
       this.waveNum++;
+      // Bonus lives every 10 waves
+      if (this.waveNum % 10 === 0) {
+        for (const id in this.players) {
+          const player = this.players[id];
+          player.lives++;
+        }
+      }
       const wave = Game.waves[this.waveNum];
       if (wave) {
         this.totalEnemies = wave.numEnemies
