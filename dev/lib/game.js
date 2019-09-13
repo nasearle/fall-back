@@ -87,13 +87,13 @@ class Game {
         this.chanceForEnemiesToGenerate = wave.chanceForEnemiesToGenerate;
         this.chancesForWeapons = wave.chancesForWeapons;
       } else {
-        this.totalEnemies = Math.floor(this.totalEnemies * 1.25);
+        this.totalEnemies = Math.max(
+          Math.floor(this.totalEnemies * 1.25),
+          50
+        );
         this.remainingEnemies = this.totalEnemies;
-        this.chanceForEnemiesToGenerate *= 1.05;
-        this.chancesForWeapons = [
-          // Could do anything here
-          { name: 'shotgun', chance: 1.00 }
-        ];
+        this.chanceForEnemiesToGenerate *= 1.10;
+        this.chancesForWeapons = Game.generateWeightedRandomItems(Game.allWeapons);
       }
     }
     static findOrCreateGame() {
@@ -123,6 +123,36 @@ class Game {
         }
       }
     }
+    static generateWeightedRandomItems(weaponsList) {
+      let cumulativeChance = 0;
+      const chancesForWeapons = [];
+
+      // Bias so that pistol is always included
+      const pistolChance = Math.min(Math.random(), 0.5);
+      chancesForWeapons.push({ name: 'pistol', chance: pistolChance });
+      weaponsList.splice(weaponsList.indexOf('pistol'), 1);
+      cumulativeChance += pistolChance
+
+      // Distribute remaining chance over other weapons
+      for (let i = 0; i < weaponsList.length; i++) {
+          const randomIndex = Math.floor(Math.random() * weaponsList.length);
+          const randomWeapon = weaponsList[randomIndex];
+          const randomChance = Math.random();
+          const remainingChance = 1 - cumulativeChance;
+          if (randomChance <= remainingChance) {
+              chancesForWeapons.push({ name: randomWeapon, chance: randomChance });
+              cumulativeChance += randomChance
+          } else {
+              chancesForWeapons.push({ name: randomWeapon, chance: remainingChance });
+              cumulativeChance += remainingChance
+              break;
+          }
+      }
+      if (cumulativeChance < 1) {
+          chancesForWeapons.push({ name: 'pistol', chance: 1 - cumulativeChance });
+      }
+      return chancesForWeapons;
+    }
   }
   Game.entities = {
     'players': Player,
@@ -134,16 +164,14 @@ class Game {
   // Chance starts at once per 3 seconds
   Game.defaultChanceForEnemiesToGenerate = 1 / (3 * FPS);
   Game.waves = {
+
+    /* First 3 waves -> introduce a new gun with 2 enemies */
     1: {
       numEnemies: 10,
       chancesForWeapons: [
         // chances should sum to 1
-        { name: 'shotgun',  chance: 0.00 },
-        { name: 'chaingun', chance: 0.00 },
-        { name: 'rifle', chance: 0.00 },
-        { name: 'burstshot', chance: 0.20 }, // high chance -> demo mechanic to user
-        { name: 'flamethrower', chance: 0.00 },
-        { name: 'pistol', chance: 0.80 },
+        { name: 'burstshot', chance: 0.20 },
+        { name: 'pistol',    chance: 0.80 },
       ],
       chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate,
     },
@@ -151,12 +179,8 @@ class Game {
       numEnemies: 15,
       chancesForWeapons: [
         // chances should sum to 1
-        { name: 'shotgun',  chance: 0.00 },
-        { name: 'chaingun', chance: 0.15 },
-        { name: 'rifle', chance: 0.00 },
-        { name: 'burstshot', chance: 0.05 },
-        { name: 'flamethrower', chance: 0.00 },
-        { name: 'pistol', chance: 0.80 },
+        { name: 'chaingun', chance: 0.14 },
+        { name: 'pistol',   chance: 0.86 },
       ],
       chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.05,
     },
@@ -164,25 +188,19 @@ class Game {
       numEnemies: 20,
       chancesForWeapons: [
         // chances should sum to 1
-        { name: 'shotgun',  chance: 0.15 },
-        { name: 'chaingun', chance: 0.05 },
-        { name: 'rifle', chance: 0.00 },
-        { name: 'burstshot', chance: 0.05 },
-        { name: 'flamethrower', chance: 0.00 },
-        { name: 'pistol', chance: 0.75 },
+        { name: 'shotgun',  chance: 0.10 },
+        { name: 'pistol',   chance: 0.90 },
       ],
       chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.10,
     },
+
+    /* Waves 4 & 5 -> introduce a new gun with 5 enemies */
     4: {
       numEnemies: 25,
       chancesForWeapons: [
         // chances should sum to 1
-        { name: 'shotgun',  chance: 0.05 },
-        { name: 'chaingun', chance: 0.05 },
-        { name: 'rifle', chance: 0.15 },
-        { name: 'burstshot', chance: 0.05 },
-        { name: 'flamethrower', chance: 0.00 },
-        { name: 'pistol', chance: 0.70 },
+        { name: 'rifle',  chance: 0.20 },
+        { name: 'pistol', chance: 0.80 },
       ],
       chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.20,
     },
@@ -190,28 +208,86 @@ class Game {
       numEnemies: 35,
       chancesForWeapons: [
         // chances should sum to 1
-        { name: 'shotgun',  chance: 0.05 },
-        { name: 'chaingun', chance: 0.05 },
-        { name: 'rifle', chance: 0.05 },
-        { name: 'burstshot', chance: 0.05 },
-        { name: 'flamethrower', chance: 0.15 },
-        { name: 'pistol', chance: 0.65 },
+        { name: 'flamethrower', chance: 0.14 },
+        { name: 'pistol',       chance: 0.86 },
       ],
       chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.30,
     },
+
+    /* Wave 6 - lightning round! bullet hell! */
     6: {
-      numEnemies: 50,
+      numEnemies: 20,
       chancesForWeapons: [
         // chances should sum to 1
-        { name: 'shotgun',  chance: 0.07 },
-        { name: 'chaingun', chance: 0.07 },
-        { name: 'rifle', chance: 0.07 },
-        { name: 'burstshot', chance: 0.07 },
-        { name: 'flamethrower', chance: 0.07 },
-        { name: 'pistol', chance: 0.65 },
+        { name: 'shotgun',    chance: 0.50 },
+        { name: 'burstshot',  chance: 0.50 },
+      ],
+      chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.40,
+    },
+
+    /* Wave 7 & 8 - mixed guns */
+    7: {
+      numEnemies: 40,
+      chancesForWeapons: [
+        // chances should sum to 1
+        { name: 'shotgun',      chance: 0.05 },
+        { name: 'chaingun',     chance: 0.05 },
+        { name: 'rifle',        chance: 0.05 },
+        { name: 'burstshot',    chance: 0.05 },
+        { name: 'flamethrower', chance: 0.05 },
+        { name: 'pistol',       chance: 0.75 },
       ],
       chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.50,
     },
+    8: {
+      numEnemies: 40,
+      chancesForWeapons: [
+        // chances should sum to 1
+        { name: 'shotgun',      chance: 0.10 },
+        { name: 'chaingun',     chance: 0.10 },
+        { name: 'rifle',        chance: 0.10 },
+        { name: 'burstshot',    chance: 0.10 },
+        { name: 'flamethrower', chance: 0.10 },
+        { name: 'pistol',       chance: 0.50 },
+      ],
+      chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.60,
+    },
+
+    /* Wave 9 - deception... */
+    9: {
+      numEnemies: 5,
+      chancesForWeapons: [
+        // chances should sum to 1
+        { name: 'pistol', chance: 1.00 },
+      ],
+      chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.70,
+    },
+
+    /* Wave 10 - Boss fight?! */
+    10: {
+      numEnemies: 10,
+      chancesForWeapons: [
+        // chances should sum to 1
+        { name: 'pistol', chance: 1.00 },
+      ],
+      chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.80,
+    },
+
+    // 'example': {
+    //   numEnemies: 20,
+    //   chancesForWeapons: [
+    //     // chances should sum to 1
+    //     { name: 'shotgun',      chance: 1.00 },
+    //     { name: 'chaingun',     chance: 0.00 },
+    //     { name: 'rifle',        chance: 0.00 },
+    //     { name: 'burstshot',    chance: 0.00 },
+    //     { name: 'flamethrower', chance: 0.00 },
+    //     { name: 'pistol',       chance: 0.00 },
+    //   ],
+    //   chanceForEnemiesToGenerate: Game.defaultChanceForEnemiesToGenerate * 1.50,
+    // },
   }
+  Game.allWeapons = [ 'shotgun', 'chaingun', 'rifle',
+                      'burstshot',  'flamethrower', 'pistol'];
 
   /* Not using module.exports because require() is unavailable in the sandbox environment */
