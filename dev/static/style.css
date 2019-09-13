@@ -7,8 +7,10 @@ html, body {
   padding: 0;
 }
 
-/* Prevent clicking from highlighting text */
 .gameUi {
+  cursor: crosshair;
+
+  /* Prevent clicking from highlighting text */
   -khtml-user-select: none; /* webkit (konqueror) browsers */
   -moz-user-select: none; /* mozilla browsers */
   -ms-user-select: none; /* IE10+ */
