@@ -169,7 +169,7 @@ a:hover, a:focus {
   width: 50%;
   padding: 0 0 20px 0;
   max-width: 600px;
-  min-height: 500px;
+  min-height: 550px;
 }
 
 .btn {
@@ -189,6 +189,10 @@ a:hover, a:focus {
   /* Player one's color */
   color: #FF5733;
   border: 1px solid #FF5733;
+}
+
+.pad-top {
+  margin-top: 20px;
 }
 
 .hidden {
