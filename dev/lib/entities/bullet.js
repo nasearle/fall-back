@@ -17,7 +17,7 @@ class Bullet extends Entity {
     this.damage = parent.weapon.damage;
     this.toRemove = false;
     this.color = this.parent.color;
-    this.ttl = 100; // time to leave
+    this.ttl = 100; // time to live
 
     GAMES[this.gameId].bullets[this.id] = this;
     GAMES[this.gameId].initPack.bullets.push(this.getInitPack());
@@ -61,7 +61,7 @@ class Bullet extends Entity {
     if (this.parent.type != 'player') { // No friendly fire
       for (let id in game.players) {
         let player = game.players[id];
-        if (Entity.overlaps(this, player)) {
+        if (!player.dead && Entity.overlaps(this, player)) {
           player.hp -= this.damage;
           this.toRemove = true;
         }

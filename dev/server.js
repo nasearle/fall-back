@@ -20,6 +20,21 @@ const FPS = 25
 setInterval(() => {
   for (let id in GAMES) {
     const game = GAMES[id];
+    let gameOver;
+    for (let playerId in game.players) {
+      const player = game.players[playerId];
+      if (!player.dead) {
+        gameOver = false;
+        break;
+      }
+      gameOver = true;
+    }
+    if (gameOver) {
+      console.log(`[setInterval] Game ended: ${id}`);
+      io.to(game.room).emit('gameOver');
+      delete GAMES[id];
+      break;
+    }
     const packs = game.getFrameUpdateData();
     io.to(game.room).emit('init', packs.initPack);
     io.to(game.room).emit('update', packs.updatePack);
@@ -27,11 +42,9 @@ setInterval(() => {
 
     const gameState = game.getState();
     io.to(game.room).emit('state', gameState);
-
-    // Delete empty games (otherwise they will remain with logic continuing
-    // for all non-player entities). TODO: this should only be checked in
-    // onDisconnect events, and not every frame. However, currently player
-    // states are not always accessible in onDisconnect. See comment in Player.update
+    // tried moving this to the updateAll in Player but it was causing crashes
+    // on reload because the game no longer existed in the middle of the entity
+    // update loops
     Game.deleteIfEmpty(id);
   }
 }, 1000 / FPS);

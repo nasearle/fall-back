@@ -70,6 +70,14 @@ class Game {
       }
     }
     nextWave() {
+      // revive dead players
+      for (const id in this.players) {
+        const player = this.players[id];
+        if (player.dead) {
+          player.lives = 0;
+          player.dead = false;
+        }
+      }
       this.waveKills = 0;
       this.waveNum++;
       const wave = Game.waves[this.waveNum];
@@ -89,31 +97,31 @@ class Game {
       }
     }
     static findOrCreateGame() {
-        console.log('[findOrCreateGame] Current games:', numIds(GAMES));
-        console.log('[findOrCreateGame] Searching for available games...');
-        const maxPlayersPerGame = 4;
-        const gameIds = ids(GAMES);
-        for (let i = 0; i < gameIds.length; i++) {
-          const gameId = gameIds[i];
-          const existingGame = GAMES[gameId];
-          const numCurrentPlayers = numIds(existingGame.players);
-          console.log('[findOrCreateGame] Existing game', gameId, 'found with', numCurrentPlayers, 'players');
-          if (numCurrentPlayers < maxPlayersPerGame) {
-            console.log('[findOrCreateGame] Available game found:', existingGame.id);
-            return existingGame;
-          }
+      console.log('[findOrCreateGame] Current games:', numIds(GAMES));
+      console.log('[findOrCreateGame] Searching for available games...');
+      const maxPlayersPerGame = 4;
+      const gameIds = ids(GAMES);
+      for (let i = 0; i < gameIds.length; i++) {
+        const gameId = gameIds[i];
+        const existingGame = GAMES[gameId];
+        const numCurrentPlayers = numIds(existingGame.players);
+        console.log('[findOrCreateGame] Existing game', gameId, 'found with', numCurrentPlayers, 'players');
+        if (numCurrentPlayers < maxPlayersPerGame) {
+          console.log('[findOrCreateGame] Available game found:', existingGame.id);
+          return existingGame;
         }
-        console.log('[findOrCreateGame] No available game found, creating new game');
-        return new Game();
+      }
+      console.log('[findOrCreateGame] No available game found, creating new game');
+      return new Game();
     }
     static deleteIfEmpty(gameId) {
-        const game = GAMES[gameId];
-        if (game) {
-            const numCurrentPlayers = numIds(game.players);
-            if (numCurrentPlayers == 0) {
-                delete GAMES[gameId];
-            }
+      const game = GAMES[gameId];
+      if (game) {
+        const numCurrentPlayers = numIds(game.players);
+        if (numCurrentPlayers == 0) {
+          delete GAMES[gameId];
         }
+      }
     }
   }
   Game.entities = {

@@ -141,7 +141,7 @@ a:hover, a:focus {
   flex-direction: column;
 }
 
-.startScreen {
+.screen {
   align-items: center;
   display: flex;
   height: 100%;
@@ -149,7 +149,7 @@ a:hover, a:focus {
   width: 100%;
 }
 
-.startScreenMenu {
+.menu {
   align-items: center;
   background-color: #000;
   border: 1px solid #4a4a4a;
@@ -161,6 +161,7 @@ a:hover, a:focus {
   width: 50%;
   padding: 0 0 20px 0;
   max-width: 600px;
+  min-height: 500px;
 }
 
 .btn {
@@ -180,4 +181,8 @@ a:hover, a:focus {
   /* Player one's color */
   color: #FF5733;
   border: 1px solid #FF5733;
+}
+
+.hidden {
+  display: none;
 }
