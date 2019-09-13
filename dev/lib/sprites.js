@@ -1,4 +1,14 @@
-class PlayerSprite extends kontra.Sprite {
+class Sprite {
+  constructor(config) {
+    const canvas = document.querySelector('canvas#ctx');
+    this.context = canvas.getContext('2d');
+    for (const prop in config) {
+      this[prop] = config[prop];
+    }
+  }
+}
+
+class PlayerSprite extends Sprite {
   constructor(config) {
     super(config);
     this.type = 'player';
@@ -19,7 +29,12 @@ class PlayerSprite extends kontra.Sprite {
         const healthBarHeight = 5;
         const healthPercentage = this.hp / this.hpMax;
         const partialHealthBar = fullHealthBarWidth * healthPercentage;
-        this.context.fillRect(healthBarX, healthBarY, partialHealthBar, healthBarHeight);
+        this.context.fillRect(
+          healthBarX,
+          healthBarY,
+          partialHealthBar,
+          healthBarHeight
+        );
       } else {
         this.context.fillStyle = `rgba(${this.rgbColorsArr[0]}, ${
           this.rgbColorsArr[1]
@@ -38,7 +53,7 @@ class PlayerSprite extends kontra.Sprite {
 }
 PlayerSprite.sprites = {};
 
-class EnemySprite extends kontra.Sprite {
+class EnemySprite extends Sprite {
   constructor(config) {
     super(config);
     this.type = 'enemy';
@@ -48,28 +63,28 @@ class EnemySprite extends kontra.Sprite {
     this.rgbColorsArr = hexToRGB(this.color);
     this.render = function() {
       this.context.beginPath();
-        if (!this.dead) {
-          this.context.arc(
-            this.x + this.width / 2,
-            this.y + this.height / 2,
-            this.width / 2,
-            0,
-            2 * Math.PI
-          );
-          this.context.strokeStyle = this.color;
-        } else {
-          this.context.arc(
-            this.x + this.width / 2,
-            this.y + this.height / 2,
-            this.width / 2 + this.deathAnimationFrame,
-            0,
-            2 * Math.PI
-          );
-          this.context.strokeStyle = `rgba(${this.rgbColorsArr[0]}, ${
-            this.rgbColorsArr[1]
-          }, ${this.rgbColorsArr[2]}, ${1 -
-            (1 / this.deathAnimationTotalFrames) * this.deathAnimationFrame})`;
-        }
+      if (!this.dead) {
+        this.context.arc(
+          this.x + this.width / 2,
+          this.y + this.height / 2,
+          this.width / 2,
+          0,
+          2 * Math.PI
+        );
+        this.context.strokeStyle = this.color;
+      } else {
+        this.context.arc(
+          this.x + this.width / 2,
+          this.y + this.height / 2,
+          this.width / 2 + this.deathAnimationFrame,
+          0,
+          2 * Math.PI
+        );
+        this.context.strokeStyle = `rgba(${this.rgbColorsArr[0]}, ${
+          this.rgbColorsArr[1]
+        }, ${this.rgbColorsArr[2]}, ${1 -
+          (1 / this.deathAnimationTotalFrames) * this.deathAnimationFrame})`;
+      }
       this.context.stroke();
     };
     EnemySprite.sprites[this.id] = this;
@@ -77,7 +92,7 @@ class EnemySprite extends kontra.Sprite {
 }
 EnemySprite.sprites = {};
 
-class BulletSprite extends kontra.Sprite {
+class BulletSprite extends Sprite {
   constructor(config) {
     super(config);
     this.type = 'bullet';
@@ -103,7 +118,7 @@ class BulletSprite extends kontra.Sprite {
 }
 BulletSprite.sprites = {};
 
-class ObstacleSprite extends kontra.Sprite {
+class ObstacleSprite extends Sprite {
   constructor(config) {
     super(config);
     this.type = 'obstacle';
@@ -116,7 +131,7 @@ class ObstacleSprite extends kontra.Sprite {
 }
 ObstacleSprite.sprites = {};
 
-class ItemSprite extends kontra.Sprite {
+class ItemSprite extends Sprite {
   constructor(config) {
     super(config);
     this.type = 'item';

@@ -8,8 +8,6 @@
       teamScore: 0,
     };
 
-    kontra.init();
-
     function hexToRGB(hex) {
       let hexString = hex.charAt(0) == '#' ? hex.substring(1) : hex;
       if (hexString.length == 3) {
@@ -22,6 +20,11 @@
     }
 
     /* The comment below will be replaced with file contents on build */
+    //=require lib/sound-effects.js
+    //=require lib/background-music.js
+    //=require lib/sonantx-reduced.js
+    //=require lib/audio.js
+    audioInit();
     //=require lib/sprites.js
 
     /**
@@ -127,7 +130,11 @@
           new EnemySprite(data.enemies[i]);
         }
         for (let i = 0; i < data.bullets.length; i++) {
-          new BulletSprite(data.bullets[i]);
+          const bullet = data.bullets[i];
+          if (bullet.parentId == selfId) {
+            audioPlay(audioSfxPistolShot);
+          }
+          new BulletSprite(bullet);
         }
         for (let i = 0; i < data.obstacles.length; i++) {
           new ObstacleSprite(data.obstacles[i]);

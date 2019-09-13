@@ -80,6 +80,7 @@ class Bullet extends Entity {
       height: this.height,
       color: this.color,
       parentType: this.parent.type,
+      parentId: this.parent.id,
     };
   }
   getUpdatePack() {
