@@ -1,6 +1,7 @@
 class Game {
-    constructor() {
-      this.id = generateId();
+    constructor(id, privateGame) {
+      this.id = id || generateId();
+      this.privateGame = privateGame || false;
       this.room = `room-${this.id}`;
       this.initPack =   { players: [], enemies: [], bullets: [],
                           obstacles: [], items: [] };
@@ -107,6 +108,15 @@ class Game {
         this.chancesForWeapons = Game.generateWeightedRandomItems(Game.allWeapons);
       }
     }
+    static joinOrCreateGame(gameId, privateGame) {
+      console.log('[joinOrCreateGame] Searching for existing game...');
+      const existingGame = GAMES[gameId];
+      if (existingGame) {
+        return existingGame
+      }
+      console.log('[joinOrCreateGame] No existing game found, creating new game');
+      return new Game(gameId, privateGame);
+    }
     static findOrCreateGame() {
       console.log('[findOrCreateGame] Current games:', numIds(GAMES));
       console.log('[findOrCreateGame] Searching for available games...');
@@ -115,11 +125,13 @@ class Game {
       for (let i = 0; i < gameIds.length; i++) {
         const gameId = gameIds[i];
         const existingGame = GAMES[gameId];
-        const numCurrentPlayers = numIds(existingGame.players);
-        console.log('[findOrCreateGame] Existing game', gameId, 'found with', numCurrentPlayers, 'players');
-        if (numCurrentPlayers < maxPlayersPerGame) {
-          console.log('[findOrCreateGame] Available game found:', existingGame.id);
-          return existingGame;
+        if (!existingGame.privateGame) {
+          const numCurrentPlayers = numIds(existingGame.players);
+          console.log('[findOrCreateGame] Existing game', gameId, 'found with', numCurrentPlayers, 'players');
+          if (numCurrentPlayers < maxPlayersPerGame) {
+            console.log('[findOrCreateGame] Available game found:', existingGame.id);
+            return existingGame;
+          }
         }
       }
       console.log('[findOrCreateGame] No available game found, creating new game');
