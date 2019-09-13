@@ -1,12 +1,12 @@
 class Sprite {
   constructor(config) {
-    const canvas = document.querySelector('canvas#ctx');
-    this.context = canvas.getContext('2d');
     for (const prop in config) {
       this[prop] = config[prop];
     }
   }
 }
+const canvas = document.querySelector('canvas#ctx');
+Sprite.context = canvas.getContext('2d');
 
 class PlayerSprite extends Sprite {
   constructor(config) {
@@ -17,8 +17,8 @@ class PlayerSprite extends Sprite {
     this.rgbColorsArr = hexToRGB(this.color);
     this.render = function() {
       if (!this.diedAt) {
-        this.context.fillStyle = this.color;
-        this.context.fillRect(this.x, this.y, this.width, this.height);
+        Sprite.context.fillStyle = this.color;
+        Sprite.context.fillRect(this.x, this.y, this.width, this.height);
 
         // Health bar
         const fullHealthBarWidth = this.width * 1.1; // 10% wider than sprite
@@ -29,18 +29,18 @@ class PlayerSprite extends Sprite {
         const healthBarHeight = 5;
         const healthPercentage = this.hp / this.hpMax;
         const partialHealthBar = fullHealthBarWidth * healthPercentage;
-        this.context.fillRect(
+        Sprite.context.fillRect(
           healthBarX,
           healthBarY,
           partialHealthBar,
           healthBarHeight
         );
       } else {
-        this.context.fillStyle = `rgba(${this.rgbColorsArr[0]}, ${
+        Sprite.context.fillStyle = `rgba(${this.rgbColorsArr[0]}, ${
           this.rgbColorsArr[1]
         }, ${this.rgbColorsArr[2]}, ${1 -
           (1 / this.deathAnimationTotalFrames) * this.deathAnimationFrame})`;
-        this.context.fillRect(
+        Sprite.context.fillRect(
           this.x,
           this.y,
           this.width + this.deathAnimationFrame,
@@ -62,30 +62,30 @@ class EnemySprite extends Sprite {
     this.deathAnimationTotalFrames = 30;
     this.rgbColorsArr = hexToRGB(this.color);
     this.render = function() {
-      this.context.beginPath();
+      Sprite.context.beginPath();
       if (!this.dead) {
-        this.context.arc(
+        Sprite.context.arc(
           this.x + this.width / 2,
           this.y + this.height / 2,
           this.width / 2,
           0,
           2 * Math.PI
         );
-        this.context.strokeStyle = this.color;
+        Sprite.context.strokeStyle = this.color;
       } else {
-        this.context.arc(
+        Sprite.context.arc(
           this.x + this.width / 2,
           this.y + this.height / 2,
           this.width / 2 + this.deathAnimationFrame,
           0,
           2 * Math.PI
         );
-        this.context.strokeStyle = `rgba(${this.rgbColorsArr[0]}, ${
+        Sprite.context.strokeStyle = `rgba(${this.rgbColorsArr[0]}, ${
           this.rgbColorsArr[1]
         }, ${this.rgbColorsArr[2]}, ${1 -
           (1 / this.deathAnimationTotalFrames) * this.deathAnimationFrame})`;
       }
-      this.context.stroke();
+      Sprite.context.stroke();
     };
     EnemySprite.sprites[this.id] = this;
   }
@@ -98,19 +98,19 @@ class BulletSprite extends Sprite {
     this.type = 'bullet';
     this.render = function() {
       if (this.parentType === 'enemy') {
-        this.context.beginPath();
-        this.context.arc(
+        Sprite.context.beginPath();
+        Sprite.context.arc(
           this.x + this.width / 2,
           this.y + this.height / 2,
           this.width / 2,
           0,
           2 * Math.PI
         );
-        this.context.strokeStyle = this.color;
-        this.context.stroke();
+        Sprite.context.strokeStyle = this.color;
+        Sprite.context.stroke();
       } else {
-        this.context.fillStyle = this.color;
-        this.context.fillRect(this.x, this.y, this.width, this.height);
+        Sprite.context.fillStyle = this.color;
+        Sprite.context.fillRect(this.x, this.y, this.width, this.height);
       }
     };
     BulletSprite.sprites[this.id] = this;
@@ -123,8 +123,8 @@ class ObstacleSprite extends Sprite {
     super(config);
     this.type = 'obstacle';
     this.render = function() {
-      this.context.fillStyle = this.color;
-      this.context.fillRect(this.x, this.y, this.width, this.height);
+      Sprite.context.fillStyle = this.color;
+      Sprite.context.fillRect(this.x, this.y, this.width, this.height);
     };
     ObstacleSprite.sprites[this.id] = this;
   }
@@ -136,16 +136,16 @@ class ItemSprite extends Sprite {
     super(config);
     this.type = 'item';
     this.render = function() {
-      this.context.fillStyle = this.color;
-      this.context.fillRect(this.x, this.y, this.width, this.height);
+      Sprite.context.fillStyle = this.color;
+      Sprite.context.fillRect(this.x, this.y, this.width, this.height);
 
       // Label
-      this.context.fillStyle = 'white';
+      Sprite.context.fillStyle = 'white';
       const offsetX = this.width / 2; // Text is center aligned @ item center
       const offsetY = -5;
       const labelX = this.x + offsetX;
       const labelY = this.y + offsetY;
-      this.context.fillText(this.name, labelX, labelY);
+      Sprite.context.fillText(this.name, labelX, labelY);
     };
     ItemSprite.sprites[this.id] = this;
   }

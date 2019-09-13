@@ -1,5 +1,6 @@
 let audioCtx = new (window.webkitAudioContext || window.AudioContext)(),
-  audioSfxPistolShot;
+  audioSfxPistolShot,
+  audioSfxPlayerDamaged;
 
 function audioInit() {
   sonantxrGenerateSong(audioCtx, backgroundMusic, function(buffer) {
@@ -7,6 +8,9 @@ function audioInit() {
   });
   sonantxrGenerateSound(audioCtx, pistolShot, 160, function(buffer) {
     audioSfxPistolShot = buffer;
+  });
+  sonantxrGenerateSound(audioCtx, playerDamaged, 120, function(buffer) {
+    audioSfxPlayerDamaged = buffer;
   });
 }
 
