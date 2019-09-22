@@ -326,10 +326,10 @@
       };
 
       const keyMap = {
-        68: 'right', // d
-        65: 'left', // a
-        87: 'up', // w
-        83: 'down', // s
+        'KeyD': 'right', // d
+        'KeyA': 'left', // a
+        'KeyW': 'up', // w
+        'KeyS': 'down', // s
         70: 'fullscreen', // f
         77: 'mute', // m
       };
@@ -344,13 +344,13 @@
           return;
         }
         socket.emit('keyPress', {
-          inputId: keyMap[event.keyCode],
+          inputId: keyMap[event.code],
           state: true,
         });
       };
       document.onkeyup = event => {
         socket.emit('keyPress', {
-          inputId: keyMap[event.keyCode],
+          inputId: keyMap[event.code],
           state: false,
         });
       };
