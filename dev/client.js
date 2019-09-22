@@ -335,6 +335,7 @@
       };
 
       document.onkeydown = event => {
+        event.preventDefault();
         if (keyMap[event.keyCode] === 'fullscreen') {
           toggleFullscreen();
           return;
