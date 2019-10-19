@@ -18,7 +18,7 @@ From the root directory, install all dependencies:
 
 Build the app and start a local server at [http://localhost:3000](http://localhost:3000) with:
 
-    npm serve
+    npm run serve
 
 You can also use:
 
