@@ -28,7 +28,8 @@ class Player extends Entity {
     // Mostly works, but sometimes there is a desync (esp. on refresh) and
     // people can end up with the same color. TODO: make more reliable
     const numExistingPlayers = numIds(GAMES[config.gameId].players);
-    this.color = Player.colors[numExistingPlayers];
+    // wrap colors every 4 in case a bunch of ppl join a private game
+    this.color = Player.colors[numExistingPlayers % 4];
 
     const playerSpawnPoint = Entity.getEntitySpawnPoint(this);
     this.x = playerSpawnPoint.x;
@@ -217,12 +218,7 @@ class Player extends Entity {
   }
   static onConnect(socket, viewportDimensions, gameId, privateGame) {
     console.log(`[onConnect] Searching for available games...`);
-    let game;
-    if (gameId) {
-      game = Game.joinOrCreateGame(gameId, privateGame);
-    } else {
-      game = Game.findOrCreateGame();
-    }
+    const game = Game.joinOrCreateGame(gameId, privateGame);
     const playerConfig = {
       id: socket.id,
       gameId: game.id,

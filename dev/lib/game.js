@@ -108,18 +108,9 @@ class Game {
         this.chancesForWeapons = Game.generateWeightedRandomItems(Game.allWeapons);
       }
     }
-    static joinOrCreateGame(gameId, privateGame) {
-      console.log('[joinOrCreateGame] Searching for existing game...');
-      const existingGame = GAMES[gameId];
-      if (existingGame) {
-        return existingGame
-      }
-      console.log('[joinOrCreateGame] No existing game found, creating new game');
-      return new Game(gameId, privateGame);
-    }
-    static findOrCreateGame() {
-      console.log('[findOrCreateGame] Current games:', numIds(GAMES));
-      console.log('[findOrCreateGame] Searching for available games...');
+    static findOrCreatePublicGame() {
+      console.log('[findOrCreatePublicGame] Current games:', numIds(GAMES));
+      console.log('[findOrCreatePublicGame] Searching for available games...');
       const maxPlayersPerGame = 4;
       const gameIds = ids(GAMES);
       for (let i = 0; i < gameIds.length; i++) {
@@ -127,15 +118,28 @@ class Game {
         const existingGame = GAMES[gameId];
         if (!existingGame.privateGame) {
           const numCurrentPlayers = numIds(existingGame.players);
-          console.log('[findOrCreateGame] Existing game', gameId, 'found with', numCurrentPlayers, 'players');
+          console.log('[findOrCreatePublicGame] Existing game', gameId, 'found with', numCurrentPlayers, 'players');
           if (numCurrentPlayers < maxPlayersPerGame) {
-            console.log('[findOrCreateGame] Available game found:', existingGame.id);
+            console.log('[findOrCreatePublicGame] Available game found:', existingGame.id);
             return existingGame;
           }
         }
       }
-      console.log('[findOrCreateGame] No available game found, creating new game');
+      console.log('[findOrCreatePublicGame] No available game found, creating new game');
       return new Game();
+    }
+    static joinOrCreateGame(gameId, privateGame) {
+      if (privateGame && gameId) {
+        console.log('[joinOrCreateGame] Searching for existing game...');
+        const existingGame = GAMES[gameId];
+        if (existingGame) {
+          return existingGame
+        }
+        console.log('[joinOrCreateGame] No existing game found, creating new game');
+        return new Game(gameId, privateGame);
+      } else {
+        return Game.findOrCreatePublicGame();
+      }
     }
     static deleteIfEmpty(gameId) {
       const game = GAMES[gameId];

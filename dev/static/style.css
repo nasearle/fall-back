@@ -156,6 +156,19 @@ a:hover, a:focus {
   width: 200px;
 }
 
+#inputGameCode {
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  border: 1px solid whitesmoke;
+  color: whitesmoke;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 15px;
+  height: 25px;
+  margin-top: 5px;
+  width: 196px; /* 200px - border and padding */
+}
+
 .checkboxLabel {
   display: flex;
   width: 200px;
@@ -163,7 +176,17 @@ a:hover, a:focus {
 }
 
 #privateGame {
-  width: 20px;
+  -webkit-appearance: none;
+  border: 1px solid whitesmoke;
+  width: 12px;
+}
+
+#privateGame:checked {
+  background: whitesmoke;
+}
+
+input:focus {
+  outline: none;
 }
 
 label {
