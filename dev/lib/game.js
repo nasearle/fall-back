@@ -81,7 +81,7 @@ class Game {
       this.waveKills = 0;
       this.waveNum++;
       // Bonus lives every 10 waves
-      if (this.waveNum % 10 === 0) {
+      if (this.waveNum % 5 === 0) {
         for (const id in this.players) {
           const player = this.players[id];
           player.lives++;
@@ -104,7 +104,13 @@ class Game {
         );
         this.remainingEnemies = this.totalEnemies;
         this.chanceForEnemiesToGenerate *= 1.10;
-        this.chancesForWeapons = Game.generateWeightedRandomItems(Game.allWeapons);
+        this.chancesForWeapons = [
+          { name: 'chaingun', chance: 0.2 },
+          { name: 'shotgun', chance: 0.2 },
+          { name: 'burstshot', chance: 0.2 },
+          { name: 'rifle', chance: 0.2 },
+          { name: 'pistol', chance: 0.2 },
+        ];
       }
     }
     static findOrCreateGame() {
@@ -133,36 +139,6 @@ class Game {
           delete GAMES[gameId];
         }
       }
-    }
-    static generateWeightedRandomItems(weaponsList) {
-      let cumulativeChance = 0;
-      const chancesForWeapons = [];
-
-      // Bias so that pistol is always included
-      const pistolChance = Math.min(Math.random(), 0.5);
-      chancesForWeapons.push({ name: 'pistol', chance: pistolChance });
-      weaponsList.splice(weaponsList.indexOf('pistol'), 1);
-      cumulativeChance += pistolChance
-
-      // Distribute remaining chance over other weapons
-      for (let i = 0; i < weaponsList.length; i++) {
-          const randomIndex = Math.floor(Math.random() * weaponsList.length);
-          const randomWeapon = weaponsList[randomIndex];
-          const randomChance = Math.random();
-          const remainingChance = 1 - cumulativeChance;
-          if (randomChance <= remainingChance) {
-              chancesForWeapons.push({ name: randomWeapon, chance: randomChance });
-              cumulativeChance += randomChance
-          } else {
-              chancesForWeapons.push({ name: randomWeapon, chance: remainingChance });
-              cumulativeChance += remainingChance
-              break;
-          }
-      }
-      if (cumulativeChance < 1) {
-          chancesForWeapons.push({ name: 'pistol', chance: 1 - cumulativeChance });
-      }
-      return chancesForWeapons;
     }
   }
   Game.entities = {
