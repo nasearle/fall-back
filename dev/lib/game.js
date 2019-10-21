@@ -105,11 +105,12 @@ class Game {
         this.remainingEnemies = this.totalEnemies;
         this.chanceForEnemiesToGenerate *= 1.10;
         this.chancesForWeapons = [
-          { name: 'chaingun', chance: 0.2 },
-          { name: 'shotgun', chance: 0.2 },
-          { name: 'burstshot', chance: 0.2 },
-          { name: 'rifle', chance: 0.2 },
-          { name: 'pistol', chance: 0.2 },
+          { name: 'flamethrower', chance: 0.166 },
+          { name: 'chaingun', chance: 0.166 },
+          { name: 'shotgun', chance: 0.166 },
+          { name: 'burstshot', chance: 0.166 },
+          { name: 'rifle', chance: 0.166 },
+          { name: 'pistol', chance: 0.17 },
         ];
       }
     }
