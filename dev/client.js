@@ -46,8 +46,8 @@
       const gameUi = document.querySelector('#gameUi');
       const inputGameCode = document.querySelector('#inputGameCode');
       const checkboxPrivateGame = document.querySelector('#privateGame');
-      const btnJoinGame = document.querySelector('#btnJoinGame');
-      btnJoinGame.onclick = () => {
+      const btnStartGame = document.querySelector('#btnStartGame');
+      btnStartGame.onclick = () => {
         STATE = {
           waveNum: 1,
           teamScore: 0,
@@ -377,7 +377,7 @@
           // 13 is the Enter key
           if (event.keyCode === 13) {
             event.preventDefault();
-            btnJoinGame.click();
+            btnStartGame.click();
           }
         }
       };
