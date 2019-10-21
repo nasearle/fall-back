@@ -37,12 +37,14 @@ class Bullet extends Entity {
       for (let id in game.enemies) {
         let enemy = game.enemies[id];
         if (Entity.overlaps(this, enemy)) {
-          enemy.hp -= this.damage;
-          if (enemy.hp <= 0) {
-            // enemy removal handled in Enemy class
-            const shooter = game.players[this.parent.id];
-            if (shooter) {
-              shooter.score += 100;
+          if (!(enemy.hp <= 0)) {
+            enemy.hp -= this.damage;
+            if (enemy.hp <= 0) {
+              // enemy removal handled in Enemy class
+              const shooter = game.players[this.parent.id];
+              if (shooter) {
+                shooter.score += 100;
+              }
             }
           }
           this.toRemove = true;
