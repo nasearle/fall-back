@@ -25,11 +25,7 @@ class Player extends Entity {
     this.bulletSpeedModifier = 1;
     this.viewportDimensions = config.viewportDimensions;
 
-    // Mostly works, but sometimes there is a desync (esp. on refresh) and
-    // people can end up with the same color. TODO: make more reliable
-    const numExistingPlayers = numIds(GAMES[config.gameId].players);
-    // wrap colors every 4 in case a bunch of ppl join a private game
-    this.color = Player.colors[numExistingPlayers % 4];
+    this.color = Player.getFreeColor(GAMES[this.gameId]);
 
     const playerSpawnPoint = Entity.getEntitySpawnPoint(this);
     this.x = playerSpawnPoint.x;
@@ -216,6 +212,34 @@ class Player extends Entity {
     // returns undefined if no living players
     return livingPlayerIds[Math.floor(Math.random() * livingPlayerIds.length)];
   }
+  static getFreeColor(game) {
+    const numExistingPlayers = numIds(game.players);
+    if (numExistingPlayers == 0) {
+      return Player.colors[0];
+    }
+    // if there are already as many players as there are colors, get a random color
+    if (numExistingPlayers >= Player.colors.length) {
+      return Player.colors[Math.floor(Math.random() * Player.colors.length)];
+    }
+
+    let colorIsFree;
+    // loop through available colors
+    for (const color of Player.colors) {
+      colorIsFree = true;
+      for (const id in game.players) {
+        const player = game.players[id];
+        // if an existing player is that color already, break the inner loop and
+        // check the next color
+        if (player.color == color) {
+          colorIsFree = false;
+          break;
+        }
+      }
+      if (colorIsFree) {
+        return color;
+      }
+    }
+  }
   static onConnect(socket, viewportDimensions, gameId, privateGame) {
     console.log(`[onConnect] Searching for available games...`);
     const game = Game.joinOrCreateGame(gameId, privateGame);
@@ -297,6 +321,6 @@ class Player extends Entity {
     }
   }
 }
-Player.colors = ['#FF5733', '#4086fd', '#56f572', '#FFBD33'];
+Player.colors = ['#FF5733', '#4086fd', '#56f572', '#FFBD33', '#EA14DA', '#1EE1F5', '#EA7919', '#C454FF'];
 
 /* Not using module.exports because require() is unavailable in the sandbox environment */
