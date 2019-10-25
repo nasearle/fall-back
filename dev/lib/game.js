@@ -1,6 +1,7 @@
 class Game {
-    constructor() {
-      this.id = generateId();
+    constructor(id, privateGame) {
+      this.id = id || generateId();
+      this.privateGame = privateGame || false;
       this.room = `room-${this.id}`;
       this.initPack =   { players: [], enemies: [], bullets: [],
                           obstacles: [], items: [] };
@@ -83,7 +84,7 @@ class Game {
       this.waveKills = 0;
       this.waveNum++;
       // Bonus lives every 10 waves
-      if (this.waveNum % 10 === 0) {
+      if (this.waveNum % 5 === 0) {
         for (const id in this.players) {
           const player = this.players[id];
           player.lives++;
@@ -106,26 +107,48 @@ class Game {
         );
         this.remainingEnemies = this.totalEnemies;
         this.chanceForEnemiesToGenerate *= 1.10;
-        this.chancesForWeapons = Game.generateWeightedRandomItems(Game.allWeapons);
+        this.chancesForWeapons = [
+          { name: 'flamethrower', chance: 0.166 },
+          { name: 'chaingun', chance: 0.166 },
+          { name: 'shotgun', chance: 0.166 },
+          { name: 'burstshot', chance: 0.166 },
+          { name: 'rifle', chance: 0.166 },
+          { name: 'pistol', chance: 0.17 },
+        ];
       }
     }
-    static findOrCreateGame() {
-      console.log('[findOrCreateGame] Current games:', numIds(GAMES));
-      console.log('[findOrCreateGame] Searching for available games...');
+    static findOrCreatePublicGame() {
+      console.log('[findOrCreatePublicGame] Current games:', numIds(GAMES));
+      console.log('[findOrCreatePublicGame] Searching for available games...');
       const maxPlayersPerGame = 4;
       const gameIds = ids(GAMES);
       for (let i = 0; i < gameIds.length; i++) {
         const gameId = gameIds[i];
         const existingGame = GAMES[gameId];
-        const numCurrentPlayers = numIds(existingGame.players);
-        console.log('[findOrCreateGame] Existing game', gameId, 'found with', numCurrentPlayers, 'players');
-        if (numCurrentPlayers < maxPlayersPerGame) {
-          console.log('[findOrCreateGame] Available game found:', existingGame.id);
-          return existingGame;
+        if (!existingGame.privateGame) {
+          const numCurrentPlayers = numIds(existingGame.players);
+          console.log('[findOrCreatePublicGame] Existing game', gameId, 'found with', numCurrentPlayers, 'players');
+          if (numCurrentPlayers < maxPlayersPerGame) {
+            console.log('[findOrCreatePublicGame] Available game found:', existingGame.id);
+            return existingGame;
+          }
         }
       }
-      console.log('[findOrCreateGame] No available game found, creating new game');
+      console.log('[findOrCreatePublicGame] No available game found, creating new game');
       return new Game();
+    }
+    static joinOrCreateGame(gameId, privateGame) {
+      if (privateGame && gameId) {
+        console.log('[joinOrCreateGame] Searching for existing game...');
+        const existingGame = GAMES[gameId];
+        if (existingGame) {
+          return existingGame
+        }
+        console.log('[joinOrCreateGame] No existing game found, creating new game');
+        return new Game(gameId, privateGame);
+      } else {
+        return Game.findOrCreatePublicGame();
+      }
     }
     static deleteIfEmpty(gameId) {
       const game = GAMES[gameId];
@@ -135,36 +158,6 @@ class Game {
           delete GAMES[gameId];
         }
       }
-    }
-    static generateWeightedRandomItems(weaponsList) {
-      let cumulativeChance = 0;
-      const chancesForWeapons = [];
-
-      // Bias so that pistol is always included
-      const pistolChance = Math.min(Math.random(), 0.5);
-      chancesForWeapons.push({ name: 'pistol', chance: pistolChance });
-      weaponsList.splice(weaponsList.indexOf('pistol'), 1);
-      cumulativeChance += pistolChance
-
-      // Distribute remaining chance over other weapons
-      for (let i = 0; i < weaponsList.length; i++) {
-          const randomIndex = Math.floor(Math.random() * weaponsList.length);
-          const randomWeapon = weaponsList[randomIndex];
-          const randomChance = Math.random();
-          const remainingChance = 1 - cumulativeChance;
-          if (randomChance <= remainingChance) {
-              chancesForWeapons.push({ name: randomWeapon, chance: randomChance });
-              cumulativeChance += randomChance
-          } else {
-              chancesForWeapons.push({ name: randomWeapon, chance: remainingChance });
-              cumulativeChance += remainingChance
-              break;
-          }
-      }
-      if (cumulativeChance < 1) {
-          chancesForWeapons.push({ name: 'pistol', chance: 1 - cumulativeChance });
-      }
-      return chancesForWeapons;
     }
   }
   Game.entities = {

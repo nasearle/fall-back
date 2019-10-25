@@ -149,6 +149,48 @@ a:hover, a:focus {
 .column {
   display: flex;
   flex-direction: column;
+  align-items: center;
+}
+
+.column input {
+  width: 200px;
+}
+
+#inputGameCode {
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  border: 1px solid whitesmoke;
+  color: whitesmoke;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 15px;
+  height: 25px;
+  margin-top: 5px;
+  width: 196px; /* 200px - border and padding */
+}
+
+.checkboxLabel {
+  display: flex;
+  width: 200px;
+  padding: 10px 0;
+}
+
+#privateGame {
+  -webkit-appearance: none;
+  border: 1px solid whitesmoke;
+  width: 12px;
+}
+
+#privateGame:checked {
+  background: whitesmoke;
+}
+
+input:focus {
+  outline: none;
+}
+
+label {
+  width: 150px;
 }
 
 .screen {
@@ -171,7 +213,7 @@ a:hover, a:focus {
   width: 50%;
   padding: 0 0 20px 0;
   max-width: 600px;
-  min-height: 550px;
+  min-height: 650px;
 }
 
 .btn {
@@ -185,6 +227,11 @@ a:hover, a:focus {
   font-size: 15px;
   height: 40px;
   width: 100px;
+  margin-bottom: 5px;
+}
+
+#btnStartGame {
+  width: 200px;
 }
 
 .btn:hover, .btn:focus {

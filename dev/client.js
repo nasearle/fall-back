@@ -44,6 +44,8 @@
       const startScreen = document.querySelector('#startScreen');
       const gameOverScreen = document.querySelector('#gameOverScreen');
       const gameUi = document.querySelector('#gameUi');
+      const inputGameCode = document.querySelector('#inputGameCode');
+      const checkboxPrivateGame = document.querySelector('#privateGame');
       const btnStartGame = document.querySelector('#btnStartGame');
       btnStartGame.onclick = () => {
         STATE = {
@@ -51,17 +53,31 @@
           teamScore: 0,
         };
         const viewportDimensions = getViewportDimensions();
-        socket.emit('startGame', viewportDimensions);
+        const gameId = inputGameCode.value;
+        const privateGame = checkboxPrivateGame.checked;
+        socket.emit('startGame', {
+          viewportDimensions: viewportDimensions,
+          gameId: gameId,
+          privateGame: privateGame,
+        });
         window.requestAnimationFrame(renderLoop);
         // Show initial first wave toast after some delay
         setTimeout(() => {
           showToast();
         }, 2000);
-      }
+      };
       btnPlayAgain.onclick = () => {
         startScreen.classList.remove('hidden');
         gameOverScreen.classList.add('hidden');
       };
+      checkboxPrivateGame.onclick = () => {
+        if (checkboxPrivateGame.checked) {
+          inputGameCode.classList.remove('hidden');
+          inputGameCode.focus();
+        } else {
+          inputGameCode.classList.add('hidden');
+        }
+      }
 
       const CANVAS = document.querySelector('canvas#ctx');
       const CTX = CANVAS.getContext('2d');
@@ -334,25 +350,35 @@
       };
 
       document.onkeydown = event => {
-        event.preventDefault();
-        if (keyMap[event.keyCode] === 'fullscreen') {
-          toggleFullscreen();
-          return;
+        if (document.activeElement !== inputGameCode) {
+          event.preventDefault();
+          if (keyMap[event.keyCode] === 'fullscreen') {
+            toggleFullscreen();
+            return;
+          }
+          if (keyMap[event.keyCode] === 'mute') {
+            toggleSound();
+            return;
+          }
+          socket.emit('keyPress', {
+            inputId: keyMap[event.code],
+            state: true,
+          });
         }
-        if (keyMap[event.keyCode] === 'mute') {
-          toggleSound();
-          return;
-        }
-        socket.emit('keyPress', {
-          inputId: keyMap[event.code],
-          state: true,
-        });
       };
       document.onkeyup = event => {
-        socket.emit('keyPress', {
-          inputId: keyMap[event.code],
-          state: false,
-        });
+        if (document.activeElement !== inputGameCode) {
+          socket.emit('keyPress', {
+            inputId: keyMap[event.code],
+            state: false,
+          });
+        } else {
+          // 13 is the Enter key
+          if (event.keyCode === 13) {
+            event.preventDefault();
+            btnStartGame.click();
+          }
+        }
       };
       document.onmousedown = event => {
         socket.emit('keyPress', { inputId: 'shoot', state: true });

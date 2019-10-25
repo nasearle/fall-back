@@ -103,7 +103,7 @@ Weapon.weapons = {
     speed: 30,
     timeLastShot: 0,
     coolDown: 40,
-    ammo: getRandomInt(75, 125),
+    ammo: getRandomInt(200, 300),
     shootFunction: Weapon.basicShoot,
     dropable: true,
     color: 'whitesmoke',
