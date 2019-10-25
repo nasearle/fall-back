@@ -43,6 +43,7 @@ class Bullet extends Entity {
             const shooter = game.players[this.parent.id];
             if (shooter) {
               shooter.score += 100;
+              game.teamScore += 100;
             }
           }
           this.toRemove = true;

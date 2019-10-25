@@ -14,6 +14,7 @@ class Game {
       this.enemies = {};
       this.items = {};
 
+      this.teamScore = 0;
       this.totalEnemies = 0;
       this.waveNum = 0;
       this.waveKills = 0;
@@ -46,6 +47,7 @@ class Game {
     }
     getState() {
       return {
+        teamScore: this.teamScore,
         totalEnemies: this.totalEnemies,
         waveKills: this.waveKills,
         waveNum: this.waveNum,

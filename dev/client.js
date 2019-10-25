@@ -222,6 +222,7 @@
       socket.on('state', data => {
         STATE.totalEnemies = data.totalEnemies;
         STATE.waveKills = data.waveKills;
+        STATE.teamScore = data.teamScore;
         if (data.waveNum !== STATE.waveNum) {
           STATE.waveNum = data.waveNum;
           showToast();
@@ -268,7 +269,7 @@
         const waveNumElem = document.querySelector('span#wave-num');
         waveNumElem.textContent = STATE.waveNum;
 
-        let teamScore = 0;
+        let teamScore = STATE.teamScore;
         const teamScoreElem = document.querySelector('span#team-score'   );
         const playerScore   = document.querySelector('span#player-score' );
         const playerLives   = document.querySelector('span#player-lives' );
@@ -283,8 +284,6 @@
             playerWeapon.textContent = player.weaponName;
             playerAmmo.textContent   = Math.min(player.weaponAmmo, 99999);
           }
-          teamScore += player.score;
-          STATE.teamScore = teamScore;
         }
         teamScoreElem.textContent = teamScore;
 
